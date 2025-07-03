@@ -1,103 +1,127 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
+import { AppCard } from "@/components/AppCard";
+import { SearchBar } from "@/components/SearchBar";
+import { TagFilter } from "@/components/TagFilter";
+
+interface App {
+  id: string;
+  name: string;
+  description: string;
+  installCommands: string;
+  repoUrl: string;
+  viewCount: number;
+  createdAt: string;
+  creatorName: string;
+  creatorUserTag: string;
+  voteCount: number;
+}
+
+interface Tag {
+  id: string;
+  name: string;
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [apps, setApps] = useState<App[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState("newest");
+  const [selectedTag, setSelectedTag] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    fetchApps();
+    fetchTags();
+  }, [sortBy, selectedTag, searchQuery]);
+
+  const fetchApps = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (sortBy) params.append("sort", sortBy);
+      if (selectedTag) params.append("tag", selectedTag);
+      if (searchQuery) params.append("search", searchQuery);
+
+      const response = await fetch(`/api/apps?${params}`);
+      const data = await response.json();
+      setApps(data.apps || []);
+    } catch (error) {
+      console.error("Error fetching apps:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTags = async () => {
+    try {
+      const response = await fetch("/api/tags");
+      const data = await response.json();
+      setTags(data.tags || []);
+    } catch (error) {
+      console.error("Error fetching tags:", error);
+    }
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-black min-h-screen">
+      {/* Hero Section */}
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold text-white mb-4">
+          Discover Amazing Terminal Apps
+        </h1>
+        <p className="text-xl text-gray-300 mb-8">
+          A community-driven platform for finding and sharing the best
+          terminal-based applications
+        </p>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="mb-8 space-y-4">
+        <SearchBar onSearch={setSearchQuery} />
+
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center space-x-2">
+            <label className="text-sm font-medium text-gray-300">
+              Sort by:
+            </label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="border border-gray-600 rounded-md px-3 py-1 text-sm bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            >
+              <option value="newest">Newest</option>
+              <option value="votes">Most Voted</option>
+              <option value="views">Most Viewed</option>
+            </select>
+          </div>
+
+          <TagFilter
+            tags={tags}
+            selectedTag={selectedTag}
+            onTagSelect={setSelectedTag}
+          />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+
+      {/* Apps Grid */}
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
+        </div>
+      ) : apps.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-400 text-lg">
+            No apps found. Be the first to submit one!
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {apps.map((app) => (
+            <AppCard key={app.id} app={app} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
