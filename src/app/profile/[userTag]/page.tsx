@@ -290,7 +290,9 @@ export default function ProfilePage() {
                 className="mr-2 w-4 text-xs"
                 style={{ color: "var(--color-text)" }}
               >
-                {focusedElement === "activity" || activeTab === "activity" ? ">" : " "}
+                {focusedElement === "activity" || activeTab === "activity"
+                  ? ">"
+                  : " "}
               </span>
               <button
                 ref={activityTabRef}
@@ -303,7 +305,8 @@ export default function ProfilePage() {
                   color: "var(--color-text)",
                 }}
               >
-                <span className="underline">C</span>omments ({profile.comments.length})
+                <span className="underline">C</span>omments (
+                {profile.comments.length})
               </button>
             </div>
             <div className="flex items-center">
@@ -311,7 +314,10 @@ export default function ProfilePage() {
                 className="mr-2 w-4 text-xs"
                 style={{ color: "var(--color-text)" }}
               >
-                {focusedElement === "achievements" || activeTab === "achievements" ? ">" : " "}
+                {focusedElement === "achievements" ||
+                activeTab === "achievements"
+                  ? ">"
+                  : " "}
               </span>
               <button
                 ref={achievementsTabRef}
@@ -324,7 +330,8 @@ export default function ProfilePage() {
                   color: "var(--color-text)",
                 }}
               >
-                Ac<span className="underline">h</span>ievements ({profile.achievements.length})
+                Ac<span className="underline">h</span>ievements (
+                {profile.achievements.length})
               </button>
             </div>
           </div>
@@ -347,10 +354,7 @@ export default function ProfilePage() {
               >
                 user
               </label>
-              <span
-                className="text-sm"
-                style={{ color: "var(--color-text)" }}
-              >
+              <span className="text-sm" style={{ color: "var(--color-text)" }}>
                 @{profile.userTag}
               </span>
             </div>
@@ -418,7 +422,10 @@ export default function ProfilePage() {
                       onFocus={() => setFocusedElement("bio")}
                       onBlur={() => setFocusedElement(null)}
                       onChange={(e) =>
-                        setEditData((prev) => ({ ...prev, bio: e.target.value }))
+                        setEditData((prev) => ({
+                          ...prev,
+                          bio: e.target.value,
+                        }))
                       }
                       rows={4}
                       className="w-full px-2 py-1 focus:outline-none text-sm resize-vertical"
@@ -615,7 +622,7 @@ export default function ProfilePage() {
                             {app.name}
                           </Link>
                         </div>
-                        
+
                         <div className="flex items-start">
                           <span
                             className="mr-2 w-4 text-xs mt-1"
@@ -644,7 +651,8 @@ export default function ProfilePage() {
                             className="text-xs"
                             style={{ color: "var(--color-text)" }}
                           >
-                            {app.viewCount} views • {app.voteCount} votes • {formatDate(app.createdAt)}
+                            {app.viewCount} views • {app.voteCount} votes •{" "}
+                            {formatDate(app.createdAt)}
                           </span>
                         </div>
 

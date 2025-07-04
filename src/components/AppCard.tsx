@@ -138,7 +138,9 @@ export function AppCard({ app }: AppCardProps) {
               disabled={isVoting}
               className="text-xs font-medium focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                color: hasVoted ? "var(--color-highlight)" : "var(--color-text)",
+                color: hasVoted
+                  ? "var(--color-highlight)"
+                  : "var(--color-text)",
               }}
             >
               {hasVoted ? "voted ↑" : "vote ↑"} ({voteCount})
@@ -155,10 +157,7 @@ export function AppCard({ app }: AppCardProps) {
           {" "}
         </span>
         <div className="flex-1">
-          <p
-            className="text-sm mb-1"
-            style={{ color: "var(--color-text)" }}
-          >
+          <p className="text-sm mb-1" style={{ color: "var(--color-text)" }}>
             {truncateDescription(app.shortDescription || app.description)}
           </p>
           <div className="flex items-center space-x-2 text-xs">

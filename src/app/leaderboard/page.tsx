@@ -137,10 +137,7 @@ export default function LeaderboardPage() {
           >
             {" "}
           </span>
-          <span
-            className="text-sm"
-            style={{ color: "var(--color-text)" }}
-          >
+          <span className="text-sm" style={{ color: "var(--color-text)" }}>
             no data available for this period
           </span>
         </div>
@@ -172,7 +169,13 @@ export default function LeaderboardPage() {
                 }}
               >
                 #{index + 1}
-                {index === 0 ? " 🥇" : index === 1 ? " �" : index === 2 ? " �" : ""}
+                {index === 0
+                  ? " 🥇"
+                  : index === 1
+                  ? " �"
+                  : index === 2
+                  ? " �"
+                  : ""}
               </span>
               <Link
                 href={`/app/${entry.appId}`}
@@ -195,7 +198,7 @@ export default function LeaderboardPage() {
                 @{entry.creatorUserTag}
               </Link>
             </div>
-            
+
             <div className="flex items-center">
               <span
                 className="mr-2 w-4 text-xs"
@@ -203,10 +206,7 @@ export default function LeaderboardPage() {
               >
                 {" "}
               </span>
-              <span
-                className="text-xs"
-                style={{ color: "var(--color-text)" }}
-              >
+              <span className="text-xs" style={{ color: "var(--color-text)" }}>
                 {type === "votes" ? entry.voteCount : entry.viewCount} {type}
               </span>
             </div>
@@ -263,7 +263,9 @@ export default function LeaderboardPage() {
                 className="mr-2 w-4 text-xs"
                 style={{ color: "var(--color-text)" }}
               >
-                {focusedElement === "daily" || activePeriod === "daily" ? ">" : " "}
+                {focusedElement === "daily" || activePeriod === "daily"
+                  ? ">"
+                  : " "}
               </span>
               <button
                 ref={dailyRef}
@@ -284,7 +286,9 @@ export default function LeaderboardPage() {
                 className="mr-2 w-4 text-xs"
                 style={{ color: "var(--color-text)" }}
               >
-                {focusedElement === "weekly" || activePeriod === "weekly" ? ">" : " "}
+                {focusedElement === "weekly" || activePeriod === "weekly"
+                  ? ">"
+                  : " "}
               </span>
               <button
                 ref={weeklyRef}
@@ -305,7 +309,9 @@ export default function LeaderboardPage() {
                 className="mr-2 w-4 text-xs"
                 style={{ color: "var(--color-text)" }}
               >
-                {focusedElement === "monthly" || activePeriod === "monthly" ? ">" : " "}
+                {focusedElement === "monthly" || activePeriod === "monthly"
+                  ? ">"
+                  : " "}
               </span>
               <button
                 ref={monthlyRef}
@@ -326,7 +332,9 @@ export default function LeaderboardPage() {
                 className="mr-2 w-4 text-xs"
                 style={{ color: "var(--color-text)" }}
               >
-                {focusedElement === "yearly" || activePeriod === "yearly" ? ">" : " "}
+                {focusedElement === "yearly" || activePeriod === "yearly"
+                  ? ">"
+                  : " "}
               </span>
               <button
                 ref={yearlyRef}
@@ -361,10 +369,7 @@ export default function LeaderboardPage() {
               >
                 period
               </label>
-              <span
-                className="text-sm"
-                style={{ color: "var(--color-text)" }}
-              >
+              <span className="text-sm" style={{ color: "var(--color-text)" }}>
                 {formatDate(data.startDate)} - present
               </span>
             </div>
@@ -422,7 +427,9 @@ export default function LeaderboardPage() {
                     className="mr-2 w-4 text-xs"
                     style={{ color: "var(--color-text)" }}
                   >
-                    {focusedElement === "votes" || activeTab === "votes" ? ">" : " "}
+                    {focusedElement === "votes" || activeTab === "votes"
+                      ? ">"
+                      : " "}
                   </span>
                   <button
                     ref={votesTabRef}
@@ -443,7 +450,9 @@ export default function LeaderboardPage() {
                     className="mr-2 w-4 text-xs"
                     style={{ color: "var(--color-text)" }}
                   >
-                    {focusedElement === "views" || activeTab === "views" ? ">" : " "}
+                    {focusedElement === "views" || activeTab === "views"
+                      ? ">"
+                      : " "}
                   </span>
                   <button
                     ref={viewsTabRef}

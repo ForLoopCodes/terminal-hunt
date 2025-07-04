@@ -224,10 +224,7 @@ export default function ViewAppPage() {
               >
                 name
               </label>
-              <span
-                className="text-sm"
-                style={{ color: "var(--color-text)" }}
-              >
+              <span className="text-sm" style={{ color: "var(--color-text)" }}>
                 {app.name}
               </span>
             </div>
@@ -250,10 +247,7 @@ export default function ViewAppPage() {
                   >
                     description
                   </label>
-                  <p
-                    className="text-sm"
-                    style={{ color: "var(--color-text)" }}
-                  >
+                  <p className="text-sm" style={{ color: "var(--color-text)" }}>
                     {app.shortDescription}
                   </p>
                 </div>
@@ -301,11 +295,9 @@ export default function ViewAppPage() {
               >
                 stats
               </label>
-              <span
-                className="text-sm"
-                style={{ color: "var(--color-text)" }}
-              >
-                {app.voteCount} votes • {app.viewCount} views • {formatDate(app.createdAt)}
+              <span className="text-sm" style={{ color: "var(--color-text)" }}>
+                {app.voteCount} votes • {app.viewCount} views •{" "}
+                {formatDate(app.createdAt)}
               </span>
             </div>
 
@@ -365,7 +357,9 @@ export default function ViewAppPage() {
                   disabled={voting}
                   className="text-sm font-medium focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
-                    color: app.userHasVoted ? "var(--color-highlight)" : "var(--color-text)",
+                    color: app.userHasVoted
+                      ? "var(--color-highlight)"
+                      : "var(--color-text)",
                   }}
                 >
                   {app.userHasVoted ? "voted ↑" : "vote ↑"} ({app.voteCount})
@@ -458,10 +452,7 @@ export default function ViewAppPage() {
               >
                 comments
               </label>
-              <span
-                className="text-sm"
-                style={{ color: "var(--color-text)" }}
-              >
+              <span className="text-sm" style={{ color: "var(--color-text)" }}>
                 ({app.comments.length})
               </span>
             </div>
@@ -584,7 +575,7 @@ export default function ViewAppPage() {
                         {formatDate(comment.createdAt)}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-start">
                       <span
                         className="mr-2 w-4 text-xs mt-1"

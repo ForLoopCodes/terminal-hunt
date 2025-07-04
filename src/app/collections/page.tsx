@@ -225,11 +225,11 @@ export default function MyCollectionsPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div 
+      <div
         className="min-h-screen flex items-center justify-center"
         style={{ backgroundColor: "var(--color-primary)" }}
       >
-        <div 
+        <div
           className="font-mono text-lg"
           style={{ color: "var(--color-text)" }}
         >
@@ -240,7 +240,7 @@ export default function MyCollectionsPage() {
   }
 
   return (
-    <div 
+    <div
       className="min-h-screen pt-20 pb-8"
       style={{ backgroundColor: "var(--color-primary)" }}
     >
@@ -268,7 +268,7 @@ export default function MyCollectionsPage() {
           <div className="w-1/3">
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
-                <h1 
+                <h1
                   className="text-lg font-mono font-semibold"
                   style={{ color: "var(--color-text)" }}
                 >
@@ -285,13 +285,13 @@ export default function MyCollectionsPage() {
 
               {/* Create Form */}
               {showCreateForm && (
-                <div 
+                <div
                   className="mb-6 pb-4 border-b"
                   style={{ borderColor: "var(--color-accent)" }}
                 >
                   <div className="space-y-3">
                     <div>
-                      <label 
+                      <label
                         className="text-xs font-mono block mb-1"
                         style={{ color: "var(--color-text)" }}
                       >
@@ -301,19 +301,22 @@ export default function MyCollectionsPage() {
                         type="text"
                         value={newCollection.name}
                         onChange={(e) =>
-                          setNewCollection({ ...newCollection, name: e.target.value })
+                          setNewCollection({
+                            ...newCollection,
+                            name: e.target.value,
+                          })
                         }
                         placeholder="_"
                         className="w-full px-2 py-1 text-sm font-mono focus:outline-none"
                         style={{
                           backgroundColor: "var(--color-primary)",
                           color: "var(--color-text)",
-                          borderBottom: "1px solid var(--color-accent)"
+                          borderBottom: "1px solid var(--color-accent)",
                         }}
                       />
                     </div>
                     <div>
-                      <label 
+                      <label
                         className="text-xs font-mono block mb-1"
                         style={{ color: "var(--color-text)" }}
                       >
@@ -332,7 +335,7 @@ export default function MyCollectionsPage() {
                         style={{
                           backgroundColor: "var(--color-primary)",
                           color: "var(--color-text)",
-                          border: "1px solid var(--color-accent)"
+                          border: "1px solid var(--color-accent)",
                         }}
                         rows={2}
                       />
@@ -344,7 +347,7 @@ export default function MyCollectionsPage() {
                         className="px-2 py-1 font-mono text-sm focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{
                           backgroundColor: "var(--color-highlight)",
-                          color: "var(--color-primary)"
+                          color: "var(--color-primary)",
                         }}
                       >
                         create
@@ -364,28 +367,28 @@ export default function MyCollectionsPage() {
               {/* Collections List */}
               {collections.length > 0 ? (
                 <DragDropCollections
-                collections={collections}
-                selectedCollection={selectedCollection}
-                editingCollection={editingCollection}
-                onCollectionSelect={(collection) => {
-                  setSelectedCollection(collection);
-                  fetchCollectionApps(collection.id);
-                }}
-                onCollectionEdit={setEditingCollection}
-                onCollectionDelete={deleteCollection}
-                onCollectionUpdate={updateCollection}
-                onCollectionReorder={reorderCollections}
-                setEditingCollection={setEditingCollection}
-              />
+                  collections={collections}
+                  selectedCollection={selectedCollection}
+                  editingCollection={editingCollection}
+                  onCollectionSelect={(collection) => {
+                    setSelectedCollection(collection);
+                    fetchCollectionApps(collection.id);
+                  }}
+                  onCollectionEdit={setEditingCollection}
+                  onCollectionDelete={deleteCollection}
+                  onCollectionUpdate={updateCollection}
+                  onCollectionReorder={reorderCollections}
+                  setEditingCollection={setEditingCollection}
+                />
               ) : !showCreateForm ? (
                 <div className="text-center py-8">
-                  <div 
+                  <div
                     className="text-sm font-mono mb-4"
                     style={{ color: "var(--color-text)" }}
                   >
                     [ ] empty
                   </div>
-                  <p 
+                  <p
                     className="font-mono mb-4 text-sm"
                     style={{ color: "var(--color-text)" }}
                   >
@@ -396,7 +399,7 @@ export default function MyCollectionsPage() {
                     className="px-3 py-1 font-mono text-sm focus:outline-none"
                     style={{
                       backgroundColor: "var(--color-highlight)",
-                      color: "var(--color-primary)"
+                      color: "var(--color-primary)",
                     }}
                   >
                     create_first_collection
@@ -409,34 +412,35 @@ export default function MyCollectionsPage() {
           {/* Collection Content */}
           <div className="flex-1">
             {selectedCollection ? (
-              <div 
+              <div
                 className="border p-6"
-                style={{ 
+                style={{
                   backgroundColor: "var(--color-primary)",
-                  borderColor: "var(--color-accent)"
+                  borderColor: "var(--color-accent)",
                 }}
               >
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 
+                    <h2
                       className="text-lg font-mono font-semibold"
                       style={{ color: "var(--color-text)" }}
                     >
                       {"> " + selectedCollection.name}
                     </h2>
                     {selectedCollection.description && (
-                      <p 
+                      <p
                         className="mt-1 text-sm font-mono"
                         style={{ color: "var(--color-text)" }}
                       >
                         {selectedCollection.description}
                       </p>
                     )}
-                    <p 
+                    <p
                       className="text-xs font-mono mt-2"
                       style={{ color: "var(--color-text)" }}
                     >
-                      {selectedCollection.appCount} apps • created {formatDate(selectedCollection.createdAt)}
+                      {selectedCollection.appCount} apps • created{" "}
+                      {formatDate(selectedCollection.createdAt)}
                     </p>
                   </div>
                 </div>
@@ -444,7 +448,7 @@ export default function MyCollectionsPage() {
                 {/* Apps in Collection */}
                 {appsLoading ? (
                   <div className="flex justify-center py-12">
-                    <div 
+                    <div
                       className="font-mono text-sm"
                       style={{ color: "var(--color-text)" }}
                     >
@@ -462,19 +466,19 @@ export default function MyCollectionsPage() {
                   />
                 ) : (
                   <div className="text-center py-12">
-                    <div 
+                    <div
                       className="text-sm font-mono mb-4"
                       style={{ color: "var(--color-text)" }}
                     >
                       [ ] empty_collection
                     </div>
-                    <p 
+                    <p
                       className="font-mono mb-4 text-sm"
                       style={{ color: "var(--color-text)" }}
                     >
                       this collection is empty
                     </p>
-                    <p 
+                    <p
                       className="text-xs font-mono"
                       style={{ color: "var(--color-text)" }}
                     >
@@ -484,27 +488,27 @@ export default function MyCollectionsPage() {
                 )}
               </div>
             ) : (
-              <div 
+              <div
                 className="border p-6"
-                style={{ 
+                style={{
                   backgroundColor: "var(--color-primary)",
-                  borderColor: "var(--color-accent)"
+                  borderColor: "var(--color-accent)",
                 }}
               >
                 <div className="text-center py-12">
-                  <div 
+                  <div
                     className="text-sm font-mono mb-4"
                     style={{ color: "var(--color-text)" }}
                   >
                     [ ? ] select_collection
                   </div>
-                  <h3 
+                  <h3
                     className="text-lg font-mono font-semibold mb-2"
                     style={{ color: "var(--color-text)" }}
                   >
                     choose collection
                   </h3>
-                  <p 
+                  <p
                     className="font-mono text-sm"
                     style={{ color: "var(--color-text)" }}
                   >

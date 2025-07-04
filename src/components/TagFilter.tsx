@@ -14,10 +14,7 @@ interface TagFilterProps {
 export function TagFilter({ tags, selectedTag, onTagSelect }: TagFilterProps) {
   return (
     <div className="flex items-center">
-      <span
-        className="mr-2 w-4 text-xs"
-        style={{ color: "var(--color-text)" }}
-      >
+      <span className="mr-2 w-4 text-xs" style={{ color: "var(--color-text)" }}>
         {" "}
       </span>
       <label

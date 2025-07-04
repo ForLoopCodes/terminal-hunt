@@ -36,10 +36,7 @@ export function SearchBar({ onSearch }: SearchBarProps) {
 
   return (
     <div className="flex items-center">
-      <span
-        className="mr-2 w-4 text-xs"
-        style={{ color: "var(--color-text)" }}
-      >
+      <span className="mr-2 w-4 text-xs" style={{ color: "var(--color-text)" }}>
         {" "}
       </span>
       <label
@@ -68,10 +65,7 @@ export function SearchBar({ onSearch }: SearchBarProps) {
             onClick={handleClear}
             className="absolute inset-y-0 right-0 pr-2 flex items-center"
           >
-            <span
-              className="text-xs"
-              style={{ color: "var(--color-text)" }}
-            >
+            <span className="text-xs" style={{ color: "var(--color-text)" }}>
               ×
             </span>
           </button>

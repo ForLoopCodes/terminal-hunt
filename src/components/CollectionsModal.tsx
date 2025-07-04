@@ -107,24 +107,24 @@ export function CollectionsModal({
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 flex items-center justify-center z-50 p-4"
       style={{ backgroundColor: "rgba(0, 0, 0, 0.8)" }}
     >
-      <div 
+      <div
         className="border max-w-md w-full max-h-[80vh] overflow-hidden"
-        style={{ 
+        style={{
           backgroundColor: "var(--color-primary)",
-          borderColor: "var(--color-accent)"
+          borderColor: "var(--color-accent)",
         }}
       >
         {/* Header */}
-        <div 
+        <div
           className="px-6 py-4 border-b"
           style={{ borderColor: "var(--color-accent)" }}
         >
           <div className="flex items-center justify-between">
-            <h3 
+            <h3
               className="text-lg font-mono font-semibold"
               style={{ color: "var(--color-text)" }}
             >
@@ -138,7 +138,7 @@ export function CollectionsModal({
               [x]
             </button>
           </div>
-          <p 
+          <p
             className="text-sm mt-1 font-mono"
             style={{ color: "var(--color-text)" }}
           >
@@ -150,7 +150,7 @@ export function CollectionsModal({
         <div className="p-6 max-h-96 overflow-y-auto">
           {loading ? (
             <div className="flex justify-center py-8">
-              <div 
+              <div
                 className="font-mono text-sm"
                 style={{ color: "var(--color-text)" }}
               >
@@ -170,7 +170,7 @@ export function CollectionsModal({
                       style={{
                         borderColor: "var(--color-accent)",
                         backgroundColor: "var(--color-primary)",
-                        color: "var(--color-text)"
+                        color: "var(--color-text)",
                       }}
                       onFocus={(e) => {
                         e.target.style.borderColor = "var(--color-highlight)";
@@ -182,19 +182,19 @@ export function CollectionsModal({
                       <div className="flex items-center">
                         <div
                           className="w-3 h-3 mr-3 border"
-                          style={{ 
+                          style={{
                             backgroundColor: collection.color,
-                            borderColor: "var(--color-accent)"
+                            borderColor: "var(--color-accent)",
                           }}
                         ></div>
                         <div>
-                          <div 
+                          <div
                             className="font-medium text-sm"
                             style={{ color: "var(--color-text)" }}
                           >
                             {collection.name}
                           </div>
-                          <div 
+                          <div
                             className="text-xs"
                             style={{ color: "var(--color-text)" }}
                           >
@@ -202,7 +202,7 @@ export function CollectionsModal({
                           </div>
                         </div>
                       </div>
-                      <span 
+                      <span
                         className="text-sm"
                         style={{ color: "var(--color-text)" }}
                       >
@@ -213,13 +213,13 @@ export function CollectionsModal({
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <div 
+                  <div
                     className="text-sm font-mono mb-4"
                     style={{ color: "var(--color-text)" }}
                   >
                     [ ] empty
                   </div>
-                  <p 
+                  <p
                     className="text-sm font-mono mb-4"
                     style={{ color: "var(--color-text)" }}
                   >
@@ -236,7 +236,7 @@ export function CollectionsModal({
                   style={{
                     borderColor: "var(--color-accent)",
                     backgroundColor: "var(--color-primary)",
-                    color: "var(--color-text)"
+                    color: "var(--color-text)",
                   }}
                   onFocus={(e) => {
                     e.target.style.borderColor = "var(--color-highlight)";
@@ -249,15 +249,15 @@ export function CollectionsModal({
                   create_new_collection
                 </button>
               ) : (
-                <div 
+                <div
                   className="border p-4 space-y-3"
-                  style={{ 
+                  style={{
                     borderColor: "var(--color-accent)",
-                    backgroundColor: "var(--color-primary)"
+                    backgroundColor: "var(--color-primary)",
                   }}
                 >
                   <div className="space-y-1">
-                    <label 
+                    <label
                       className="text-xs font-mono block"
                       style={{ color: "var(--color-text)" }}
                     >
@@ -272,7 +272,7 @@ export function CollectionsModal({
                       style={{
                         backgroundColor: "var(--color-primary)",
                         borderColor: "var(--color-accent)",
-                        color: "var(--color-text)"
+                        color: "var(--color-text)",
                       }}
                       onFocus={(e) => {
                         e.target.style.borderColor = "var(--color-highlight)";
@@ -294,7 +294,7 @@ export function CollectionsModal({
                       className="flex-1 px-3 py-1 font-mono text-sm focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{
                         backgroundColor: "var(--color-highlight)",
-                        color: "var(--color-primary)"
+                        color: "var(--color-primary)",
                       }}
                     >
                       {creating ? "creating..." : "create"}
@@ -308,7 +308,7 @@ export function CollectionsModal({
                       style={{
                         borderColor: "var(--color-accent)",
                         backgroundColor: "var(--color-primary)",
-                        color: "var(--color-text)"
+                        color: "var(--color-text)",
                       }}
                       onFocus={(e) => {
                         e.target.style.borderColor = "var(--color-highlight)";
