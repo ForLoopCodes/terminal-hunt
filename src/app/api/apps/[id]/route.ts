@@ -15,7 +15,9 @@ export async function GET(
       .select({
         id: apps.id,
         name: apps.name,
+        shortDescription: apps.shortDescription,
         description: apps.description,
+        website: apps.website,
         installCommands: apps.installCommands,
         repoUrl: apps.repoUrl,
         viewCount: apps.viewCount,

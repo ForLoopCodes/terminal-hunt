@@ -2,14 +2,14 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import TwitterProvider from "next-auth/providers/twitter";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
+import { checkRateLimit, clearRateLimit } from "@/lib/rateLimit";
 
 export const authOptions: NextAuthOptions = {
-  adapter: DrizzleAdapter(db) as any,
+  // Remove adapter to handle OAuth manually
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -31,11 +31,21 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // Check rate limit for this email
+        const rateLimitCheck = checkRateLimit(credentials.email);
+        if (!rateLimitCheck.allowed) {
+          console.log(`Rate limit exceeded for ${credentials.email}`);
+          return null;
+        }
+
         const user = await db.query.users.findFirst({
           where: eq(users.email, credentials.email),
         });
 
         if (!user || !user.passwordHash) {
+          console.log(
+            `Invalid login attempt for ${credentials.email}: user not found`
+          );
           return null;
         }
 
@@ -45,8 +55,14 @@ export const authOptions: NextAuthOptions = {
         );
 
         if (!isPasswordValid) {
+          console.log(
+            `Invalid login attempt for ${credentials.email}: wrong password`
+          );
           return null;
         }
+
+        // Clear rate limit on successful login
+        clearRateLimit(credentials.email);
 
         return {
           id: user.id,
@@ -92,6 +108,8 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async signIn({ user, account, profile }) {
+      console.log("SignIn callback:", { user, account, profile });
+
       if (account?.provider === "google" || account?.provider === "twitter") {
         // For OAuth providers, ensure user exists in our database
         try {
@@ -101,23 +119,29 @@ export const authOptions: NextAuthOptions = {
 
           if (!existingUser) {
             // Create user if they don't exist
+            console.log("Creating new OAuth user:", user.email);
             const userTag = user
               .email!.split("@")[0]
               .toLowerCase()
               .replace(/[^a-z0-9]/g, "");
+
             const newUser = await db
               .insert(users)
               .values({
                 email: user.email!,
                 name: user.name || user.email!,
                 userTag: userTag,
+                userType: "individual", // Set default user type
               })
               .returning();
 
+            console.log("Created new user:", newUser[0]);
+
             // Update the user object with the userTag
-            (user as any).userTag = userTag;
+            (user as any).userTag = newUser[0].userTag;
             user.id = newUser[0].id;
           } else {
+            console.log("Found existing user:", existingUser);
             // Update the user object with existing userTag
             (user as any).userTag = existingUser.userTag;
             user.id = existingUser.id;

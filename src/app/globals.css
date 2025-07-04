@@ -1,234 +1,33 @@
+@import url("https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap");
 @layer base, utils, components;
-
-@import "@webtui/css/base.css";
-
-/* Utils */
-@import "@webtui/css/utils/box.css";
-
-/* Components */
-@import "@webtui/css/components/button.css";
-@import "@webtui/css/components/typography.css";
 
 @import "tailwindcss";
 
 :root {
-  --background: #000000;
-  --foreground: #ffffff;
+  --color-primary: #03050c;
+  --color-secondary: #1c2541;
+  --color-accent: #4b6688;
+  --color-highlight: #5bc0be;
+  --color-text: #6fffe9;
+
+  --background: var(--color-primary);
+  --foreground: var(--color-text);
   --font-geist-sans: ui-sans-serif, system-ui, sans-serif;
   --font-geist-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas,
     "Liberation Mono", Menlo, monospace;
 }
 
 html {
-  background: #000000;
+  background: var(--color-primary);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans);
+  font-family: var(--font-geist-mono), "geist mono", monospace !important;
   min-height: 100vh;
 }
 
-/* OLED Dark Mode - Force all components to use true black background */
 * {
-  border-color: #333333 !important;
-}
-
-/* Main container background */
-main,
-.main,
-#__next {
-  background-color: #000000 !important;
-}
-
-/* Override any light mode classes */
-.bg-white {
-  background-color: #000000 !important;
-}
-
-.bg-gray-50 {
-  background-color: #111111 !important;
-}
-
-.bg-gray-100 {
-  background-color: #1a1a1a !important;
-}
-
-.bg-gray-200 {
-  background-color: #222222 !important;
-}
-
-.bg-gray-300 {
-  background-color: #333333 !important;
-}
-
-.bg-gray-400 {
-  background-color: #444444 !important;
-}
-
-.bg-gray-500 {
-  background-color: #555555 !important;
-}
-
-.bg-gray-600 {
-  background-color: #666666 !important;
-}
-
-.bg-gray-700 {
-  background-color: #111111 !important;
-}
-
-.bg-gray-800 {
-  background-color: #000000 !important;
-}
-
-.bg-gray-900 {
-  background-color: #000000 !important;
-}
-
-/* Text colors */
-.text-gray-900 {
-  color: #ffffff !important;
-}
-
-.text-gray-800 {
-  color: #ffffff !important;
-}
-
-.text-gray-700 {
-  color: #cccccc !important;
-}
-
-.text-gray-600 {
-  color: #aaaaaa !important;
-}
-
-.text-gray-500 {
-  color: #888888 !important;
-}
-
-.text-gray-400 {
-  color: #777777 !important;
-}
-
-.text-gray-300 {
-  color: #bbbbbb !important;
-}
-
-.text-black {
-  color: #ffffff !important;
-}
-
-/* Border colors */
-.border-gray-300 {
-  border-color: #333333 !important;
-}
-
-.border-gray-200 {
-  border-color: #333333 !important;
-}
-
-.border-gray-600 {
-  border-color: #444444 !important;
-}
-
-/* Form elements */
-input,
-textarea,
-select {
-  background-color: #111111 !important;
-  color: #ffffff !important;
-  border-color: #333333 !important;
-}
-
-input:focus,
-textarea:focus,
-select:focus {
-  background-color: #111111 !important;
-  color: #ffffff !important;
-  border-color: #555555 !important;
-}
-
-/* Cards and containers */
-.shadow-md,
-.shadow-lg,
-.shadow {
-  box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.05),
-    0 2px 4px -1px rgba(255, 255, 255, 0.03) !important;
-}
-
-/* Prose (Markdown) styling for dark mode */
-.prose {
-  color: #ffffff !important;
-}
-
-.prose h1,
-.prose h2,
-.prose h3,
-.prose h4,
-.prose h5,
-.prose h6 {
-  color: #ffffff !important;
-}
-
-.prose p,
-.prose li {
-  color: #cccccc !important;
-}
-
-.prose code {
-  background-color: #222222 !important;
-  color: #ffffff !important;
-  padding: 0.125rem 0.25rem !important;
-  border-radius: 0.25rem !important;
-}
-
-.prose pre {
-  background-color: #111111 !important;
-  color: #ffffff !important;
-  border: 1px solid #333333 !important;
-}
-
-.prose blockquote {
-  color: #aaaaaa !important;
-  border-left-color: #444444 !important;
-}
-
-.prose a {
-  color: #60a5fa !important;
-}
-
-.prose a:hover {
-  color: #93c5fd !important;
-}
-
-/* Button styles */
-.btn,
-button {
-  transition: all 0.2s ease-in-out;
-}
-
-/* Hover states for interactive elements */
-.hover\:bg-gray-100:hover {
-  background-color: #1a1a1a !important;
-}
-
-.hover\:bg-gray-200:hover {
-  background-color: #222222 !important;
-}
-
-.hover\:bg-gray-300:hover {
-  background-color: #333333 !important;
-}
-
-/* Focus states */
-.focus\:ring-blue-500:focus {
-  --tw-ring-color: #3b82f6 !important;
-}
-
-/* Disabled states */
-.disabled\:bg-gray-400:disabled {
-  background-color: #333333 !important;
-  color: #666666 !important;
+  font-family: var(--font-geist-mono), "geist mono", monospace !important;
 }

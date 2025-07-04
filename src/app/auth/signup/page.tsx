@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { SecurityWarning } from "@/components/SecurityWarning";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -16,35 +17,121 @@ export default function SignUpPage() {
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [focusedElement, setFocusedElement] = useState<string | null>(null);
+
+  // Refs for programmatic focus
+  const userTagRef = useRef<HTMLInputElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordRef = useRef<HTMLInputElement>(null);
+  const submitRef = useRef<HTMLButtonElement>(null);
+  const signinRef = useRef<HTMLAnchorElement>(null);
+  const googleRef = useRef<HTMLButtonElement>(null);
+  const twitterRef = useRef<HTMLButtonElement>(null);
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ignore shortcuts when typing in inputs
+      const activeElement = document.activeElement;
+      if (
+        activeElement &&
+        (activeElement.tagName === "INPUT" ||
+          activeElement.tagName === "TEXTAREA")
+      ) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+
+      switch (key) {
+        case "g":
+          e.preventDefault();
+          googleRef.current?.click();
+          break;
+        case "t":
+          e.preventDefault();
+          twitterRef.current?.click();
+          break;
+        case "r":
+          e.preventDefault();
+          userTagRef.current?.focus();
+          break;
+        case "n":
+          e.preventDefault();
+          nameRef.current?.focus();
+          break;
+        case "e":
+          e.preventDefault();
+          emailRef.current?.focus();
+          break;
+        case "w":
+          e.preventDefault();
+          passwordRef.current?.focus();
+          break;
+        case "f":
+          e.preventDefault();
+          confirmPasswordRef.current?.focus();
+          break;
+        case "u":
+          e.preventDefault();
+          submitRef.current?.click();
+          break;
+        case "i":
+          e.preventDefault();
+          signinRef.current?.click();
+          break;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, []);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
+    // Tag validation
     if (!formData.userTag.trim()) {
-      newErrors.userTag = "User tag is required";
-    } else if (!/^[a-zA-Z0-9_-]+$/.test(formData.userTag)) {
-      newErrors.userTag =
-        "User tag can only contain letters, numbers, underscores, and hyphens";
+      newErrors.userTag = "Tag required";
+    } else if (!/^[a-zA-Z0-9_]{3,30}$/.test(formData.userTag)) {
+      newErrors.userTag = "3-30 chars, alphanumeric only";
     }
 
+    // Name validation
     if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+      newErrors.name = "Name required";
+    } else if (formData.name.length < 2) {
+      newErrors.name = "Min 2 characters";
     }
 
+    // Email validation
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email";
+      newErrors.email = "Email required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Invalid email";
     }
 
+    // Password validation
     if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+      newErrors.password = "Password required";
+    } else {
+      const password = formData.password;
+      if (password.length < 8) {
+        newErrors.password = "Min 8 characters";
+      } else if (!/(?=.*[a-z])/.test(password)) {
+        newErrors.password = "Need lowercase letter";
+      } else if (!/(?=.*[A-Z])/.test(password)) {
+        newErrors.password = "Need uppercase letter";
+      } else if (!/(?=.*\d)/.test(password)) {
+        newErrors.password = "Need number";
+      }
     }
 
+    // Confirm password validation
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      newErrors.confirmPassword = "Passwords don't match";
     }
 
     setErrors(newErrors);
@@ -112,247 +199,417 @@ export default function SignUpPage() {
     }
   };
 
+  const termhuntText = `
+ ___                                   ___                      ___      
+(   )                                 (   )                    (   )     
+ | |_     .--.  ___ .-.  ___ .-. .-.   | | .-. ___  ___ ___ .-. | |_     
+(   __)  /    \\(   )   \\(   )   '   \\  | |/   (   )(   |   )   (   __)   
+ | |    |  .-. ;| ' .-. ;|  .-.  .-. ; |  .-. .| |  | | |  .-. .| |      
+ | | ___|  | | ||  / (___) |  | |  | | | |  | || |  | | | |  | || | ___  
+ | |(   )  |/  || |      | |  | |  | | | |  | || |  | | | |  | || |(   ) 
+ | | | ||  ' _.'| |      | |  | |  | | | |  | || |  | | | |  | || | | |  
+ | ' | ||  .'.-.| |      | |  | |  | | | |  | || |  ; ' | |  | || ' | |  
+ ' \`-' ;'  \`-' /| |      | |  | |  | | | |  | |' \`-'  / | |  | |' \`-' ;  
+  \`.__.  \`.__.'(___)    (___)(___)(___|___)(___)'.__.' (___)(___)\`.__.   
+                  
+  J O I N   T H E   H U N T
+  `;
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            Join Terminal Hunt
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            Or{" "}
-            <Link
-              href="/auth/signin"
-              className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
-            >
-              sign in to your account
-            </Link>
-          </p>
-        </div>
+    <div
+      className="min-h-screen flex flex-col items-center justify-center py-12 px-4 gap-10 sm:px-6 lg:px-8"
+      style={{ backgroundColor: "var(--color-primary)" }}
+    >
+      <SecurityWarning />
 
-        <div className="mt-8 space-y-6">
+      <div className="text-center">
+        <pre
+          className="text-sm whitespace-pre-wrap font-semibold"
+          style={{ color: "var(--color-accent)" }}
+        >
+          {termhuntText}
+        </pre>
+      </div>
+
+      <div className="max-w-[650px] w-full">
+        <div className="space-y-4">
           {/* OAuth Providers */}
-          <div className="space-y-3">
-            <button
-              onClick={() => handleOAuthSignIn("google")}
-              disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                <path
-                  fill="currentColor"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                />
-                <path
-                  fill="currentColor"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                />
-                <path
-                  fill="currentColor"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                />
-                <path
-                  fill="currentColor"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                />
-              </svg>
-              Sign up with Google
-            </button>
-
-            <button
-              onClick={() => handleOAuthSignIn("twitter")}
-              disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="currentColor"
-                viewBox="0 0 24 24"
+          <div>
+            <div className="flex items-center">
+              <span
+                className="mr-2 w-4 text-xs"
+                style={{ color: "var(--color-text)" }}
               >
-                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
-              </svg>
-              Sign up with X (Twitter)
-            </button>
+                {focusedElement === "google" ? ">" : " "}
+              </span>
+              <button
+                ref={googleRef}
+                onFocus={() => setFocusedElement("google")}
+                onBlur={() => setFocusedElement(null)}
+                onClick={() => handleOAuthSignIn("google")}
+                disabled={loading}
+                className="justify-center py-2 text-sm font-medium focus:outline-none focus:ring-none disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-text)",
+                }}
+              >
+                <span className="underline">G</span>oogle
+              </button>
+            </div>
+            <div className="flex items-center">
+              <span
+                className="mr-2 w-4 text-xs"
+                style={{ color: "var(--color-text)" }}
+              >
+                {focusedElement === "twitter" ? ">" : " "}
+              </span>
+              <button
+                ref={twitterRef}
+                onFocus={() => setFocusedElement("twitter")}
+                onBlur={() => setFocusedElement(null)}
+                onClick={() => handleOAuthSignIn("twitter")}
+                disabled={loading}
+                className="justify-center py-2 text-sm font-medium focus:outline-none focus:ring-none disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-text)",
+                }}
+              >
+                <span className="underline">T</span>witter
+              </button>
+            </div>
           </div>
 
           <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300 dark:border-gray-600" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400">
-                Or create account with email
+            <div className="relative flex text-sm">
+              <span
+                className="px-6"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-accent)",
+                }}
+              >
+                \\
               </span>
             </div>
           </div>
 
           {/* Signup Form */}
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
             {errors.submit && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
-                <p className="text-red-600 dark:text-red-400 text-sm">
+              <div
+                className="border p-4"
+                style={{
+                  backgroundColor: "var(--color-secondary)",
+                  borderColor: "var(--color-accent)",
+                }}
+              >
+                <p
+                  className="text-sm"
+                  style={{ color: "var(--color-highlight)" }}
+                >
                   {errors.submit}
                 </p>
               </div>
             )}
 
-            <div className="space-y-4">
-              <div>
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center">
+                <span
+                  className="mr-2 w-4 text-xs"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  {focusedElement === "userTag" ? ">" : " "}
+                </span>
                 <label
                   htmlFor="userTag"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  className="text-sm pr-2"
+                  style={{
+                    color: "var(--color-text)",
+                    backgroundColor: "var(--color-primary)",
+                  }}
                 >
-                  User Tag (e.g., @username)
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 dark:text-gray-400">@</span>
-                  </div>
-                  <input
-                    id="userTag"
-                    name="userTag"
-                    type="text"
-                    required
-                    value={formData.userTag}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        userTag: e.target.value,
-                      }))
-                    }
-                    className="block w-full pl-8 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-md placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="username123"
-                  />
-                </div>
-                {errors.userTag && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                    {errors.userTag}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                >
-                  Full Name
+                  Tag/<span className="underline">@</span>
                 </label>
                 <input
+                  ref={userTagRef}
+                  id="userTag"
+                  name="userTag"
+                  type="text"
+                  required
+                  value={formData.userTag}
+                  onFocus={() => setFocusedElement("userTag")}
+                  onBlur={() => setFocusedElement(null)}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      userTag: e.target.value,
+                    }))
+                  }
+                  className="relative w-full px-2 focus:outline-none focus:ring-none focus:z-10 text-sm"
+                  style={{
+                    backgroundColor: "var(--color-primary)",
+                    color: "var(--color-text)",
+                    borderColor: "var(--color-accent)",
+                  }}
+                  placeholder="_"
+                />
+              </div>
+              {errors.userTag && (
+                <p
+                  className="text-sm ml-6"
+                  style={{ color: "var(--color-highlight)" }}
+                >
+                  {errors.userTag}
+                </p>
+              )}
+
+              <div className="flex items-center">
+                <span
+                  className="mr-2 w-4 text-xs"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  {focusedElement === "name" ? ">" : " "}
+                </span>
+                <label
+                  htmlFor="name"
+                  className="text-sm pr-2"
+                  style={{
+                    color: "var(--color-text)",
+                    backgroundColor: "var(--color-primary)",
+                  }}
+                >
+                  <span className="underline">N</span>ame
+                </label>
+                <input
+                  ref={nameRef}
                   id="name"
                   name="name"
                   type="text"
                   required
                   value={formData.name}
+                  onFocus={() => setFocusedElement("name")}
+                  onBlur={() => setFocusedElement(null)}
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, name: e.target.value }))
                   }
-                  className="block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-md placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="John Doe"
+                  className="relative w-full px-2 focus:outline-none focus:ring-none focus:z-10 text-sm"
+                  style={{
+                    backgroundColor: "var(--color-primary)",
+                    color: "var(--color-text)",
+                    borderColor: "var(--color-accent)",
+                  }}
+                  placeholder="_"
                 />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                    {errors.name}
-                  </p>
-                )}
               </div>
+              {errors.name && (
+                <p
+                  className="text-sm ml-6"
+                  style={{ color: "var(--color-highlight)" }}
+                >
+                  {errors.name}
+                </p>
+              )}
 
-              <div>
+              <div className="flex items-center">
+                <span
+                  className="mr-2 w-4 text-xs"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  {focusedElement === "email" ? ">" : " "}
+                </span>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  className="text-sm pr-2"
+                  style={{
+                    color: "var(--color-text)",
+                    backgroundColor: "var(--color-primary)",
+                  }}
                 >
-                  Email Address
+                  <span className="underline">E</span>mail
                 </label>
                 <input
+                  ref={emailRef}
                   id="email"
                   name="email"
                   type="email"
                   autoComplete="email"
                   required
                   value={formData.email}
+                  onFocus={() => setFocusedElement("email")}
+                  onBlur={() => setFocusedElement(null)}
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, email: e.target.value }))
                   }
-                  className="block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-md placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="john@example.com"
+                  className="relative w-full px-2 focus:outline-none focus:ring-none focus:z-10 text-sm"
+                  style={{
+                    backgroundColor: "var(--color-primary)",
+                    color: "var(--color-text)",
+                    borderColor: "var(--color-accent)",
+                  }}
+                  placeholder="_"
                 />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                    {errors.email}
-                  </p>
-                )}
               </div>
+              {errors.email && (
+                <p
+                  className="text-sm ml-6"
+                  style={{ color: "var(--color-highlight)" }}
+                >
+                  {errors.email}
+                </p>
+              )}
 
-              <div>
+              <div className="flex items-center">
+                <span
+                  className="mr-2 w-4 text-xs"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  {focusedElement === "password" ? ">" : " "}
+                </span>
                 <label
                   htmlFor="password"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  className="text-sm pr-2"
+                  style={{
+                    color: "var(--color-text)",
+                    backgroundColor: "var(--color-primary)",
+                  }}
                 >
-                  Password
+                  Pass<span className="underline">w</span>ord
                 </label>
                 <input
+                  ref={passwordRef}
                   id="password"
                   name="password"
                   type="password"
                   autoComplete="new-password"
                   required
                   value={formData.password}
+                  onFocus={() => setFocusedElement("password")}
+                  onBlur={() => setFocusedElement(null)}
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
                       password: e.target.value,
                     }))
                   }
-                  className="block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-md placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Min. 6 characters"
+                  className="relative w-full px-2 focus:outline-none focus:ring-none focus:z-10 text-sm"
+                  style={{
+                    backgroundColor: "var(--color-primary)",
+                    color: "var(--color-text)",
+                    borderColor: "var(--color-accent)",
+                  }}
+                  placeholder="_"
                 />
-                {errors.password && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                    {errors.password}
-                  </p>
-                )}
               </div>
+              {errors.password && (
+                <p
+                  className="text-sm ml-6"
+                  style={{ color: "var(--color-highlight)" }}
+                >
+                  {errors.password}
+                </p>
+              )}
 
-              <div>
+              <div className="flex items-center">
+                <span
+                  className="mr-2 w-4 text-xs"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  {focusedElement === "confirmPassword" ? ">" : " "}
+                </span>
                 <label
                   htmlFor="confirmPassword"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  className="text-sm pr-2"
+                  style={{
+                    color: "var(--color-text)",
+                    backgroundColor: "var(--color-primary)",
+                  }}
                 >
-                  Confirm Password
+                  Con<span className="underline">f</span>irm
                 </label>
                 <input
+                  ref={confirmPasswordRef}
                   id="confirmPassword"
                   name="confirmPassword"
                   type="password"
                   autoComplete="new-password"
                   required
                   value={formData.confirmPassword}
+                  onFocus={() => setFocusedElement("confirmPassword")}
+                  onBlur={() => setFocusedElement(null)}
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
                       confirmPassword: e.target.value,
                     }))
                   }
-                  className="block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-md placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Repeat password"
+                  className="relative w-full px-2 focus:outline-none focus:ring-none focus:z-10 text-sm"
+                  style={{
+                    backgroundColor: "var(--color-primary)",
+                    color: "var(--color-text)",
+                    borderColor: "var(--color-accent)",
+                  }}
+                  placeholder="_"
                 />
-                {errors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                    {errors.confirmPassword}
-                  </p>
-                )}
               </div>
+              {errors.confirmPassword && (
+                <p
+                  className="text-sm ml-6"
+                  style={{ color: "var(--color-highlight)" }}
+                >
+                  {errors.confirmPassword}
+                </p>
+              )}
             </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? "Creating account..." : "Create account"}
-              </button>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <span
+                  className="mr-0 w-4 text-xs"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  {focusedElement === "submit" ? ">" : " "}
+                </span>
+                <button
+                  ref={submitRef}
+                  type="submit"
+                  disabled={loading}
+                  onFocus={() => setFocusedElement("submit")}
+                  onBlur={() => setFocusedElement(null)}
+                  className="group relative px-2 ml-1 flex py-1 border border-transparent text-sm font-medium focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    backgroundColor: "var(--color-highlight)",
+                    color: "var(--color-primary)",
+                  }}
+                >
+                  {loading ? (
+                    "Creating..."
+                  ) : (
+                    <>
+                      Sign <span className="underline">u</span>p
+                    </>
+                  )}
+                </button>
+              </div>
+              <div className="flex items-center">
+                <span
+                  className="w-4 text-xs"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  {focusedElement === "signin" ? ">" : " "}
+                </span>
+                <Link
+                  ref={signinRef}
+                  href="/auth/signin"
+                  onFocus={() => setFocusedElement("signin")}
+                  onBlur={() => setFocusedElement(null)}
+                  className="font-medium text-sm focus:outline-none"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  Sign <span className="underline">i</span>n
+                </Link>
+              </div>
             </div>
           </form>
         </div>

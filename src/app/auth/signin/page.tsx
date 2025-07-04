@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { SecurityWarning } from "@/components/SecurityWarning";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -13,6 +14,62 @@ export default function SignInPage() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [focusedElement, setFocusedElement] = useState<string | null>(null);
+
+  // Refs for programmatic focus
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const submitRef = useRef<HTMLButtonElement>(null);
+  const signupRef = useRef<HTMLAnchorElement>(null);
+  const googleRef = useRef<HTMLButtonElement>(null);
+  const twitterRef = useRef<HTMLButtonElement>(null);
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ignore shortcuts when typing in inputs
+      const activeElement = document.activeElement;
+      if (
+        activeElement &&
+        (activeElement.tagName === "INPUT" ||
+          activeElement.tagName === "TEXTAREA")
+      ) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+
+      switch (key) {
+        case "g":
+          e.preventDefault();
+          googleRef.current?.click();
+          break;
+        case "t":
+          e.preventDefault();
+          twitterRef.current?.click();
+          break;
+        case "e":
+          e.preventDefault();
+          emailRef.current?.focus();
+          break;
+        case "w":
+          e.preventDefault();
+          passwordRef.current?.focus();
+          break;
+        case "u":
+          e.preventDefault();
+          submitRef.current?.click();
+          break;
+        case "n":
+          e.preventDefault();
+          signupRef.current?.click();
+          break;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,8 +101,18 @@ export default function SignInPage() {
 
   const handleOAuthSignIn = async (provider: "google" | "twitter") => {
     setLoading(true);
+    setError("");
     try {
-      await signIn(provider, { callbackUrl: "/" });
+      const result = await signIn(provider, {
+        callbackUrl: "/",
+        redirect: true,
+      });
+
+      if (result?.error) {
+        console.error(`OAuth sign-in error:`, result.error);
+        setError(`Failed to sign in with ${provider}`);
+        setLoading(false);
+      }
     } catch (error) {
       console.error(`Error signing in with ${provider}:`, error);
       setError(`Failed to sign in with ${provider}`);
@@ -53,140 +120,300 @@ export default function SignInPage() {
     }
   };
 
+  const termhuntText = `
+ ___                                   ___                      ___      
+(   )                                 (   )                    (   )     
+ | |_     .--.  ___ .-.  ___ .-. .-.   | | .-. ___  ___ ___ .-. | |_     
+(   __)  /    \\(   )   \\(   )   '   \\  | |/   (   )(   |   )   (   __)   
+ | |    |  .-. ;| ' .-. ;|  .-.  .-. ; |  .-. .| |  | | |  .-. .| |      
+ | | ___|  | | ||  / (___) |  | |  | | | |  | || |  | | | |  | || | ___  
+ | |(   )  |/  || |      | |  | |  | | | |  | || |  | | | |  | || |(   ) 
+ | | | ||  ' _.'| |      | |  | |  | | | |  | || |  | | | |  | || | | |  
+ | ' | ||  .'.-.| |      | |  | |  | | | |  | || |  ; ' | |  | || ' | |  
+ ' \`-' ;'  \`-' /| |      | |  | |  | | | |  | |' \`-'  / | |  | |' \`-' ;  
+  \`.__.  \`.__.'(___)    (___)(___)(___|___)(___)'.__.' (___)(___)\`.__.   
+                  
+  D I S C O V E R   W I L D   T E R M I N A L   A P P S
+  `;
+
+  // const termhuntText = `
+
+  //  _______,---.  ,---.            .-. .-..-. .-.-. .-._______
+  // |__   __| .-'  | .-'.\\  |\\    /| | | | || | | |  \\| |__   __|
+  //   )| |  | \`-.  | \`-'/  |(\\  / | | \`-' || | | |   | | )| |
+  //  (_) |  | .-'  |   (   (_)\\/  | | .-. || | | | |\\  |(_) |
+  //    | |  |  \`--.| |\\ \\  | \\  / | | | |)|| \`-')| | |)|  | |
+  //    \`-'  /( __.'|_| \\)\\ | |\\/| | /(  (_)\`---(_)(  (_)  \`-'
+  //        (__)        (__)\'-'  \'-\'(__)         (__)
+
+  // `;
+
+  //   const termhuntText = `
+
+  //     .....                ..      .          ..      ...         ...     ..      ..
+  //  .H8888888h.  ~-.     x88f\` \`..x88. .>   :~"8888x :"%888x     x*8888x.:*8888: -"888:
+  //  888888888888x  \`>  :8888   xf\`*8888%   8    8888Xf  8888>   X   48888X \`8888H  8888
+  // X~     \`?888888hx~ :8888f .888  \`"\`    X88x. ?8888k  8888X  X8x.  8888X  8888X  !888>
+  // '      x8.^"*88*"  88888' X8888. >"8x  '8888L'8888X  '%88X  X8888 X8888  88888   "*8%-
+  //  \`-:- X8888x       88888  ?88888< 888>  "888X 8888X:xnHH(\`\` '*888!X8888> X8888  xH8>
+  //       488888>      88888   "88888 "8%     ?8~ 8888X X8888     \`?8 \`8888  X888X X888>
+  //     .. \`"88*       88888 '  \`8888>      -~\`   8888> X8888     -^  '888"  X888  8888>
+  //   x88888nX"      . \`8888> %  X88!       :H8x  8888  X8888      dx '88~x. !88~  8888>
+  //  !"*8888888n..  :   \`888X  \`~""\`   :    8888> 888~  X8888    .8888Xf.888x:!    X888X.:
+  // '    "*88888888*      "88k.      .~     48"\` '8*~   \`8888!\` :""888":~"888"     \`888*"
+  //         ^"***"\`         \`""*==~~\`        ^-==""      \`""        "~'    "~        ""
+
+  //   `;
+
+  //   const termhuntText2 = `
+  //                                              ...     ...         .....
+  //          .xHL           x8h.     x8.      .=*8888n.."%888:    .H8888888h.  ~-.
+  //        .-\`8888hxxx~    :88888> .x8888x.   X    ?8888f '8888    888888888888x  \`>
+  //     .H8X  \`%888*"       \`8888   \`8888f    88x. '8888X  8888>  X~     \`?888888hx~
+  //  888X     ..x..       8888    8888'   '8888k 8888X  '"*8h. '      x8.^"*88*"
+  //    '8888k .x8888888x     8888    8888     "8888 X888X .xH8     \`-:- X8888x
+  //    ?8888X    "88888X    8888    8888       \`8" X888!:888X          488888>
+  //      ?8888X    '88888>   8888    8888      =~\`  X888 X888X        .. \`"88*
+  // H8H %8888     \`8888>   8888    8888       :h. X8*\` !888X      x88888nX"      .
+  //  '888> 888"      8888  -n88888x>"88888x-   X888xX"   '8888..:  !"*8888888n..  :
+  //    "8\` .8" ..     88*     \`%888"  4888!\`  :~\`888f     '*888*"  '    "*88888888*
+  //       \`  x8888h. d*"        \`"      ""        ""        \`"\`            ^"***"\`
+  //     !""*888%~
+  //     !   \`"  .
+  //     '-....:~
+  //   `;
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            Sign in to Terminal Hunt
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            Or{" "}
-            <Link
-              href="/auth/signup"
-              className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
-            >
-              create a new account
-            </Link>
-          </p>
-        </div>
-
-        <div className="mt-8 space-y-6">
+    <div
+      className="min-h-screen flex flex-col items-center justify-center py-12 px-4 gap-10 sm:px-6 lg:px-8"
+      style={{ backgroundColor: "var(--color-primary)" }}
+    >
+      <SecurityWarning />
+      <div className="text-center">
+        <pre
+          className="text-sm whitespace-pre-wrap font-semibold"
+          style={{ color: "var(--color-accent)" }}
+        >
+          {termhuntText}
+        </pre>
+      </div>
+      <div className="max-w-[650px] w-full">
+        <div className="space-y-4">
           {/* OAuth Providers */}
-          <div className="space-y-3">
-            <button
-              onClick={() => handleOAuthSignIn("google")}
-              disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                <path
-                  fill="currentColor"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                />
-                <path
-                  fill="currentColor"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                />
-                <path
-                  fill="currentColor"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                />
-                <path
-                  fill="currentColor"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                />
-              </svg>
-              Sign in with Google
-            </button>
-
-            <button
-              onClick={() => handleOAuthSignIn("twitter")}
-              disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="currentColor"
-                viewBox="0 0 24 24"
+          <div>
+            <div className="flex items-center">
+              <span
+                className="mr-2 w-4 text-xs"
+                style={{ color: "var(--color-text)" }}
               >
-                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
-              </svg>
-              Sign in with X (Twitter)
-            </button>
+                {focusedElement === "google" ? ">" : " "}
+              </span>
+              <button
+                ref={googleRef}
+                onFocus={() => setFocusedElement("google")}
+                onBlur={() => setFocusedElement(null)}
+                onClick={() => handleOAuthSignIn("google")}
+                disabled={loading}
+                className="justify-center py-2 text-sm font-medium focus:outline-none focus:ring-none disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-text)",
+                }}
+              >
+                <span className="underline">G</span>oogle
+              </button>
+            </div>
+            <div className="flex items-center">
+              <span
+                className="mr-2 w-4 text-xs"
+                style={{ color: "var(--color-text)" }}
+              >
+                {focusedElement === "twitter" ? ">" : " "}
+              </span>
+              <button
+                ref={twitterRef}
+                onFocus={() => setFocusedElement("twitter")}
+                onBlur={() => setFocusedElement(null)}
+                onClick={() => handleOAuthSignIn("twitter")}
+                disabled={loading}
+                className="justify-center py-2 text-sm font-medium focus:outline-none focus:ring-none disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-text)",
+                }}
+              >
+                <span className="underline">T</span>witter
+              </button>
+            </div>
           </div>
 
           <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300 dark:border-gray-600" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400">
-                Or continue with email
+            <div className="relative flex text-sm">
+              <span
+                className="px-6"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-accent)",
+                }}
+              >
+                \\
               </span>
             </div>
           </div>
 
           {/* Email/Password Form */}
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
-                <p className="text-red-600 dark:text-red-400 text-sm">
+              <div
+                className="border p-4"
+                style={{
+                  backgroundColor: "var(--color-secondary)",
+                  borderColor: "var(--color-accent)",
+                }}
+              >
+                <p
+                  className="text-sm"
+                  style={{ color: "var(--color-highlight)" }}
+                >
                   {error}
                 </p>
               </div>
             )}
 
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="email" className="sr-only">
-                  Email address
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center">
+                <span
+                  className="mr-2 w-4 text-xs"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  {focusedElement === "email" ? ">" : " "}
+                </span>
+                <label
+                  htmlFor="email"
+                  className="text-sm pr-2"
+                  style={{
+                    color: "var(--color-text)",
+                    backgroundColor: "var(--color-primary)",
+                  }}
+                >
+                  <span className="underline">E</span>mail
                 </label>
                 <input
+                  ref={emailRef}
                   id="email"
                   name="email"
                   type="email"
                   autoComplete="email"
                   required
                   value={formData.email}
+                  onFocus={() => setFocusedElement("email")}
+                  onBlur={() => setFocusedElement(null)}
                   onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, email: e.target.value }))
+                    setFormData((prev) => ({
+                      ...prev,
+                      email: e.target.value,
+                    }))
                   }
-                  className="relative block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-md placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Email address"
+                  className="relative w-full px-2 focus:outline-none focus:ring-none focus:z-10 text-sm"
+                  style={{
+                    backgroundColor: "var(--color-primary)",
+                    color: "var(--color-text)",
+                    borderColor: "var(--color-accent)",
+                  }}
+                  placeholder="_"
                 />
               </div>
-              <div>
-                <label htmlFor="password" className="sr-only">
-                  Password
+              <div className="flex items-center">
+                <span
+                  className="mr-2 w-4 text-xs"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  {focusedElement === "password" ? ">" : " "}
+                </span>
+                <label
+                  htmlFor="password"
+                  className="text-sm pr-2"
+                  style={{
+                    color: "var(--color-text)",
+                    backgroundColor: "var(--color-primary)",
+                  }}
+                >
+                  Pass<span className="underline">w</span>ord
                 </label>
                 <input
+                  ref={passwordRef}
                   id="password"
                   name="password"
                   type="password"
                   autoComplete="current-password"
                   required
                   value={formData.password}
+                  onFocus={() => setFocusedElement("password")}
+                  onBlur={() => setFocusedElement(null)}
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
                       password: e.target.value,
                     }))
                   }
-                  className="relative block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-md placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Password"
+                  className="relative w-full px-2 focus:ring-none focus:outline-none focus:ring-none focus:z-10 text-sm"
+                  style={{
+                    backgroundColor: "var(--color-primary)",
+                    color: "var(--color-text)",
+                    borderColor: "var(--color-accent)",
+                  }}
+                  placeholder="_"
                 />
               </div>
             </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? "Signing in..." : "Sign in"}
-              </button>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <span
+                  className="mr-0 w-4 text-xs"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  {focusedElement === "submit" ? ">" : " "}
+                </span>
+                <button
+                  ref={submitRef}
+                  type="submit"
+                  disabled={loading}
+                  onFocus={() => setFocusedElement("submit")}
+                  onBlur={() => setFocusedElement(null)}
+                  className="group relative px-2 ml-1 flex py-1 border border-transparent text-sm font-medium focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    backgroundColor: "var(--color-highlight)",
+                    color: "var(--color-primary)",
+                  }}
+                >
+                  {loading ? (
+                    "Signing in..."
+                  ) : (
+                    <>
+                      Sign <span className="underline ml-1">u</span>p
+                    </>
+                  )}
+                </button>
+              </div>
+              <div className="flex items-center">
+                <span
+                  className="w-4 text-xs"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  {focusedElement === "signup" ? ">" : " "}
+                </span>
+                <Link
+                  ref={signupRef}
+                  href="/auth/signup"
+                  onFocus={() => setFocusedElement("signup")}
+                  onBlur={() => setFocusedElement(null)}
+                  className="font-medium text-sm focus:outline-none"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  <span className="underline">N</span>ew account
+                </Link>
+              </div>
             </div>
           </form>
         </div>

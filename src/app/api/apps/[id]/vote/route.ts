@@ -58,3 +58,48 @@ export async function POST(
     );
   }
 }
+
+// DELETE method for unliking
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { id: appId } = await params;
+
+    // Get user from database
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, session.user.email))
+      .limit(1);
+
+    if (!user.length) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Delete the vote
+    const deletedVote = await db
+      .delete(votes)
+      .where(and(eq(votes.userId, user[0].id), eq(votes.appId, appId)))
+      .returning();
+
+    if (!deletedVote.length) {
+      return NextResponse.json({ error: "Vote not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting vote:", error);
+    return NextResponse.json(
+      { error: "Failed to delete vote" },
+      { status: 500 }
+    );
+  }
+}

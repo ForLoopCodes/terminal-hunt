@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { CollectionsModal } from "./CollectionsModal";
 
 interface App {
   id: string;
   name: string;
+  shortDescription?: string;
   description: string;
+  website?: string;
   installCommands: string;
   repoUrl: string;
   viewCount: number;
@@ -26,19 +29,62 @@ export function AppCard({ app }: AppCardProps) {
   const [voteCount, setVoteCount] = useState(app.voteCount);
   const [hasVoted, setHasVoted] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
+  const [showCollectionsModal, setShowCollectionsModal] = useState(false);
+
+  // Check vote status on mount
+  useEffect(() => {
+    if (session) {
+      checkVoteStatus();
+    }
+  }, [session]);
+
+  const checkVoteStatus = async () => {
+    try {
+      const response = await fetch(`/api/apps/${app.id}/vote-status`);
+      if (response.ok) {
+        const data = await response.json();
+        setHasVoted(data.hasVoted);
+      }
+    } catch (error) {
+      console.error("Error checking vote status:", error);
+    }
+  };
 
   const handleVote = async () => {
     if (!session || isVoting) return;
 
     setIsVoting(true);
     try {
-      const response = await fetch(`/api/apps/${app.id}/vote`, {
-        method: "POST",
-      });
+      if (hasVoted) {
+        // Unlike
+        const response = await fetch(`/api/apps/${app.id}/vote`, {
+          method: "DELETE",
+        });
 
-      if (response.ok) {
-        setVoteCount((prev) => prev + 1);
-        setHasVoted(true);
+        if (response.ok) {
+          setVoteCount((prev) => prev - 1);
+          setHasVoted(false);
+        } else {
+          const data = await response.json();
+          console.error("Error unliking:", data.error);
+        }
+      } else {
+        // Like
+        const response = await fetch(`/api/apps/${app.id}/vote`, {
+          method: "POST",
+        });
+
+        if (response.ok) {
+          setVoteCount((prev) => prev + 1);
+          setHasVoted(true);
+        } else {
+          const data = await response.json();
+          if (data.error === "Already voted") {
+            setHasVoted(true);
+          } else {
+            console.error("Error voting:", data.error);
+          }
+        }
       }
     } catch (error) {
       console.error("Error voting:", error);
@@ -63,63 +109,126 @@ export function AppCard({ app }: AppCardProps) {
   };
 
   return (
-    <div className="bg-black border border-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg hover:border-gray-700 transition-all">
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex-1">
-          <Link
-            href={`/app/${app.id}`}
-            onClick={handleView}
-            className="text-xl font-semibold text-white hover:text-blue-400 transition-colors"
-          >
-            {app.name}
-          </Link>
+    <div className="space-y-2">
+      <div className="flex items-center">
+        <span
+          className="mr-2 w-4 text-xs"
+          style={{ color: "var(--color-text)" }}
+        >
+          {" "}
+        </span>
+        <Link
+          href={`/app/${app.id}`}
+          onClick={handleView}
+          className="text-sm focus:outline-none font-semibold"
+          style={{ color: "var(--color-text)" }}
+        >
+          {app.name}
+        </Link>
+        {session && (
+          <>
+            <span
+              className="mx-2 text-xs"
+              style={{ color: "var(--color-text)" }}
+            >
+              •
+            </span>
+            <button
+              onClick={handleVote}
+              disabled={isVoting}
+              className="text-xs font-medium focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                color: hasVoted ? "var(--color-highlight)" : "var(--color-text)",
+              }}
+            >
+              {hasVoted ? "voted ↑" : "vote ↑"} ({voteCount})
+            </button>
+          </>
+        )}
+      </div>
 
-          <div className="flex items-center mt-2 text-sm text-gray-400">
-            <span>by</span>
+      <div className="flex items-start">
+        <span
+          className="mr-2 w-4 text-xs mt-1"
+          style={{ color: "var(--color-text)" }}
+        >
+          {" "}
+        </span>
+        <div className="flex-1">
+          <p
+            className="text-sm mb-1"
+            style={{ color: "var(--color-text)" }}
+          >
+            {truncateDescription(app.shortDescription || app.description)}
+          </p>
+          <div className="flex items-center space-x-2 text-xs">
+            <span style={{ color: "var(--color-text)" }}>by</span>
             <Link
               href={`/profile/${app.creatorUserTag}`}
-              className="ml-1 text-blue-400 hover:text-blue-300 hover:underline transition-colors"
+              className="focus:outline-none"
+              style={{ color: "var(--color-text)" }}
             >
               @{app.creatorUserTag}
             </Link>
+            <span style={{ color: "var(--color-text)" }}>•</span>
+            <span style={{ color: "var(--color-text)" }}>
+              {app.viewCount} views
+            </span>
+            <span style={{ color: "var(--color-text)" }}>•</span>
+            <span style={{ color: "var(--color-text)" }}>
+              {new Date(app.createdAt).toLocaleDateString()}
+            </span>
+            <span style={{ color: "var(--color-text)" }}>•</span>
+            <a
+              href={app.repoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="focus:outline-none"
+              style={{ color: "var(--color-text)" }}
+            >
+              repo
+            </a>
+            {app.website && (
+              <>
+                <span style={{ color: "var(--color-text)" }}>•</span>
+                <a
+                  href={app.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="focus:outline-none"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  site
+                </a>
+              </>
+            )}
+            {session && (
+              <>
+                <span style={{ color: "var(--color-text)" }}>•</span>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowCollectionsModal(true);
+                  }}
+                  className="focus:outline-none"
+                  style={{ color: "var(--color-text)" }}
+                  title="Add to collection"
+                >
+                  +collection
+                </button>
+              </>
+            )}
           </div>
         </div>
-
-        <button
-          onClick={handleVote}
-          disabled={!session || hasVoted || isVoting}
-          className={`flex flex-col items-center px-3 py-2 rounded-lg transition-colors ${
-            hasVoted || !session
-              ? "bg-gray-900 text-gray-600 cursor-not-allowed"
-              : "bg-blue-900/30 text-blue-400 hover:bg-blue-900/50 border border-blue-800"
-          }`}
-        >
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M10 2L13.09 8.26L20 9L15 13.74L16.18 20.02L10 16.77L3.82 20.02L5 13.74L0 9L6.91 8.26L10 2Z" />
-          </svg>
-          <span className="text-sm font-medium">{voteCount}</span>
-        </button>
       </div>
 
-      <p className="text-gray-300 mb-4">
-        {truncateDescription(app.description)}
-      </p>
-
-      <div className="flex items-center justify-between text-sm text-gray-500">
-        <div className="flex items-center space-x-4">
-          <span>{app.viewCount} views</span>
-          <span>{new Date(app.createdAt).toLocaleDateString()}</span>
-        </div>
-
-        <a
-          href={app.repoUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-400 hover:text-blue-300 hover:underline transition-colors"
-        >
-          View Repo
-        </a>
-      </div>
+      {/* Collections Modal */}
+      <CollectionsModal
+        isOpen={showCollectionsModal}
+        onClose={() => setShowCollectionsModal(false)}
+        appId={app.id}
+        appName={app.name}
+      />
     </div>
   );
 }

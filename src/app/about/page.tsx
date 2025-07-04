@@ -1,174 +1,242 @@
-export default function AboutPage() {
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+
+export default function FAQPage() {
+  const [focusedElement, setFocusedElement] = useState<string | null>(null);
+  const [expandedSections, setExpandedSections] = useState<Set<number>>(
+    new Set()
+  );
+
+  // Refs for keyboard navigation
+  const sectionRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ignore shortcuts when typing in inputs
+      const activeElement = document.activeElement;
+      if (
+        activeElement &&
+        (activeElement.tagName === "INPUT" ||
+          activeElement.tagName === "TEXTAREA")
+      ) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+
+      // Number keys 1-9 to focus/toggle FAQ sections
+      if (key >= "1" && key <= "9") {
+        e.preventDefault();
+        const index = parseInt(key) - 1;
+        if (index < faqData.length) {
+          sectionRefs.current[index]?.focus();
+          sectionRefs.current[index]?.click();
+        }
+      }
+
+      switch (key) {
+        case "a":
+          e.preventDefault();
+          // Expand all sections
+          setExpandedSections(
+            new Set(Array.from({ length: faqData.length }, (_, i) => i))
+          );
+          break;
+        case "c":
+          e.preventDefault();
+          // Collapse all sections
+          setExpandedSections(new Set());
+          break;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, []);
+
+  const toggleSection = (index: number) => {
+    const newExpanded = new Set(expandedSections);
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index);
+    } else {
+      newExpanded.add(index);
+    }
+    setExpandedSections(newExpanded);
+  };
+
+  const faqData = [
+    {
+      question: "What is Terminal Hunt?",
+      answer:
+        "Terminal Hunt is a community-driven platform for discovering, sharing, and showcasing amazing terminal-based applications. Think of it as Product Hunt specifically for command-line tools and terminal applications.",
+    },
+    {
+      question: "How do I submit an app?",
+      answer:
+        "After signing in, click the 'Submit App' button in the navigation or press 'S'. Fill out the form with your app's name, description, installation commands, and repository URL. You can use Markdown for formatting.",
+    },
+    {
+      question: "What makes a good terminal app submission?",
+      answer:
+        "A good submission includes: clear app name, detailed description of what it does, step-by-step installation instructions, active repository link, appropriate tags, and screenshots or examples if possible.",
+    },
+    {
+      question: "How does the voting system work?",
+      answer:
+        "Community members can upvote apps they find useful. Apps with more votes rank higher and gain more visibility. You need to be signed in to vote, and you can only vote once per app.",
+    },
+    {
+      question: "Can I edit my submitted apps?",
+      answer:
+        "Yes! Visit your profile page and click on any of your submitted apps. You'll see management options if you're the creator, including edit and delete functionality.",
+    },
+    {
+      question: "What are the keyboard shortcuts?",
+      answer:
+        "Navigate with: H (Home), L (Leaderboard), F (FAQ), S (Submit/Sign Up), P (Profile), I (Sign In). On this page: 1-9 (toggle FAQ sections), A (expand all), C (collapse all).",
+    },
+    {
+      question: "How do tags work?",
+      answer:
+        "Tags help categorize apps by type, language, or use case. You can filter the main page by tags and select multiple tags when submitting an app. Popular tags include CLI, DevTools, Productivity, etc.",
+    },
+    {
+      question: "Is Terminal Hunt open source?",
+      answer:
+        "Yes! Terminal Hunt is built with transparency in mind. The platform itself demonstrates the kind of tools we celebrate - built for developers, by developers.",
+    },
+    {
+      question: "How do I report issues or suggest features?",
+      answer:
+        "You can report bugs or suggest features through the repository issues page. We welcome community contributions and feedback to make the platform better.",
+    },
+  ];
+
+  const termhuntText = `
+ ___                                   ___                      ___      
+(   )                                 (   )                    (   )     
+ | |_     .--.  ___ .-.  ___ .-. .-.   | | .-. ___  ___ ___ .-. | |_     
+(   __)  /    \\(   )   \\(   )   '   \\  | |/   (   )(   |   )   (   __)   
+ | |    |  .-. ;| ' .-. ;|  .-.  .-. ; |  .-. .| |  | | |  .-. .| |      
+ | | ___|  | | ||  / (___) |  | |  | | | |  | || |  | | | |  | || | ___  
+ | |(   )  |/  || |      | |  | |  | | | |  | || |  | | | |  | || |(   ) 
+ | | | ||  ' _.'| |      | |  | |  | | | |  | || |  | | | |  | || | | |  
+ | ' | ||  .'.-.| |      | |  | |  | | | |  | || |  ; ' | |  | || ' | |  
+ ' \`-' ;'  \`-' /| |      | |  | |  | | | |  | |' \`-'  / | |  | |' \`-' ;  
+  \`.__.  \`.__.'(___)    (___)(___)(___|___)(___)'.__.' (___)(___)\`.__.   
+                  
+  F R E Q U E N T L Y   A S K E D   Q U E S T I O N S
+  `;
+
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
-          About Terminal Hunt
-        </h1>
+    <div
+      className="min-h-screen pt-20 pb-8"
+      style={{ backgroundColor: "var(--color-primary)" }}
+    >
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <pre
+            className="text-xs md:text-sm whitespace-pre-wrap font-semibold mb-8"
+            style={{ color: "var(--color-accent)" }}
+          >
+            {termhuntText}
+          </pre>
+        </div>
 
-        <div className="prose dark:prose-invert max-w-none">
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
-            Terminal Hunt is a community-driven platform for discovering and
-            sharing amazing terminal-based applications. Think of it as Product
-            Hunt, but specifically for command-line tools and terminal
-            applications.
-          </p>
-
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-            Our Mission
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            We believe that the terminal is one of the most powerful interfaces
-            for developers and power users. However, discovering new and useful
-            terminal applications can be challenging. Terminal Hunt aims to
-            solve this by creating a centralized place where the community can:
-          </p>
-
-          <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 mb-6 space-y-2">
-            <li>Share their favorite terminal applications</li>
-            <li>Discover new tools that can improve their workflow</li>
-            <li>Get installation instructions and documentation</li>
-            <li>Connect with other terminal enthusiasts</li>
-            <li>Vote for the best applications in the community</li>
-          </ul>
-
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-            Features
-          </h2>
-          <div className="grid md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                📝 Easy Submission
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Submit your terminal applications with markdown support for rich
-                descriptions and installation instructions.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                ⭐ Community Voting
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Vote for your favorite applications to help others discover the
-                best tools in the community.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                🏆 Leaderboards
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Track the most popular applications across daily, weekly,
-                monthly, and yearly leaderboards.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                💬 Community Discussion
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Engage with the community through comments and discussions on
-                each application.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                🏷️ Smart Tagging
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Filter applications by categories like CLI tools, productivity,
-                development, and more.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                🔍 Powerful Search
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Find exactly what you're looking for with our intelligent search
-                functionality.
-              </p>
+        {/* Navigation Help */}
+        <div
+          className=" p-4 mb-8"
+          style={{
+            backgroundColor: "var(--color-primary)",
+          }}
+        >
+          <div className="text-sm space-y-1">
+            <div style={{ color: "var(--color-text)" }}>
+              <span style={{ color: "var(--color-highlight)" }}>
+                Navigation:
+              </span>
+              1-9 (toggle sections) | <span className="underline">A</span>{" "}
+              (expand all) | <span className="underline">C</span> (collapse all)
             </div>
           </div>
+        </div>
 
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-            Getting Started
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
-            Ready to join the Terminal Hunt community? Here's how to get
-            started:
-          </p>
-
-          <ol className="list-decimal list-inside text-gray-600 dark:text-gray-300 mb-6 space-y-2">
-            <li>
-              Create an account using your email or sign in with Google/Twitter
-            </li>
-            <li>
-              Browse the homepage to discover amazing terminal applications
-            </li>
-            <li>Vote for applications you find useful</li>
-            <li>
-              Submit your own terminal applications to share with the community
-            </li>
-            <li>Engage with other users through comments and discussions</li>
-          </ol>
-
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-            Community Guidelines
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
-            To maintain a positive and helpful community, please follow these
-            guidelines:
-          </p>
-
-          <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 mb-6 space-y-2">
-            <li>Only submit applications that run in a terminal environment</li>
-            <li>
-              Provide clear and accurate descriptions and installation
-              instructions
-            </li>
-            <li>Be respectful in comments and discussions</li>
-            <li>Don't spam or submit duplicate applications</li>
-            <li>Help others by answering questions and providing feedback</li>
-          </ul>
-
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-            Open Source
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            Terminal Hunt is built with modern web technologies including
-            Next.js, TypeScript, PostgreSQL, and Tailwind CSS. We believe in
-            transparency and community-driven development.
-          </p>
-
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-blue-900 dark:text-blue-100 mb-2">
-              Ready to explore?
-            </h3>
-            <p className="text-blue-700 dark:text-blue-200 mb-4">
-              Start discovering amazing terminal applications or share your own
-              with the community!
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <a
-                href="/"
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+        {/* FAQ Sections */}
+        <div className="space-y-4">
+          {faqData.map((faq, index) => (
+            <div
+              key={index}
+              className=""
+              style={{
+                backgroundColor: "var(--color-primary)",
+              }}
+            >
+              <button
+                ref={(el) => {
+                  sectionRefs.current[index] = el;
+                }}
+                onClick={() => toggleSection(index)}
+                onFocus={() => setFocusedElement(`faq-${index}`)}
+                onBlur={() => setFocusedElement(null)}
+                className="w-full text-left py-1 focus:outline-none text-sm flex items-center justify-between"
+                style={{ color: "var(--color-text)" }}
               >
-                Browse Applications
-              </a>
-              <a
-                href="/submit"
-                className="inline-flex items-center px-4 py-2 border border-blue-600 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-              >
-                Submit App
-              </a>
+                <div className="flex items-center">
+                  <span
+                    className="mr-3 w-6 text-xs"
+                    style={{ color: "var(--color-highlight)" }}
+                  >
+                    {focusedElement === `faq-${index}` ? ">" : " "}
+                  </span>
+                  <span className="font-medium">
+                    <span
+                      className="mr-2"
+                      style={{ color: "var(--color-highlight)" }}
+                    >
+                      [{index + 1}]
+                    </span>
+                    {faq.question}
+                  </span>
+                </div>
+                <span
+                  className="text-sm font-mono"
+                  style={{ color: "var(--color-accent)" }}
+                >
+                  {expandedSections.has(index) ? "[-]" : "[+]"}
+                </span>
+              </button>
+
+              {expandedSections.has(index) && (
+                <div
+                  className="px-4 pb-4"
+                  style={{ color: "var(--color-accent)" }}
+                >
+                  <div className="pl-9 text-sm leading-relaxed">
+                    {faq.answer}
+                  </div>
+                </div>
+              )}
             </div>
+          ))}
+        </div>
+
+        {/* Footer Commands */}
+        <div className="mt-12 text-center">
+          <div
+            className="text-xs mt-2"
+            style={{ color: "var(--color-accent)" }}
+          >
+            for more help, dm me on twitter:{" "}
+            <a
+              href="https://twitter.com/forloopcodes"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "var(--color-accent)" }}
+            >
+              @forloopcodes
+            </a>
           </div>
         </div>
       </div>

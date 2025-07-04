@@ -8,7 +8,9 @@ import { TagFilter } from "@/components/TagFilter";
 interface App {
   id: string;
   name: string;
+  shortDescription?: string;
   description: string;
+  website?: string;
   installCommands: string;
   repoUrl: string;
   viewCount: number;
@@ -64,64 +66,124 @@ export default function Home() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-black min-h-screen">
-      {/* Hero Section */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-white mb-4">
-          Discover Amazing Terminal Apps
-        </h1>
-        <p className="text-xl text-gray-300 mb-8">
-          A community-driven platform for finding and sharing the best
-          terminal-based applications
-        </p>
-      </div>
+    <div
+      className="min-h-screen pt-20 pb-8"
+      style={{ backgroundColor: "var(--color-primary)" }}
+    >
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Hero Section */}
+        <div className="text-center mb-8">
+          <pre
+            className="text-xs md:text-sm whitespace-pre-wrap font-semibold mb-6"
+            style={{ color: "var(--color-accent)" }}
+          >
+            {`
+ ___                                   ___                      ___      
+(   )                                 (   )                    (   )     
+ | |_     .--.  ___ .-.  ___ .-. .-.   | | .-. ___  ___ ___ .-. | |_     
+(   __)  /    \\(   )   \\(   )   '   \\  | |/   (   )(   |   )   (   __)   
+ | |    |  .-. ;| ' .-. ;|  .-.  .-. ; |  .-. .| |  | | |  .-. .| |      
+ | | ___|  | | ||  / (___) |  | |  | | | |  | || |  | | | |  | || | ___  
+ | |(   )  |/  || |      | |  | |  | | | |  | || |  | | | |  | || |(   ) 
+ | | | ||  ' _.'| |      | |  | |  | | | |  | || |  | | | |  | || | | |  
+ | ' | ||  .'.-.| |      | |  | |  | | | |  | || |  ; ' | |  | || ' | |  
+ ' \`-' ;'  \`-' /| |      | |  | |  | | | |  | |' \`-'  / | |  | |' \`-' ;  
+  \`.__.  \`.__.'(___)    (___)(___)(___|___)(___)'.__.' (___)(___)\`.__.   
+                  
+  D I S C O V E R   W I L D   T E R M I N A L   A P P S
+  `}
+          </pre>
+        </div>
 
-      {/* Search and Filters */}
-      <div className="mb-8 space-y-4">
-        <SearchBar onSearch={setSearchQuery} />
+        <div className="space-y-6 max-w-[650px] mx-auto">
+          {/* Search and Filters */}
+          <div className="space-y-4">
+            <SearchBar onSearch={setSearchQuery} />
 
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-300">
-              Sort by:
-            </label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="border border-gray-600 rounded-md px-3 py-1 text-sm bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            >
-              <option value="newest">Newest</option>
-              <option value="votes">Most Voted</option>
-              <option value="views">Most Viewed</option>
-            </select>
+            <div className="flex items-center">
+              <span
+                className="mr-2 w-4 text-xs"
+                style={{ color: "var(--color-text)" }}
+              >
+                {" "}
+              </span>
+              <label
+                className="text-sm pr-2"
+                style={{
+                  color: "var(--color-text)",
+                  backgroundColor: "var(--color-primary)",
+                }}
+              >
+                sort
+              </label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="flex-1 px-2 py-1 focus:outline-none text-sm"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-text)",
+                }}
+              >
+                <option value="newest">newest</option>
+                <option value="votes">most voted</option>
+                <option value="views">most viewed</option>
+              </select>
+            </div>
+
+            <TagFilter
+              tags={tags}
+              selectedTag={selectedTag}
+              onTagSelect={setSelectedTag}
+            />
           </div>
 
-          <TagFilter
-            tags={tags}
-            selectedTag={selectedTag}
-            onTagSelect={setSelectedTag}
-          />
+          {/* Apps List */}
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div
+                className="font-mono text-lg"
+                style={{ color: "var(--color-text)" }}
+              >
+                loading_apps...
+              </div>
+            </div>
+          ) : apps.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="flex items-center justify-center">
+                <span
+                  className="mr-2 w-4 text-xs"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  {" "}
+                </span>
+                <span
+                  className="text-sm"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  no apps found - be the first to submit one!
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {apps.map((app, index) => (
+                <div key={app.id}>
+                  <AppCard app={app} />
+                  {index < apps.length - 1 && (
+                    <div className="mx-6 mt-4">
+                      <div
+                        className="h-px"
+                        style={{ backgroundColor: "var(--color-accent)" }}
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Apps Grid */}
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
-        </div>
-      ) : apps.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-400 text-lg">
-            No apps found. Be the first to submit one!
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {apps.map((app) => (
-            <AppCard key={app.id} app={app} />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

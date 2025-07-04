@@ -5,7 +5,6 @@
       "name": "terminal-hunt",
       "dependencies": {
         "@auth/drizzle-adapter": "^1.4.2",
-        "@webtui/css": "^0.1.2",
         "bcryptjs": "^2.4.3",
         "dotenv": "^17.0.1",
         "drizzle-kit": "^0.31.4",
@@ -347,8 +346,6 @@
     "@unrs/resolver-binding-win32-ia32-msvc": ["@unrs/resolver-binding-win32-ia32-msvc@1.10.1", "", { "os": "win32", "cpu": "ia32" }, "sha512-BAJN5PEPlEV+1m8+PCtFoKm3LQ1P57B4Z+0+efU0NzmCaGk7pUaOxuPgl+m3eufVeeNBKiPDltG0sSB9qEfCxw=="],
 
     "@unrs/resolver-binding-win32-x64-msvc": ["@unrs/resolver-binding-win32-x64-msvc@1.10.1", "", { "os": "win32", "cpu": "x64" }, "sha512-2v3erKKmmCyIVvvhI2nF15qEbdBpISTq44m9pyd5gfIJB1PN94oePTLWEd82XUbIbvKhv76xTSeUQSCOGesLeg=="],
-
-    "@webtui/css": ["@webtui/css@0.1.2", "", {}, "sha512-KKPI7cNW2dxoZcMyOVvNT56Z9ZR1BE0HvSVInQ/bpFRLO7C4XpnX5Cu5Cyx7ZjFBmC0BJHRF2KekIvnhgC8pJw=="],
 
     "acorn": ["acorn@8.15.0", "", { "bin": { "acorn": "bin/acorn" } }, "sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg=="],
 

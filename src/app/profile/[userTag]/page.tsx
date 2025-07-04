@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -20,8 +20,11 @@ interface UserProfile {
 interface App {
   id: string;
   name: string;
+  shortDescription?: string;
   description: string;
+  website?: string;
   viewCount: number;
+  voteCount: number;
   createdAt: string;
 }
 
@@ -51,46 +54,105 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState<
+    "apps" | "activity" | "achievements"
+  >("apps");
   const [editing, setEditing] = useState(false);
-  const [editData, setEditData] = useState({
-    name: "",
-    bio: "",
-    socialLinks: {} as { [key: string]: string },
-  });
+  const [editData, setEditData] = useState({ name: "", bio: "" });
+  const [focusedElement, setFocusedElement] = useState<string | null>(null);
 
-  const isOwnProfile = session?.user?.userTag === userTag;
+  // Refs for programmatic focus
+  const appsTabRef = useRef<HTMLButtonElement>(null);
+  const activityTabRef = useRef<HTMLButtonElement>(null);
+  const achievementsTabRef = useRef<HTMLButtonElement>(null);
+  const editButtonRef = useRef<HTMLButtonElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const bioInputRef = useRef<HTMLTextAreaElement>(null);
+  const saveButtonRef = useRef<HTMLButtonElement>(null);
+
+  const isOwnProfile = (session as any)?.user?.userTag === userTag;
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ignore shortcuts when typing in inputs
+      const activeElement = document.activeElement;
+      if (
+        activeElement &&
+        (activeElement.tagName === "INPUT" ||
+          activeElement.tagName === "TEXTAREA")
+      ) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+
+      switch (key) {
+        case "a":
+          e.preventDefault();
+          setActiveTab("apps");
+          appsTabRef.current?.focus();
+          break;
+        case "c":
+          e.preventDefault();
+          setActiveTab("activity");
+          activityTabRef.current?.focus();
+          break;
+        case "h":
+          e.preventDefault();
+          setActiveTab("achievements");
+          achievementsTabRef.current?.focus();
+          break;
+        case "e":
+          e.preventDefault();
+          if (isOwnProfile && !editing) {
+            setEditing(true);
+            setTimeout(() => nameInputRef.current?.focus(), 100);
+          }
+          break;
+        case "n":
+          e.preventDefault();
+          if (editing) {
+            nameInputRef.current?.focus();
+          }
+          break;
+        case "b":
+          e.preventDefault();
+          if (editing) {
+            bioInputRef.current?.focus();
+          }
+          break;
+        case "s":
+          e.preventDefault();
+          if (editing) {
+            saveButtonRef.current?.click();
+          }
+          break;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [isOwnProfile, editing]);
 
   useEffect(() => {
-    if (userTag) {
-      fetchProfile();
-    }
+    fetchProfile();
   }, [userTag]);
 
   const fetchProfile = async () => {
-    setLoading(true);
-    setError("");
-
     try {
       const response = await fetch(`/api/users/${userTag}`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error("User not found");
-        }
-        throw new Error("Failed to load profile");
-      }
+      const data = await response.json();
 
-      const profileData = await response.json();
-      setProfile(profileData);
-      setEditData({
-        name: profileData.name,
-        bio: profileData.bio || "",
-        socialLinks: profileData.socialLinks || {},
-      });
+      if (response.ok) {
+        setProfile(data);
+        setEditData({ name: data.name || "", bio: data.bio || "" });
+      } else {
+        setError(data.error || "User not found");
+      }
     } catch (error) {
       console.error("Error fetching profile:", error);
-      setError(
-        error instanceof Error ? error.message : "Failed to load profile"
-      );
+      setError("Failed to load profile");
     } finally {
       setLoading(false);
     }
@@ -122,309 +184,666 @@ export default function ProfilePage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
-  };
-
-  const getSocialIcon = (platform: string) => {
-    switch (platform.toLowerCase()) {
-      case "twitter":
-      case "x":
-        return "🐦";
-      case "github":
-        return "🐙";
-      case "linkedin":
-        return "💼";
-      case "website":
-      case "blog":
-        return "🌐";
-      default:
-        return "🔗";
-    }
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: "var(--color-primary)" }}
+      >
+        <div
+          className="font-mono text-lg"
+          style={{ color: "var(--color-text)" }}
+        >
+          loading_profile...
         </div>
       </div>
     );
   }
 
-  if (error || !profile) {
+  if (error) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center py-12">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
-          <p className="text-gray-600 dark:text-gray-400">{error}</p>
+      <div
+        className="min-h-screen"
+        style={{ backgroundColor: "var(--color-primary)" }}
+      >
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          <div className="text-center py-12">
+            <p
+              className="text-lg font-mono"
+              style={{ color: "var(--color-highlight)" }}
+            >
+              ! {error}
+            </p>
+          </div>
         </div>
       </div>
     );
   }
+
+  if (!profile) return null;
+
+  const termhuntText = `
+ ___                                   ___                      ___      
+(   )                                 (   )                    (   )     
+ | |_     .--.  ___ .-.  ___ .-. .-.   | | .-. ___  ___ ___ .-. | |_     
+(   __)  /    \\(   )   \\(   )   '   \\  | |/   (   )(   |   )   (   __)   
+ | |    |  .-. ;| ' .-. ;|  .-.  .-. ; |  .-. .| |  | | |  .-. .| |      
+ | | ___|  | | ||  / (___) |  | |  | | | |  | || |  | | | |  | || | ___  
+ | |(   )  |/  || |      | |  | |  | | | |  | || |  | | | |  | || |(   ) 
+ | | | ||  ' _.'| |      | |  | |  | | | |  | || |  | | | |  | || | | |  
+ | ' | ||  .'.-.| |      | |  | |  | | | |  | || |  ; ' | |  | || ' | |  
+ ' \`-' ;'  \`-' /| |      | |  | |  | | | |  | |' \`-'  / | |  | |' \`-' ;  
+  \`.__.  \`.__.'(___)    (___)(___)(___|___)(___)'.__.' (___)(___)\`.__.   
+                  
+  P R O F I L E   @${profile.userTag}
+  `;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Profile Header */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
+    <div
+      className="min-h-screen pt-20 pb-8"
+      style={{ backgroundColor: "var(--color-primary)" }}
+    >
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <pre
+            className="text-xs md:text-sm whitespace-pre-wrap font-semibold mb-6"
+            style={{ color: "var(--color-accent)" }}
+          >
+            {termhuntText}
+          </pre>
+        </div>
+
+        <div className="space-y-6 max-w-[650px] mx-auto">
+          {/* Navigation tabs */}
+          <div className="space-y-2">
+            <div className="flex items-center">
+              <span
+                className="mr-2 w-4 text-xs"
+                style={{ color: "var(--color-text)" }}
+              >
+                {focusedElement === "apps" || activeTab === "apps" ? ">" : " "}
+              </span>
+              <button
+                ref={appsTabRef}
+                onFocus={() => setFocusedElement("apps")}
+                onBlur={() => setFocusedElement(null)}
+                onClick={() => setActiveTab("apps")}
+                className="text-sm font-medium focus:outline-none focus:ring-none"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-text)",
+                }}
+              >
+                <span className="underline">A</span>pps ({profile.apps.length})
+              </button>
+            </div>
+            <div className="flex items-center">
+              <span
+                className="mr-2 w-4 text-xs"
+                style={{ color: "var(--color-text)" }}
+              >
+                {focusedElement === "activity" || activeTab === "activity" ? ">" : " "}
+              </span>
+              <button
+                ref={activityTabRef}
+                onFocus={() => setFocusedElement("activity")}
+                onBlur={() => setFocusedElement(null)}
+                onClick={() => setActiveTab("activity")}
+                className="text-sm font-medium focus:outline-none focus:ring-none"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-text)",
+                }}
+              >
+                <span className="underline">C</span>omments ({profile.comments.length})
+              </button>
+            </div>
+            <div className="flex items-center">
+              <span
+                className="mr-2 w-4 text-xs"
+                style={{ color: "var(--color-text)" }}
+              >
+                {focusedElement === "achievements" || activeTab === "achievements" ? ">" : " "}
+              </span>
+              <button
+                ref={achievementsTabRef}
+                onFocus={() => setFocusedElement("achievements")}
+                onBlur={() => setFocusedElement(null)}
+                onClick={() => setActiveTab("achievements")}
+                className="text-sm font-medium focus:outline-none focus:ring-none"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-text)",
+                }}
+              >
+                Ac<span className="underline">h</span>ievements ({profile.achievements.length})
+              </button>
+            </div>
+          </div>
+
+          {/* Profile Info */}
+          <div className="space-y-4 pt-4">
+            <div className="flex items-center">
+              <span
+                className="mr-2 w-4 text-xs"
+                style={{ color: "var(--color-text)" }}
+              >
+                {" "}
+              </span>
+              <label
+                className="text-sm pr-2"
+                style={{
+                  color: "var(--color-text)",
+                  backgroundColor: "var(--color-primary)",
+                }}
+              >
+                user
+              </label>
+              <span
+                className="text-sm"
+                style={{ color: "var(--color-text)" }}
+              >
+                @{profile.userTag}
+              </span>
+            </div>
+
             {editing ? (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Name
+              <>
+                <div className="flex items-center">
+                  <span
+                    className="mr-2 w-4 text-xs"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    {focusedElement === "name" ? ">" : " "}
+                  </span>
+                  <label
+                    htmlFor="name"
+                    className="text-sm pr-2"
+                    style={{
+                      color: "var(--color-text)",
+                      backgroundColor: "var(--color-primary)",
+                    }}
+                  >
+                    <span className="underline">n</span>ame
                   </label>
                   <input
+                    ref={nameInputRef}
                     type="text"
+                    id="name"
                     value={editData.name}
+                    onFocus={() => setFocusedElement("name")}
+                    onBlur={() => setFocusedElement(null)}
                     onChange={(e) =>
                       setEditData((prev) => ({ ...prev, name: e.target.value }))
                     }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Bio
-                  </label>
-                  <textarea
-                    value={editData.bio}
-                    onChange={(e) =>
-                      setEditData((prev) => ({ ...prev, bio: e.target.value }))
-                    }
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Social Links (JSON format)
-                  </label>
-                  <textarea
-                    value={JSON.stringify(editData.socialLinks, null, 2)}
-                    onChange={(e) => {
-                      try {
-                        const parsed = JSON.parse(e.target.value);
-                        setEditData((prev) => ({
-                          ...prev,
-                          socialLinks: parsed,
-                        }));
-                      } catch {
-                        // Invalid JSON, don't update
-                      }
+                    className="flex-1 px-2 py-1 focus:outline-none text-sm"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-text)",
                     }}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm"
-                    placeholder='{"github": "https://github.com/username", "twitter": "https://twitter.com/username"}'
+                    placeholder="_"
                   />
                 </div>
 
-                <div className="flex space-x-2">
-                  <button
-                    onClick={handleSaveProfile}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                <div className="flex items-start">
+                  <span
+                    className="mr-2 w-4 text-xs mt-1"
+                    style={{ color: "var(--color-text)" }}
                   >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => setEditing(false)}
-                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
-                  >
-                    Cancel
-                  </button>
+                    {focusedElement === "bio" ? ">" : " "}
+                  </span>
+                  <div className="flex-1">
+                    <label
+                      htmlFor="bio"
+                      className="text-sm pr-2 block mb-1"
+                      style={{
+                        color: "var(--color-text)",
+                        backgroundColor: "var(--color-primary)",
+                      }}
+                    >
+                      <span className="underline">b</span>io
+                    </label>
+                    <textarea
+                      ref={bioInputRef}
+                      id="bio"
+                      value={editData.bio}
+                      onFocus={() => setFocusedElement("bio")}
+                      onBlur={() => setFocusedElement(null)}
+                      onChange={(e) =>
+                        setEditData((prev) => ({ ...prev, bio: e.target.value }))
+                      }
+                      rows={4}
+                      className="w-full px-2 py-1 focus:outline-none text-sm resize-vertical"
+                      style={{
+                        backgroundColor: "var(--color-primary)",
+                        color: "var(--color-text)",
+                      }}
+                      placeholder="_"
+                    />
+                  </div>
                 </div>
-              </div>
+
+                <div className="flex items-center justify-start space-x-4">
+                  <div className="flex items-center">
+                    <span
+                      className="mr-2 w-4 text-xs"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      {focusedElement === "save" ? ">" : " "}
+                    </span>
+                    <button
+                      ref={saveButtonRef}
+                      type="button"
+                      onClick={handleSaveProfile}
+                      onFocus={() => setFocusedElement("save")}
+                      onBlur={() => setFocusedElement(null)}
+                      className="px-2 py-1 font-medium focus:outline-none transition-colors text-sm"
+                      style={{
+                        backgroundColor: "var(--color-highlight)",
+                        color: "var(--color-primary)",
+                      }}
+                    >
+                      <span className="underline">S</span>ave
+                    </button>
+                  </div>
+                  <div className="flex items-center">
+                    <span
+                      className="mr-2 w-4 text-xs"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      {focusedElement === "cancel" ? ">" : " "}
+                    </span>
+                    <button
+                      onFocus={() => setFocusedElement("cancel")}
+                      onBlur={() => setFocusedElement(null)}
+                      onClick={() => setEditing(false)}
+                      className="font-medium text-sm focus:outline-none"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </>
             ) : (
               <>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                  @{profile.userTag}
-                </h1>
-                <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">
-                  {profile.name}
-                </p>
-
-                {profile.bio && (
-                  <p className="text-gray-600 dark:text-gray-300 mb-4">
-                    {profile.bio}
-                  </p>
+                {profile.name && (
+                  <div className="flex items-center">
+                    <span
+                      className="mr-2 w-4 text-xs"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      {" "}
+                    </span>
+                    <label
+                      className="text-sm pr-2"
+                      style={{
+                        color: "var(--color-text)",
+                        backgroundColor: "var(--color-primary)",
+                      }}
+                    >
+                      name
+                    </label>
+                    <span
+                      className="text-sm"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      {profile.name}
+                    </span>
+                  </div>
                 )}
 
-                {profile.socialLinks &&
-                  Object.keys(profile.socialLinks).length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {Object.entries(profile.socialLinks).map(
-                        ([platform, url]) => (
-                          <a
-                            key={platform}
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                          >
-                            <span className="mr-1">
-                              {getSocialIcon(platform)}
-                            </span>
-                            {platform}
-                          </a>
-                        )
-                      )}
+                {profile.bio && (
+                  <div className="flex items-start">
+                    <span
+                      className="mr-2 w-4 text-xs mt-1"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      {" "}
+                    </span>
+                    <div className="flex-1">
+                      <label
+                        className="text-sm pr-2 block mb-1"
+                        style={{
+                          color: "var(--color-text)",
+                          backgroundColor: "var(--color-primary)",
+                        }}
+                      >
+                        bio
+                      </label>
+                      <p
+                        className="text-sm"
+                        style={{ color: "var(--color-text)" }}
+                      >
+                        {profile.bio}
+                      </p>
                     </div>
-                  )}
+                  </div>
+                )}
 
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Joined {formatDate(profile.createdAt)}
-                </p>
+                <div className="flex items-center">
+                  <span
+                    className="mr-2 w-4 text-xs"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    {" "}
+                  </span>
+                  <label
+                    className="text-sm pr-2"
+                    style={{
+                      color: "var(--color-text)",
+                      backgroundColor: "var(--color-primary)",
+                    }}
+                  >
+                    joined
+                  </label>
+                  <span
+                    className="text-sm"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    {formatDate(profile.createdAt)}
+                  </span>
+                </div>
+
+                {isOwnProfile && (
+                  <div className="flex items-center">
+                    <span
+                      className="mr-2 w-4 text-xs"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      {focusedElement === "edit" ? ">" : " "}
+                    </span>
+                    <button
+                      ref={editButtonRef}
+                      onFocus={() => setFocusedElement("edit")}
+                      onBlur={() => setFocusedElement(null)}
+                      onClick={() => setEditing(true)}
+                      className="font-medium text-sm focus:outline-none"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      <span className="underline">E</span>dit Profile
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </div>
 
-          {isOwnProfile && !editing && (
-            <button
-              onClick={() => setEditing(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Edit Profile
-            </button>
-          )}
+          {/* Tab Content */}
+          <div className="space-y-6 pt-6">
+            {activeTab === "apps" && (
+              <div>
+                {profile.apps.length === 0 ? (
+                  <div className="flex items-center">
+                    <span
+                      className="mr-2 w-4 text-xs"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      {" "}
+                    </span>
+                    <span
+                      className="text-sm"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      no apps published yet
+                    </span>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {profile.apps.map((app, index) => (
+                      <div key={app.id} className="space-y-2">
+                        <div className="flex items-center">
+                          <span
+                            className="mr-2 w-4 text-xs"
+                            style={{ color: "var(--color-text)" }}
+                          >
+                            {" "}
+                          </span>
+                          <Link
+                            href={`/app/${app.id}`}
+                            className="text-sm focus:outline-none"
+                            style={{ color: "var(--color-text)" }}
+                          >
+                            {app.name}
+                          </Link>
+                        </div>
+                        
+                        <div className="flex items-start">
+                          <span
+                            className="mr-2 w-4 text-xs mt-1"
+                            style={{ color: "var(--color-text)" }}
+                          >
+                            {" "}
+                          </span>
+                          <div className="flex-1">
+                            <p
+                              className="text-sm"
+                              style={{ color: "var(--color-text)" }}
+                            >
+                              {app.description}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center">
+                          <span
+                            className="mr-2 w-4 text-xs"
+                            style={{ color: "var(--color-text)" }}
+                          >
+                            {" "}
+                          </span>
+                          <span
+                            className="text-xs"
+                            style={{ color: "var(--color-text)" }}
+                          >
+                            {app.viewCount} views • {app.voteCount} votes • {formatDate(app.createdAt)}
+                          </span>
+                        </div>
+
+                        {index < profile.apps.length - 1 && (
+                          <div className="mx-6">
+                            <div
+                              className="h-px"
+                              style={{ backgroundColor: "var(--color-accent)" }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "activity" && (
+              <div>
+                {profile.comments.length === 0 ? (
+                  <div className="flex items-center">
+                    <span
+                      className="mr-2 w-4 text-xs"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      {" "}
+                    </span>
+                    <span
+                      className="text-sm"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      no comments yet
+                    </span>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {profile.comments.map((comment, index) => (
+                      <div key={comment.id} className="space-y-2">
+                        <div className="flex items-start">
+                          <span
+                            className="mr-2 w-4 text-xs mt-1"
+                            style={{ color: "var(--color-text)" }}
+                          >
+                            {" "}
+                          </span>
+                          <div className="flex-1">
+                            <p
+                              className="text-sm mb-1"
+                              style={{ color: "var(--color-text)" }}
+                            >
+                              {comment.content}
+                            </p>
+                            <div className="flex items-center space-x-2">
+                              <span
+                                className="text-xs"
+                                style={{ color: "var(--color-text)" }}
+                              >
+                                on
+                              </span>
+                              <Link
+                                href={`/app/${comment.appId}`}
+                                className="text-xs focus:outline-none"
+                                style={{ color: "var(--color-text)" }}
+                              >
+                                {comment.appName}
+                              </Link>
+                              <span
+                                className="text-xs"
+                                style={{ color: "var(--color-text)" }}
+                              >
+                                • {formatDate(comment.createdAt)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {index < profile.comments.length - 1 && (
+                          <div className="mx-6">
+                            <div
+                              className="h-px"
+                              style={{ backgroundColor: "var(--color-accent)" }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "achievements" && (
+              <div>
+                {profile.achievements.length === 0 ? (
+                  <div className="flex items-center">
+                    <span
+                      className="mr-2 w-4 text-xs"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      {" "}
+                    </span>
+                    <span
+                      className="text-sm"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      no achievements yet
+                    </span>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {profile.achievements.map((achievement, index) => (
+                      <div key={achievement.id} className="space-y-2">
+                        <div className="flex items-center">
+                          <span
+                            className="mr-2 w-4 text-xs"
+                            style={{ color: "var(--color-text)" }}
+                          >
+                            {" "}
+                          </span>
+                          <span
+                            className="text-sm mr-2"
+                            style={{ color: "var(--color-text)" }}
+                          >
+                            {achievement.type === "first_app"
+                              ? "📱"
+                              : achievement.type === "popular_app"
+                              ? "⭐"
+                              : achievement.type === "veteran"
+                              ? "🏆"
+                              : "🎖️"}
+                          </span>
+                          <span
+                            className="text-sm font-semibold"
+                            style={{ color: "var(--color-text)" }}
+                          >
+                            {achievement.title}
+                          </span>
+                        </div>
+
+                        <div className="flex items-start">
+                          <span
+                            className="mr-2 w-4 text-xs mt-1"
+                            style={{ color: "var(--color-text)" }}
+                          >
+                            {" "}
+                          </span>
+                          <div className="flex-1">
+                            <p
+                              className="text-sm mb-1"
+                              style={{ color: "var(--color-text)" }}
+                            >
+                              {achievement.description}
+                            </p>
+                            <div className="flex items-center space-x-2">
+                              <span
+                                className="text-xs"
+                                style={{ color: "var(--color-text)" }}
+                              >
+                                earned {formatDate(achievement.awardedAt)}
+                              </span>
+                              {achievement.appName && (
+                                <>
+                                  <span
+                                    className="text-xs"
+                                    style={{ color: "var(--color-text)" }}
+                                  >
+                                    for
+                                  </span>
+                                  <Link
+                                    href={`/app/${achievement.appId}`}
+                                    className="text-xs focus:outline-none"
+                                    style={{ color: "var(--color-text)" }}
+                                  >
+                                    {achievement.appName}
+                                  </Link>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {index < profile.achievements.length - 1 && (
+                          <div className="mx-6">
+                            <div
+                              className="h-px"
+                              style={{ backgroundColor: "var(--color-accent)" }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 text-center">
-          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-            {profile.apps.length}
-          </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Apps Submitted
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 text-center">
-          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-            {profile.comments.length}
-          </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Comments
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 text-center">
-          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-            {profile.achievements.length}
-          </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Achievements
-          </div>
-        </div>
-      </div>
-
-      {/* Submitted Apps */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          Submitted Apps ({profile.apps.length})
-        </h2>
-
-        {profile.apps.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400">
-            No apps submitted yet.
-          </p>
-        ) : (
-          <div className="space-y-4">
-            {profile.apps.map((app) => (
-              <div key={app.id} className="border-l-2 border-blue-500 pl-4">
-                <Link
-                  href={`/app/${app.id}`}
-                  className="text-lg font-medium text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  {app.name}
-                </Link>
-                <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">
-                  {app.description.substring(0, 150)}
-                  {app.description.length > 150 ? "..." : ""}
-                </p>
-                <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400 mt-2">
-                  <span>{app.viewCount} views</span>
-                  <span>{formatDate(app.createdAt)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Achievements */}
-      {profile.achievements.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            Achievements ({profile.achievements.length})
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            {profile.achievements.map((achievement) => (
-              <div
-                key={achievement.id}
-                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
-              >
-                <div className="flex items-center mb-2">
-                  <span className="text-2xl mr-2">🏆</span>
-                  <h3 className="font-medium text-gray-900 dark:text-white">
-                    {achievement.title}
-                  </h3>
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                  {achievement.description}
-                </p>
-                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                  <Link
-                    href={`/app/${achievement.appId}`}
-                    className="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    {achievement.appName}
-                  </Link>
-                  <span>{formatDate(achievement.awardedAt)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Recent Comments */}
-      {profile.comments.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            Recent Comments ({profile.comments.length})
-          </h2>
-
-          <div className="space-y-4">
-            {profile.comments.slice(0, 5).map((comment) => (
-              <div
-                key={comment.id}
-                className="border-l-2 border-gray-300 dark:border-gray-600 pl-4"
-              >
-                <div className="flex items-center space-x-2 mb-1">
-                  <Link
-                    href={`/app/${comment.appId}`}
-                    className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
-                  >
-                    {comment.appName}
-                  </Link>
-                  <span className="text-gray-400 dark:text-gray-500 text-sm">
-                    {formatDate(comment.createdAt)}
-                  </span>
-                </div>
-                <p className="text-gray-600 dark:text-gray-300 text-sm">
-                  {comment.content}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

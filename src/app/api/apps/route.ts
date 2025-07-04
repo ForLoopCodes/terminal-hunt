@@ -17,7 +17,9 @@ export async function GET(request: NextRequest) {
       .select({
         id: apps.id,
         name: apps.name,
+        shortDescription: apps.shortDescription,
         description: apps.description,
+        website: apps.website,
         installCommands: apps.installCommands,
         repoUrl: apps.repoUrl,
         viewCount: apps.viewCount,
@@ -50,7 +52,9 @@ export async function GET(request: NextRequest) {
       filteredApps = filteredApps.filter(
         (app) =>
           app.name.toLowerCase().includes(searchLower) ||
-          app.description.toLowerCase().includes(searchLower)
+          app.description.toLowerCase().includes(searchLower) ||
+          (app.shortDescription &&
+            app.shortDescription.toLowerCase().includes(searchLower))
       );
     }
 
@@ -107,7 +111,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, description, installCommands, repoUrl, tagIds } = body;
+    const {
+      name,
+      shortDescription,
+      description,
+      website,
+      installCommands,
+      repoUrl,
+      tagIds,
+    } = body;
 
     // Validate required fields
     if (!name || !description || !installCommands || !repoUrl) {
@@ -152,7 +164,9 @@ export async function POST(request: NextRequest) {
       .insert(apps)
       .values({
         name,
+        shortDescription,
         description,
+        website,
         installCommands,
         repoUrl,
         creatorId: user[0].id,

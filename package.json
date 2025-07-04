@@ -4,16 +4,18 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev-https": "next dev --turbopack --experimental-https",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "db-dev": "drizzle-kit generate && drizzle-kit push && next dev --turbopack",
+    "db-dev-https": "drizzle-kit generate && drizzle-kit push && next dev --turbopack --experimental-https"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.4.2",
-    "@webtui/css": "^0.1.2",
     "bcryptjs": "^2.4.3",
     "dotenv": "^17.0.1",
     "drizzle-kit": "^0.31.4",

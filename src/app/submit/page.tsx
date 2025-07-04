@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
@@ -16,7 +16,9 @@ export default function SubmitAppPage() {
 
   const [formData, setFormData] = useState({
     name: "",
+    shortDescription: "",
     description: "",
+    website: "",
     installCommands: "",
     repoUrl: "",
     tagIds: [] as string[],
@@ -28,6 +30,14 @@ export default function SubmitAppPage() {
   const [previewMode, setPreviewMode] = useState<
     "description" | "install" | null
   >(null);
+  const [focusedElement, setFocusedElement] = useState<string | null>(null);
+
+  // Refs for programmatic focus
+  const nameRef = useRef<HTMLInputElement>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
+  const installRef = useRef<HTMLTextAreaElement>(null);
+  const repoRef = useRef<HTMLInputElement>(null);
+  const submitRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -38,6 +48,57 @@ export default function SubmitAppPage() {
   useEffect(() => {
     fetchTags();
   }, []);
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ignore shortcuts when typing in inputs
+      const activeElement = document.activeElement;
+      if (
+        activeElement &&
+        (activeElement.tagName === "INPUT" ||
+          activeElement.tagName === "TEXTAREA")
+      ) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+
+      switch (key) {
+        case "n":
+          e.preventDefault();
+          nameRef.current?.focus();
+          break;
+        case "d":
+          e.preventDefault();
+          descriptionRef.current?.focus();
+          break;
+        case "i":
+          e.preventDefault();
+          installRef.current?.focus();
+          break;
+        case "r":
+          e.preventDefault();
+          repoRef.current?.focus();
+          break;
+        case "u":
+          e.preventDefault();
+          submitRef.current?.click();
+          break;
+        case "p":
+          e.preventDefault();
+          setPreviewMode(previewMode === "description" ? null : "description");
+          break;
+        case "v":
+          e.preventDefault();
+          setPreviewMode(previewMode === "install" ? null : "install");
+          break;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [previewMode]);
 
   const fetchTags = async () => {
     try {
@@ -56,22 +117,33 @@ export default function SubmitAppPage() {
       newErrors.name = "App name is required";
     }
 
+    if (!formData.shortDescription.trim()) {
+      newErrors.shortDescription = "Short description is required";
+    }
+
     if (!formData.description.trim()) {
       newErrors.description = "Description is required";
     }
 
     if (!formData.installCommands.trim()) {
-      newErrors.installCommands = "Installation commands are required";
+      newErrors.installCommands = "Installation instructions are required";
     }
 
     if (!formData.repoUrl.trim()) {
       newErrors.repoUrl = "Repository URL is required";
     } else {
-      // Basic URL validation
       try {
         new URL(formData.repoUrl);
       } catch {
-        newErrors.repoUrl = "Please enter a valid URL";
+        newErrors.repoUrl = "Invalid URL format";
+      }
+    }
+
+    if (formData.website && formData.website.trim()) {
+      try {
+        new URL(formData.website);
+      } catch {
+        newErrors.website = "Invalid URL format";
       }
     }
 
@@ -83,6 +155,8 @@ export default function SubmitAppPage() {
     if (!validateForm()) return;
 
     setLoading(true);
+    setErrors({});
+
     try {
       const response = await fetch("/api/apps", {
         method: "POST",
@@ -118,10 +192,8 @@ export default function SubmitAppPage() {
 
   if (status === "loading") {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-400 font-mono text-lg">loading_submit...</div>
       </div>
     );
   }
@@ -130,192 +202,407 @@ export default function SubmitAppPage() {
     return null; // Will redirect to signin
   }
 
+  const termhuntText = `
+ ___                                   ___                      ___      
+(   )                                 (   )                    (   )     
+ | |_     .--.  ___ .-.  ___ .-. .-.   | | .-. ___  ___ ___ .-. | |_     
+(   __)  /    \\(   )   \\(   )   '   \\  | |/   (   )(   |   )   (   __)   
+ | |    |  .-. ;| ' .-. ;|  .-.  .-. ; |  .-. .| |  | | |  .-. .| |      
+ | | ___|  | | ||  / (___) |  | |  | | | |  | || |  | | | |  | || | ___  
+ | |(   )  |/  || |      | |  | |  | | | |  | || |  | | | |  | || |(   ) 
+ | | | ||  ' _.'| |      | |  | |  | | | |  | || |  | | | |  | || | | |  
+ | ' | ||  .'.-.| |      | |  | |  | | | |  | || |  ; ' | |  | || ' | |  
+ ' \`-' ;'  \`-' /| |      | |  | |  | | | |  | |' \`-'  / | |  | |' \`-' ;  
+  \`.__.  \`.__.'(___)    (___)(___)(___|___)(___)'.__.' (___)(___)\`.__.   
+                  
+  S U B M I T   Y O U R   A P P
+  `;
+
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="bg-black border border-gray-800 rounded-lg shadow-md p-6">
-        <h1 className="text-3xl font-bold text-white mb-6">
-          Submit Terminal App
-        </h1>
+    <div
+      className="min-h-screen pt-20 pb-8"
+      style={{ backgroundColor: "var(--color-primary)" }}
+    >
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <pre
+            className="text-xs md:text-sm whitespace-pre-wrap font-semibold mb-6"
+            style={{ color: "var(--color-accent)" }}
+          >
+            {termhuntText}
+          </pre>
+        </div>
 
         {errors.submit && (
-          <div className="bg-red-900/20 border border-red-800 rounded-md p-4 mb-6">
-            <p className="text-red-400">{errors.submit}</p>
+          <div
+            className="p-4 mb-6 max-w-[650px] mx-auto"
+            style={{
+              backgroundColor: "var(--color-primary)",
+            }}
+          >
+            <p style={{ color: "var(--color-highlight)" }}>! {errors.submit}</p>
           </div>
         )}
 
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-[650px] mx-auto">
           {/* App Name */}
-          <div>
+          <div className="flex items-center">
+            <span
+              className="mr-2 w-4 text-xs"
+              style={{ color: "var(--color-text)" }}
+            >
+              {focusedElement === "name" ? ">" : " "}
+            </span>
             <label
               htmlFor="name"
-              className="block text-sm font-medium text-gray-300 mb-2"
+              className="text-sm pr-2"
+              style={{
+                color: "var(--color-text)",
+                backgroundColor: "var(--color-primary)",
+              }}
             >
-              App Name *
+              <span className="underline">n</span>ame
             </label>
             <input
+              ref={nameRef}
               type="text"
               id="name"
               value={formData.name}
+              onFocus={() => setFocusedElement("name")}
+              onBlur={() => setFocusedElement(null)}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, name: e.target.value }))
               }
-              className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="e.g., MyAwesomeTerminalApp"
+              className="flex-1 px-2 py-1 focus:outline-none text-sm"
+              style={{
+                backgroundColor: "var(--color-primary)",
+                color: "var(--color-text)",
+              }}
+              placeholder="_"
+              required
             />
-            {errors.name && (
-              <p className="mt-1 text-sm text-red-400">{errors.name}</p>
-            )}
           </div>
-
-          {/* Repository URL */}
-          <div>
-            <label
-              htmlFor="repoUrl"
-              className="block text-sm font-medium text-gray-300 mb-2"
+          {errors.name && (
+            <div
+              className="ml-6 text-sm"
+              style={{ color: "var(--color-highlight)" }}
             >
-              Repository URL *
+              ! {errors.name}
+            </div>
+          )}
+
+          {/* Short Description */}
+          <div className="flex items-center">
+            <span
+              className="mr-2 w-4 text-xs"
+              style={{ color: "var(--color-text)" }}
+            >
+              {focusedElement === "shortDesc" ? ">" : " "}
+            </span>
+            <label
+              htmlFor="shortDescription"
+              className="text-sm pr-2"
+              style={{
+                color: "var(--color-text)",
+                backgroundColor: "var(--color-primary)",
+              }}
+            >
+              <span className="underline">s</span>hort description
             </label>
             <input
+              type="text"
+              id="shortDescription"
+              value={formData.shortDescription}
+              onFocus={() => setFocusedElement("shortDesc")}
+              onBlur={() => setFocusedElement(null)}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  shortDescription: e.target.value,
+                }))
+              }
+              className="flex-1 px-2 py-1 focus:outline-none text-sm"
+              style={{
+                backgroundColor: "var(--color-primary)",
+                color: "var(--color-text)",
+              }}
+              placeholder="_"
+              required
+            />
+          </div>
+          {errors.shortDescription && (
+            <div
+              className="ml-6 text-sm"
+              style={{ color: "var(--color-highlight)" }}
+            >
+              ! {errors.shortDescription}
+            </div>
+          )}
+
+          {/* Repository URL */}
+          <div className="flex items-center">
+            <span
+              className="mr-2 w-4 text-xs"
+              style={{ color: "var(--color-text)" }}
+            >
+              {focusedElement === "repo" ? ">" : " "}
+            </span>
+            <label
+              htmlFor="repoUrl"
+              className="text-sm pr-2"
+              style={{
+                color: "var(--color-text)",
+                backgroundColor: "var(--color-primary)",
+              }}
+            >
+              <span className="underline">r</span>epo
+            </label>
+            <input
+              ref={repoRef}
               type="url"
               id="repoUrl"
               value={formData.repoUrl}
+              onFocus={() => setFocusedElement("repo")}
+              onBlur={() => setFocusedElement(null)}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, repoUrl: e.target.value }))
               }
-              className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="https://github.com/username/repo"
+              className="flex-1 px-2 py-1 focus:outline-none text-sm"
+              style={{
+                backgroundColor: "var(--color-primary)",
+                color: "var(--color-text)",
+              }}
+              placeholder="_"
+              required
             />
-            {errors.repoUrl && (
-              <p className="mt-1 text-sm text-red-400">{errors.repoUrl}</p>
-            )}
           </div>
+          {errors.repoUrl && (
+            <div
+              className="ml-6 text-sm"
+              style={{ color: "var(--color-highlight)" }}
+            >
+              ! {errors.repoUrl}
+            </div>
+          )}
 
           {/* Description */}
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <label
-                htmlFor="description"
-                className="block text-sm font-medium text-gray-300"
+            <div className="flex items-start">
+              <span
+                className="mr-2 w-4 text-xs mt-1"
+                style={{ color: "var(--color-text)" }}
               >
-                Description * (Markdown supported)
-              </label>
-              <button
-                type="button"
-                onClick={() =>
-                  setPreviewMode(
-                    previewMode === "description" ? null : "description"
-                  )
-                }
-                className="text-sm text-blue-400 hover:text-blue-300 hover:underline transition-colors"
-              >
-                {previewMode === "description" ? "Edit" : "Preview"}
-              </button>
-            </div>
-
-            {previewMode === "description" ? (
-              <div className="w-full min-h-32 px-3 py-2 border border-gray-600 rounded-md bg-gray-900">
-                <div className="prose prose-invert max-w-none">
-                  <ReactMarkdown>
-                    {formData.description || "*No description provided*"}
-                  </ReactMarkdown>
+                {focusedElement === "description" ? ">" : " "}
+              </span>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <label
+                    htmlFor="description"
+                    className="text-sm"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    <span className="underline">d</span>escription (markdown
+                    supported)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPreviewMode(
+                        previewMode === "description" ? null : "description"
+                      )
+                    }
+                    className="text-sm px-2 py-1 focus:outline-none focus:underline"
+                    style={{
+                      color: "var(--color-accent)",
+                      backgroundColor:
+                        previewMode === "description"
+                          ? "var(--color-accent)"
+                          : "var(--color-primary)",
+                    }}
+                  >
+                    [{previewMode === "description" ? "edit" : "preview"}]
+                  </button>
                 </div>
+                {previewMode === "description" ? (
+                  <div
+                    className="min-h-[120px] p-3 text-sm"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-text)",
+                    }}
+                  >
+                    <ReactMarkdown>
+                      {formData.description || "*No content to preview*"}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  <textarea
+                    ref={descriptionRef}
+                    id="description"
+                    value={formData.description}
+                    onFocus={() => setFocusedElement("description")}
+                    onBlur={() => setFocusedElement(null)}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
+                    rows={6}
+                    className="w-full px-3 py-2 border focus:outline-none text-sm font-mono"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      border: "1px solid var(--color-accent)",
+                      color: "var(--color-text)",
+                      resize: "vertical",
+                    }}
+                    placeholder="_"
+                    required
+                  />
+                )}
               </div>
-            ) : (
-              <textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }))
-                }
-                rows={6}
-                className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Describe what your terminal app does, its features, and why it's useful..."
-              />
-            )}
+            </div>
             {errors.description && (
-              <p className="mt-1 text-sm text-red-400">{errors.description}</p>
+              <div
+                className="ml-6 text-sm"
+                style={{ color: "var(--color-highlight)" }}
+              >
+                ! {errors.description}
+              </div>
             )}
           </div>
 
-          {/* Installation Commands */}
+          {/* Install Commands */}
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <label
-                htmlFor="installCommands"
-                className="block text-sm font-medium text-gray-300"
+            <div className="flex items-start">
+              <span
+                className="mr-2 w-4 text-xs mt-1"
+                style={{ color: "var(--color-text)" }}
               >
-                Installation Commands * (Markdown supported)
-              </label>
-              <button
-                type="button"
-                onClick={() =>
-                  setPreviewMode(previewMode === "install" ? null : "install")
-                }
-                className="text-sm text-blue-400 hover:text-blue-300 hover:underline transition-colors"
-              >
-                {previewMode === "install" ? "Edit" : "Preview"}
-              </button>
-            </div>
-
-            {previewMode === "install" ? (
-              <div className="w-full min-h-32 px-3 py-2 border border-gray-600 rounded-md bg-gray-900">
-                <div className="prose prose-invert max-w-none">
-                  <ReactMarkdown>
-                    {formData.installCommands ||
-                      "*No installation commands provided*"}
-                  </ReactMarkdown>
+                {focusedElement === "install" ? ">" : " "}
+              </span>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <label
+                    htmlFor="installCommands"
+                    className="text-sm"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    <span className="underline">i</span>nstall commands
+                    (markdown supported)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPreviewMode(
+                        previewMode === "install" ? null : "install"
+                      )
+                    }
+                    className="text-sm px-2 py-1 focus:outline-none focus:underline"
+                    style={{
+                      color: "var(--color-accent)",
+                      backgroundColor:
+                        previewMode === "install"
+                          ? "var(--color-accent)"
+                          : "var(--color-primary)",
+                    }}
+                  >
+                    [{previewMode === "install" ? "edit" : "view"}]
+                  </button>
                 </div>
+                {previewMode === "install" ? (
+                  <div
+                    className="min-h-[120px] p-3 text-sm"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-text)",
+                    }}
+                  >
+                    <ReactMarkdown>
+                      {formData.installCommands ||
+                        "*No installation instructions*"}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  <textarea
+                    ref={installRef}
+                    id="installCommands"
+                    value={formData.installCommands}
+                    onFocus={() => setFocusedElement("install")}
+                    onBlur={() => setFocusedElement(null)}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        installCommands: e.target.value,
+                      }))
+                    }
+                    rows={4}
+                    className="w-full px-3 py-2 border focus:outline-none text-sm font-mono"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      border: "1px solid var(--color-accent)",
+                      color: "var(--color-text)",
+                      resize: "vertical",
+                    }}
+                    placeholder={`_`}
+                    required
+                  />
+                )}
               </div>
-            ) : (
-              <textarea
-                id="installCommands"
-                value={formData.installCommands}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    installCommands: e.target.value,
-                  }))
-                }
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="```bash\nnpm install -g your-app\n# or\ncurl -sSL https://install.example.com | bash\n```"
-              />
-            )}
+            </div>
             {errors.installCommands && (
-              <p className="mt-1 text-sm text-red-400">
-                {errors.installCommands}
-              </p>
+              <div
+                className="ml-6 text-sm"
+                style={{ color: "var(--color-highlight)" }}
+              >
+                ! {errors.installCommands}
+              </div>
             )}
           </div>
 
           {/* Tags */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Tags (Select relevant categories)
+          <div className="mx-6">
+            <label
+              className="block text-sm mb-2"
+              style={{ color: "var(--color-text)" }}
+            >
+              tags (select multiple)
             </label>
             {tags.length === 0 ? (
-              <div className="text-gray-500 text-sm">Loading tags...</div>
+              <div className="text-sm" style={{ color: "var(--color-accent)" }}>
+                Loading tags...
+              </div>
             ) : (
-              <div className="flex flex-wrap gap-2 min-h-[2.5rem] p-3 border border-gray-600 rounded-md bg-gray-900">
+              <div
+                className="flex flex-wrap gap-2 min-h-[2.5rem] p-3"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                }}
+              >
                 {tags.map((tag) => (
                   <button
                     key={tag.id}
                     type="button"
                     onClick={() => handleTagToggle(tag.id)}
-                    className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                      formData.tagIds.includes(tag.id)
-                        ? "bg-blue-600 text-white border border-blue-500"
-                        : "bg-gray-800 text-gray-300 border border-gray-600 hover:bg-gray-700 hover:border-gray-500"
-                    }`}
+                    className="px-3 py-1 text-sm transition-colors"
+                    style={{
+                      backgroundColor: formData.tagIds.includes(tag.id)
+                        ? "var(--color-highlight)"
+                        : "var(--color-primary)",
+                      color: formData.tagIds.includes(tag.id)
+                        ? "var(--color-primary)"
+                        : "var(--color-text)",
+                    }}
                   >
                     {tag.name}
                   </button>
                 ))}
                 {tags.length === 0 && (
-                  <span className="text-gray-500 text-sm">
+                  <span
+                    className="text-sm"
+                    style={{ color: "var(--color-accent)" }}
+                  >
                     No tags available
                   </span>
                 )}
@@ -324,14 +611,27 @@ export default function SubmitAppPage() {
           </div>
 
           {/* Submit Button */}
-          <div className="flex justify-end">
+          <div className="flex items-center justify-start">
+            <span
+              className="mr-2 w-4 text-xs"
+              style={{ color: "var(--color-text)" }}
+            >
+              {focusedElement === "submit" ? ">" : " "}
+            </span>
             <button
+              ref={submitRef}
               type="button"
               onClick={handleSubmit}
+              onFocus={() => setFocusedElement("submit")}
+              onBlur={() => setFocusedElement(null)}
               disabled={loading}
-              className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed font-medium transition-colors"
+              className="px-2 py-1 font-medium focus:outline-none transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                backgroundColor: "var(--color-highlight)",
+                color: "var(--color-primary)",
+              }}
             >
-              {loading ? "Submitting..." : "Submit App"}
+              {loading ? "uploading..." : "[upload app]"}
             </button>
           </div>
         </div>

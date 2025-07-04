@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 interface LeaderboardEntry {
@@ -32,6 +32,68 @@ export default function LeaderboardPage() {
   const [data, setData] = useState<LeaderboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [focusedElement, setFocusedElement] = useState<string | null>(null);
+
+  // Refs for keyboard navigation
+  const dailyRef = useRef<HTMLButtonElement>(null);
+  const weeklyRef = useRef<HTMLButtonElement>(null);
+  const monthlyRef = useRef<HTMLButtonElement>(null);
+  const yearlyRef = useRef<HTMLButtonElement>(null);
+  const votesTabRef = useRef<HTMLButtonElement>(null);
+  const viewsTabRef = useRef<HTMLButtonElement>(null);
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ignore shortcuts when typing in inputs
+      const activeElement = document.activeElement;
+      if (
+        activeElement &&
+        (activeElement.tagName === "INPUT" ||
+          activeElement.tagName === "TEXTAREA")
+      ) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+
+      switch (key) {
+        case "d":
+          e.preventDefault();
+          setActivePeriod("daily");
+          dailyRef.current?.focus();
+          break;
+        case "w":
+          e.preventDefault();
+          setActivePeriod("weekly");
+          weeklyRef.current?.focus();
+          break;
+        case "m":
+          e.preventDefault();
+          setActivePeriod("monthly");
+          monthlyRef.current?.focus();
+          break;
+        case "y":
+          e.preventDefault();
+          setActivePeriod("yearly");
+          yearlyRef.current?.focus();
+          break;
+        case "v":
+          e.preventDefault();
+          setActiveTab("votes");
+          votesTabRef.current?.focus();
+          break;
+        case "i":
+          e.preventDefault();
+          setActiveTab("views");
+          viewsTabRef.current?.focus();
+          break;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, []);
 
   useEffect(() => {
     fetchLeaderboard();
@@ -68,179 +130,346 @@ export default function LeaderboardPage() {
   ) => {
     if (entries.length === 0) {
       return (
-        <div className="text-center py-8">
-          <p className="text-gray-500 dark:text-gray-400">
-            No data available for this period.
-          </p>
+        <div className="flex items-center justify-center py-8">
+          <span
+            className="mr-2 w-4 text-xs"
+            style={{ color: "var(--color-text)" }}
+          >
+            {" "}
+          </span>
+          <span
+            className="text-sm"
+            style={{ color: "var(--color-text)" }}
+          >
+            no data available for this period
+          </span>
         </div>
       );
     }
 
     return (
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-800">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Rank
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Application
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Creator
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                {type === "votes" ? "Votes" : "Views"}
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-            {entries.map((entry, index) => (
-              <tr
-                key={entry.appId}
-                className="hover:bg-gray-50 dark:hover:bg-gray-800"
+      <div className="space-y-4">
+        {entries.map((entry, index) => (
+          <div key={entry.appId} className="space-y-2">
+            <div className="flex items-center">
+              <span
+                className="mr-2 w-4 text-xs"
+                style={{ color: "var(--color-text)" }}
               >
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <span
-                      className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
-                        index === 0
-                          ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-                          : index === 1
-                          ? "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
-                          : index === 2
-                          ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300"
-                          : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-                      }`}
-                    >
-                      {index + 1}
-                    </span>
-                    {index < 3 && (
-                      <span className="ml-2">
-                        {index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉"}
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <Link
-                    href={`/app/${entry.appId}`}
-                    className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
-                  >
-                    {entry.appName}
-                  </Link>
-                </td>
-                <td className="px-6 py-4">
-                  <Link
-                    href={`/profile/${entry.creatorUserTag}`}
-                    className="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    @{entry.creatorUserTag}
-                  </Link>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {entry.creatorName}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {type === "votes" ? entry.voteCount : entry.viewCount}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                {" "}
+              </span>
+              <span
+                className="text-sm mr-3"
+                style={{
+                  color:
+                    index === 0
+                      ? "var(--color-highlight)"
+                      : index === 1
+                      ? "var(--color-accent)"
+                      : index === 2
+                      ? "var(--color-highlight)"
+                      : "var(--color-text)",
+                }}
+              >
+                #{index + 1}
+                {index === 0 ? " 🥇" : index === 1 ? " �" : index === 2 ? " �" : ""}
+              </span>
+              <Link
+                href={`/app/${entry.appId}`}
+                className="text-sm focus:outline-none mr-4"
+                style={{ color: "var(--color-text)" }}
+              >
+                {entry.appName}
+              </Link>
+              <span
+                className="text-sm mr-4"
+                style={{ color: "var(--color-text)" }}
+              >
+                by
+              </span>
+              <Link
+                href={`/profile/${entry.creatorUserTag}`}
+                className="text-sm focus:outline-none"
+                style={{ color: "var(--color-text)" }}
+              >
+                @{entry.creatorUserTag}
+              </Link>
+            </div>
+            
+            <div className="flex items-center">
+              <span
+                className="mr-2 w-4 text-xs"
+                style={{ color: "var(--color-text)" }}
+              >
+                {" "}
+              </span>
+              <span
+                className="text-xs"
+                style={{ color: "var(--color-text)" }}
+              >
+                {type === "votes" ? entry.voteCount : entry.viewCount} {type}
+              </span>
+            </div>
+
+            {index < entries.length - 1 && (
+              <div className="mx-6">
+                <div
+                  className="h-px"
+                  style={{ backgroundColor: "var(--color-accent)" }}
+                />
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     );
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <div
+      className="min-h-screen pt-20 pb-8"
+      style={{ backgroundColor: "var(--color-primary)" }}
+    >
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Leaderboards
-          </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-300">
-            Discover the most popular terminal applications in the community
-          </p>
+        <div className="text-center mb-8">
+          <pre
+            className="text-xs md:text-sm whitespace-pre-wrap font-semibold mb-6"
+            style={{ color: "var(--color-accent)" }}
+          >
+            {`
+ ___                                   ___                      ___      
+(   )                                 (   )                    (   )     
+ | |_     .--.  ___ .-.  ___ .-. .-.   | | .-. ___  ___ ___ .-. | |_     
+(   __)  /    \\(   )   \\(   )   '   \\  | |/   (   )(   |   )   (   __)   
+ | |    |  .-. ;| ' .-. ;|  .-.  .-. ; |  .-. .| |  | | |  .-. .| |      
+ | | ___|  | | ||  / (___) |  | |  | | | |  | || |  | | | |  | || | ___  
+ | |(   )  |/  || |      | |  | |  | | | |  | || |  | | | |  | || |(   ) 
+ | | | ||  ' _.'| |      | |  | |  | | | |  | || |  | | | |  | || | | |  
+ | ' | ||  .'.-.| |      | |  | |  | | | |  | || |  ; ' | |  | || ' | |  
+ ' \`-' ;'  \`-' /| |      | |  | |  | | | |  | |' \`-'  / | |  | |' \`-' ;  
+  \`.__.  \`.__.'(___)    (___)(___)(___|___)(___)'.__.' (___)(___)\`.__.   
+                  
+  L E A D E R B O A R D S
+  `}
+          </pre>
         </div>
 
-        {/* Period Tabs */}
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex space-x-1">
-            {periods.map((period) => (
-              <button
-                key={period.key}
-                onClick={() => setActivePeriod(period.key)}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  activePeriod === period.key
-                    ? "bg-blue-600 text-white"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                }`}
+        <div className="space-y-6 max-w-[650px] mx-auto">
+          {/* Period Selection */}
+          <div className="space-y-2">
+            <div className="flex items-center">
+              <span
+                className="mr-2 w-4 text-xs"
+                style={{ color: "var(--color-text)" }}
               >
-                {period.label}
+                {focusedElement === "daily" || activePeriod === "daily" ? ">" : " "}
+              </span>
+              <button
+                ref={dailyRef}
+                onFocus={() => setFocusedElement("daily")}
+                onBlur={() => setFocusedElement(null)}
+                onClick={() => setActivePeriod("daily")}
+                className="text-sm font-medium focus:outline-none focus:ring-none"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-text)",
+                }}
+              >
+                <span className="underline">D</span>aily
               </button>
-            ))}
+            </div>
+            <div className="flex items-center">
+              <span
+                className="mr-2 w-4 text-xs"
+                style={{ color: "var(--color-text)" }}
+              >
+                {focusedElement === "weekly" || activePeriod === "weekly" ? ">" : " "}
+              </span>
+              <button
+                ref={weeklyRef}
+                onFocus={() => setFocusedElement("weekly")}
+                onBlur={() => setFocusedElement(null)}
+                onClick={() => setActivePeriod("weekly")}
+                className="text-sm font-medium focus:outline-none focus:ring-none"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-text)",
+                }}
+              >
+                <span className="underline">W</span>eekly
+              </button>
+            </div>
+            <div className="flex items-center">
+              <span
+                className="mr-2 w-4 text-xs"
+                style={{ color: "var(--color-text)" }}
+              >
+                {focusedElement === "monthly" || activePeriod === "monthly" ? ">" : " "}
+              </span>
+              <button
+                ref={monthlyRef}
+                onFocus={() => setFocusedElement("monthly")}
+                onBlur={() => setFocusedElement(null)}
+                onClick={() => setActivePeriod("monthly")}
+                className="text-sm font-medium focus:outline-none focus:ring-none"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-text)",
+                }}
+              >
+                <span className="underline">M</span>onthly
+              </button>
+            </div>
+            <div className="flex items-center">
+              <span
+                className="mr-2 w-4 text-xs"
+                style={{ color: "var(--color-text)" }}
+              >
+                {focusedElement === "yearly" || activePeriod === "yearly" ? ">" : " "}
+              </span>
+              <button
+                ref={yearlyRef}
+                onFocus={() => setFocusedElement("yearly")}
+                onBlur={() => setFocusedElement(null)}
+                onClick={() => setActivePeriod("yearly")}
+                className="text-sm font-medium focus:outline-none focus:ring-none"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-text)",
+                }}
+              >
+                <span className="underline">Y</span>early
+              </button>
+            </div>
           </div>
 
           {data && (
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Period: {formatDate(data.startDate)} - Present
-            </p>
+            <div className="flex items-center">
+              <span
+                className="mr-2 w-4 text-xs"
+                style={{ color: "var(--color-text)" }}
+              >
+                {" "}
+              </span>
+              <label
+                className="text-sm pr-2"
+                style={{
+                  color: "var(--color-text)",
+                  backgroundColor: "var(--color-primary)",
+                }}
+              >
+                period
+              </label>
+              <span
+                className="text-sm"
+                style={{ color: "var(--color-text)" }}
+              >
+                {formatDate(data.startDate)} - present
+              </span>
+            </div>
           )}
-        </div>
 
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
-        ) : error ? (
-          <div className="text-center py-12">
-            <p className="text-red-600 dark:text-red-400">{error}</p>
-            <button
-              onClick={fetchLeaderboard}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Retry
-            </button>
-          </div>
-        ) : data ? (
-          <>
-            {/* Vote/View Tabs */}
-            <div className="px-6 py-4">
-              <div className="flex space-x-1 mb-6">
-                <button
-                  onClick={() => setActiveTab("votes")}
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                    activeTab === "votes"
-                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }`}
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div
+                className="font-mono text-lg"
+                style={{ color: "var(--color-text)" }}
+              >
+                loading_leaderboard...
+              </div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <div className="flex items-center justify-center mb-4">
+                <span
+                  className="mr-2 w-4 text-xs"
+                  style={{ color: "var(--color-text)" }}
                 >
-                  🗳️ Most Voted
-                </button>
-                <button
-                  onClick={() => setActiveTab("views")}
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                    activeTab === "views"
-                      ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"
-                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }`}
+                  {" "}
+                </span>
+                <span
+                  className="text-sm"
+                  style={{ color: "var(--color-highlight)" }}
                 >
-                  👁️ Most Viewed
+                  ! {error}
+                </span>
+              </div>
+              <div className="flex items-center justify-center">
+                <span
+                  className="mr-2 w-4 text-xs"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  {focusedElement === "retry" ? ">" : " "}
+                </span>
+                <button
+                  onFocus={() => setFocusedElement("retry")}
+                  onBlur={() => setFocusedElement(null)}
+                  onClick={fetchLeaderboard}
+                  className="font-medium text-sm focus:outline-none"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  retry
                 </button>
               </div>
-
-              {/* Leaderboard Table */}
-              {activeTab === "votes"
-                ? renderLeaderboardTable(data.voteLeaderboard, "votes")
-                : renderLeaderboardTable(data.viewLeaderboard, "views")}
             </div>
-          </>
-        ) : null}
+          ) : data ? (
+            <>
+              {/* Vote/View Tabs */}
+              <div className="space-y-2">
+                <div className="flex items-center">
+                  <span
+                    className="mr-2 w-4 text-xs"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    {focusedElement === "votes" || activeTab === "votes" ? ">" : " "}
+                  </span>
+                  <button
+                    ref={votesTabRef}
+                    onFocus={() => setFocusedElement("votes")}
+                    onBlur={() => setFocusedElement(null)}
+                    onClick={() => setActiveTab("votes")}
+                    className="text-sm font-medium focus:outline-none focus:ring-none"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-text)",
+                    }}
+                  >
+                    🗳️ Most <span className="underline">V</span>oted
+                  </button>
+                </div>
+                <div className="flex items-center">
+                  <span
+                    className="mr-2 w-4 text-xs"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    {focusedElement === "views" || activeTab === "views" ? ">" : " "}
+                  </span>
+                  <button
+                    ref={viewsTabRef}
+                    onFocus={() => setFocusedElement("views")}
+                    onBlur={() => setFocusedElement(null)}
+                    onClick={() => setActiveTab("views")}
+                    className="text-sm font-medium focus:outline-none focus:ring-none"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-text)",
+                    }}
+                  >
+                    👁️ Most V<span className="underline">i</span>ewed
+                  </button>
+                </div>
+              </div>
+
+              {/* Leaderboard Content */}
+              <div className="pt-4">
+                {activeTab === "votes"
+                  ? renderLeaderboardTable(data.voteLeaderboard, "votes")
+                  : renderLeaderboardTable(data.viewLeaderboard, "views")}
+              </div>
+            </>
+          ) : null}
+        </div>
       </div>
     </div>
   );
