@@ -20,15 +20,34 @@ interface LeaderboardData {
 }
 
 const periods = [
-  { key: "daily", label: "Daily" },
-  { key: "weekly", label: "Weekly" },
-  { key: "monthly", label: "Monthly" },
-  { key: "yearly", label: "Yearly" },
+  { key: "daily", label: "Daily", shortcut: "D" },
+  { key: "weekly", label: "Weekly", shortcut: "W" },
+  { key: "monthly", label: "Monthly", shortcut: "M" },
+  { key: "yearly", label: "Yearly", shortcut: "Y" },
+];
+
+const sortOptions = [
+  { key: "votes", label: "Most Voted", shortcut: "V" },
+  { key: "views", label: "Most Viewed", shortcut: "I" },
+];
+
+const displayOptions = [
+  { key: "grid", label: "Grid View", shortcut: "G" },
+  { key: "list", label: "List View", shortcut: "L" },
+];
+
+const limitOptions = [
+  { key: "10", label: "Top 10" },
+  { key: "25", label: "Top 25" },
+  { key: "50", label: "Top 50" },
+  { key: "100", label: "Top 100" },
 ];
 
 export default function LeaderboardPage() {
   const [activePeriod, setActivePeriod] = useState("daily");
   const [activeTab, setActiveTab] = useState<"votes" | "views">("votes");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
+  const [displayLimit, setDisplayLimit] = useState("25");
   const [data, setData] = useState<LeaderboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -88,6 +107,18 @@ export default function LeaderboardPage() {
           setActiveTab("views");
           viewsTabRef.current?.focus();
           break;
+        case "g":
+          e.preventDefault();
+          setViewMode("grid");
+          break;
+        case "l":
+          e.preventDefault();
+          setViewMode("list");
+          break;
+        case "escape":
+          e.preventDefault();
+          setFocusedElement(null);
+          break;
       }
     };
 
@@ -128,97 +159,143 @@ export default function LeaderboardPage() {
     entries: LeaderboardEntry[],
     type: "votes" | "views"
   ) => {
-    if (entries.length === 0) {
+    const limitedEntries = entries.slice(0, parseInt(displayLimit));
+
+    if (limitedEntries.length === 0) {
       return (
-        <div className="flex items-center justify-center py-8">
-          <span
-            className="mr-2 w-4 text-xs"
-            style={{ color: "var(--color-text)" }}
-          >
-            {" "}
-          </span>
-          <span className="text-sm" style={{ color: "var(--color-text)" }}>
-            no data available for this period
-          </span>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <span className="text-sm" style={{ color: "var(--color-text)" }}>
+              no data available for this period
+            </span>
+          </div>
         </div>
       );
     }
 
-    return (
-      <div className="space-y-4">
-        {entries.map((entry, index) => (
-          <div key={entry.appId} className="space-y-2">
-            <div className="flex items-center">
-              <span
-                className="mr-2 w-4 text-xs"
-                style={{ color: "var(--color-text)" }}
-              >
-                {" "}
-              </span>
-              <span
-                className="text-sm mr-3"
-                style={{
-                  color:
-                    index === 0
-                      ? "var(--color-highlight)"
-                      : index === 1
-                      ? "var(--color-accent)"
-                      : index === 2
-                      ? "var(--color-highlight)"
-                      : "var(--color-text)",
-                }}
-              >
-                #{index + 1}
-                {index === 0
-                  ? " 🥇"
-                  : index === 1
-                  ? " �"
-                  : index === 2
-                  ? " �"
-                  : ""}
-              </span>
+    if (viewMode === "grid") {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {limitedEntries.map((entry, index) => (
+            <div
+              key={entry.appId}
+              className="p-4 border"
+              style={{
+                borderColor: "var(--color-accent)",
+                borderWidth: "1px",
+              }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span
+                  className="text-sm font-bold"
+                  style={{
+                    color:
+                      index === 0
+                        ? "var(--color-highlight)"
+                        : index === 1
+                        ? "var(--color-accent)"
+                        : index === 2
+                        ? "#ffa500"
+                        : "var(--color-text)",
+                  }}
+                >
+                  #{index + 1}
+                </span>
+                <span
+                  className="text-sm px-2 py-1"
+                  style={{
+                    backgroundColor: "var(--color-primary)",
+                    color: "var(--color-highlight)",
+                  }}
+                >
+                  {type === "votes" ? entry.voteCount : entry.viewCount} {type}
+                </span>
+              </div>
+
               <Link
                 href={`/app/${entry.appId}`}
-                className="text-sm focus:outline-none mr-4"
+                className="block text-sm font-medium mb-2 focus:outline-none"
                 style={{ color: "var(--color-text)" }}
               >
                 {entry.appName}
               </Link>
-              <span
-                className="text-sm mr-4"
-                style={{ color: "var(--color-text)" }}
-              >
-                by
-              </span>
-              <Link
-                href={`/profile/${entry.creatorUserTag}`}
-                className="text-sm focus:outline-none"
-                style={{ color: "var(--color-text)" }}
-              >
-                @{entry.creatorUserTag}
-              </Link>
-            </div>
 
-            <div className="flex items-center">
+              <div className="flex items-center text-xs">
+                <span style={{ color: "var(--color-accent)" }}>by </span>
+                <Link
+                  href={`/profile/${entry.creatorUserTag}`}
+                  className="ml-1 focus:outline-none"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  @{entry.creatorUserTag}
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // List view
+    return (
+      <div className="space-y-1">
+        {limitedEntries.map((entry, index) => (
+          <div
+            key={entry.appId}
+            className="p-4 border"
+            style={{
+              borderColor: "var(--color-accent)",
+              borderWidth: "1px",
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4 flex-1">
+                <span
+                  className="text-sm font-bold w-12"
+                  style={{
+                    color:
+                      index === 0
+                        ? "var(--color-highlight)"
+                        : index === 1
+                        ? "var(--color-accent)"
+                        : index === 2
+                        ? "#ffa500"
+                        : "var(--color-text)",
+                  }}
+                >
+                  #{index + 1}
+                </span>
+
+                <Link
+                  href={`/app/${entry.appId}`}
+                  className="text-sm font-medium focus:outline-none flex-1"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  {entry.appName}
+                </Link>
+
+                <div className="flex items-center text-xs">
+                  <span style={{ color: "var(--color-accent)" }}>by </span>
+                  <Link
+                    href={`/profile/${entry.creatorUserTag}`}
+                    className="ml-1 focus:outline-none"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    @{entry.creatorUserTag}
+                  </Link>
+                </div>
+              </div>
+
               <span
-                className="mr-2 w-4 text-xs"
-                style={{ color: "var(--color-text)" }}
+                className="text-sm px-3 py-1 ml-4"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-highlight)",
+                }}
               >
-                {" "}
-              </span>
-              <span className="text-xs" style={{ color: "var(--color-text)" }}>
                 {type === "votes" ? entry.voteCount : entry.viewCount} {type}
               </span>
             </div>
-
-            {index < entries.length - 1 && (
-              <div className="mx-6">
-                <div
-                  className="h-px"
-                  style={{ backgroundColor: "var(--color-accent)" }}
-                />
-              </div>
-            )}
           </div>
         ))}
       </div>
@@ -227,17 +304,258 @@ export default function LeaderboardPage() {
 
   return (
     <div
-      className="min-h-screen pt-20 pb-8"
+      className="min-h-screen pt-20 pb-8 flex"
       style={{ backgroundColor: "var(--color-primary)" }}
     >
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <pre
-            className="text-xs md:text-sm whitespace-pre-wrap font-semibold mb-6"
-            style={{ color: "var(--color-accent)" }}
-          >
-            {`
+      {/* Sidebar */}
+      <div className="fixed left-0 top-20 h-[calc(100vh-5rem)] z-40 w-80">
+        <div
+          className="p-4 border-b"
+          style={{ borderColor: "var(--color-accent)" }}
+        >
+          <h2 className="font-bold" style={{ color: "var(--color-highlight)" }}>
+            FILTERS
+          </h2>
+        </div>
+
+        <div className="p-4 space-y-6 overflow-y-auto h-full">
+          {/* Time Period Section */}
+          <div>
+            <h3
+              className="text-xs font-semibold mb-3 uppercase tracking-wider"
+              style={{ color: "var(--color-accent)" }}
+            >
+              Period
+            </h3>
+            <div className="space-y-2">
+              {periods.map((period) => (
+                <div key={period.key} className="flex items-center">
+                  <span
+                    className="mr-2 w-4 text-xs"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    {focusedElement === period.key ? ">" : " "}
+                  </span>
+                  <button
+                    ref={
+                      period.key === "daily"
+                        ? dailyRef
+                        : period.key === "weekly"
+                        ? weeklyRef
+                        : period.key === "monthly"
+                        ? monthlyRef
+                        : yearlyRef
+                    }
+                    onFocus={() => setFocusedElement(period.key)}
+                    onBlur={() => setFocusedElement(null)}
+                    onClick={() => setActivePeriod(period.key)}
+                    className="px-2 py-1 text-sm font-medium focus:outline-none font-mono"
+                    style={{
+                      backgroundColor:
+                        activePeriod === period.key
+                          ? "var(--color-highlight)"
+                          : "var(--color-primary)",
+                      color:
+                        activePeriod === period.key
+                          ? "var(--color-primary)"
+                          : "var(--color-text)",
+                      borderBottom:
+                        activePeriod === period.key
+                          ? "2px solid var(--color-highlight)"
+                          : "2px solid transparent",
+                    }}
+                  >
+                    <span className="underline">{period.shortcut}</span>
+                    {period.label.slice(1)}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Sort By Section */}
+          <div>
+            <h3
+              className="text-xs font-semibold mb-3 uppercase tracking-wider"
+              style={{ color: "var(--color-accent)" }}
+            >
+              Sort By
+            </h3>
+            <div className="space-y-2">
+              {sortOptions.map((sort) => (
+                <div key={sort.key} className="flex items-center">
+                  <span
+                    className="mr-2 w-4 text-xs"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    {focusedElement === sort.key ? ">" : " "}
+                  </span>
+                  <button
+                    ref={sort.key === "votes" ? votesTabRef : viewsTabRef}
+                    onFocus={() => setFocusedElement(sort.key)}
+                    onBlur={() => setFocusedElement(null)}
+                    onClick={() => setActiveTab(sort.key as "votes" | "views")}
+                    className="px-2 py-1 text-sm font-medium focus:outline-none font-mono"
+                    style={{
+                      backgroundColor:
+                        activeTab === sort.key
+                          ? "var(--color-highlight)"
+                          : "var(--color-primary)",
+                      color:
+                        activeTab === sort.key
+                          ? "var(--color-primary)"
+                          : "var(--color-text)",
+                      borderBottom:
+                        activeTab === sort.key
+                          ? "2px solid var(--color-highlight)"
+                          : "2px solid transparent",
+                    }}
+                  >
+                    most{" "}
+                    <span className="underline">
+                      {sort.key === "votes" ? "v" : "i"}
+                    </span>
+                    {sort.key === "votes" ? "oted" : "ewed"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Display Options */}
+          <div>
+            <h3
+              className="text-xs font-semibold mb-3 uppercase tracking-wider"
+              style={{ color: "var(--color-accent)" }}
+            >
+              View Mode
+            </h3>
+            <div className="space-y-2">
+              {displayOptions.map((display) => (
+                <div key={display.key} className="flex items-center">
+                  <span
+                    className="mr-2 w-4 text-xs"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    {focusedElement === display.key ? ">" : " "}
+                  </span>
+                  <button
+                    onFocus={() => setFocusedElement(display.key)}
+                    onBlur={() => setFocusedElement(null)}
+                    onClick={() => setViewMode(display.key as "grid" | "list")}
+                    className="px-2 py-1 text-sm font-medium focus:outline-none font-mono"
+                    style={{
+                      backgroundColor:
+                        viewMode === display.key
+                          ? "var(--color-highlight)"
+                          : "var(--color-primary)",
+                      color:
+                        viewMode === display.key
+                          ? "var(--color-primary)"
+                          : "var(--color-text)",
+                      borderBottom:
+                        viewMode === display.key
+                          ? "2px solid var(--color-highlight)"
+                          : "2px solid transparent",
+                    }}
+                  >
+                    <span className="underline">{display.shortcut}</span>
+                    {display.label.split(" ")[1]}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Results Limit */}
+          <div>
+            <h3
+              className="text-xs font-semibold mb-3 uppercase tracking-wider"
+              style={{ color: "var(--color-accent)" }}
+            >
+              Results
+            </h3>
+            <div className="space-y-2">
+              {limitOptions.map((limit) => (
+                <div key={limit.key} className="flex items-center">
+                  <span
+                    className="mr-2 w-4 text-xs"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    {focusedElement === `limit-${limit.key}` ? ">" : " "}
+                  </span>
+                  <button
+                    onFocus={() => setFocusedElement(`limit-${limit.key}`)}
+                    onBlur={() => setFocusedElement(null)}
+                    onClick={() => setDisplayLimit(limit.key)}
+                    className="px-2 py-1 text-sm font-medium focus:outline-none font-mono"
+                    style={{
+                      backgroundColor:
+                        displayLimit === limit.key
+                          ? "var(--color-highlight)"
+                          : "var(--color-primary)",
+                      color:
+                        displayLimit === limit.key
+                          ? "var(--color-primary)"
+                          : "var(--color-text)",
+                      borderBottom:
+                        displayLimit === limit.key
+                          ? "2px solid var(--color-highlight)"
+                          : "2px solid transparent",
+                    }}
+                  >
+                    {limit.label}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick Stats */}
+          {data && (
+            <div className="p-3">
+              <h3
+                className="text-xs font-semibold mb-2 uppercase tracking-wider"
+                style={{ color: "var(--color-accent)" }}
+              >
+                Stats
+              </h3>
+              <div
+                className="text-xs space-y-1"
+                style={{ color: "var(--color-text)" }}
+              >
+                <div>Period: {formatDate(data.startDate)} - present</div>
+                <div>
+                  Total entries:{" "}
+                  {activeTab === "votes"
+                    ? data.voteLeaderboard.length
+                    : data.viewLeaderboard.length}
+                </div>
+                <div>
+                  Showing:{" "}
+                  {Math.min(
+                    parseInt(displayLimit),
+                    activeTab === "votes"
+                      ? data.voteLeaderboard.length
+                      : data.viewLeaderboard.length
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 ml-80">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <pre
+              className="text-xs md:text-sm whitespace-pre-wrap font-semibold mb-6"
+              style={{ color: "var(--color-accent)" }}
+            >
+              {`
  ___                                   ___                      ___      
 (   )                                 (   )                    (   )     
  | |_     .--.  ___ .-.  ___ .-. .-.   | | .-. ___  ___ ___ .-. | |_     
@@ -252,231 +570,122 @@ export default function LeaderboardPage() {
                   
   L E A D E R B O A R D S
   `}
-          </pre>
-        </div>
+            </pre>
 
-        <div className="space-y-6 max-w-[650px] mx-auto">
-          {/* Period Selection */}
-          <div className="space-y-2">
-            <div className="flex items-center">
-              <span
-                className="mr-2 w-4 text-xs"
-                style={{ color: "var(--color-text)" }}
+            {/* Top Action Bar */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-4">
+                <span
+                  className="text-sm font-medium"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  {activePeriod} • {activeTab} • {viewMode} view
+                </span>
+              </div>
+
+              <div
+                className="flex items-center space-x-2 text-xs"
+                style={{ color: "var(--color-accent)" }}
               >
-                {focusedElement === "daily" || activePeriod === "daily"
-                  ? ">"
-                  : " "}
-              </span>
-              <button
-                ref={dailyRef}
-                onFocus={() => setFocusedElement("daily")}
-                onBlur={() => setFocusedElement(null)}
-                onClick={() => setActivePeriod("daily")}
-                className="text-sm font-medium focus:outline-none focus:ring-none"
-                style={{
-                  backgroundColor: "var(--color-primary)",
-                  color: "var(--color-text)",
-                }}
-              >
-                <span className="underline">D</span>aily
-              </button>
-            </div>
-            <div className="flex items-center">
-              <span
-                className="mr-2 w-4 text-xs"
-                style={{ color: "var(--color-text)" }}
-              >
-                {focusedElement === "weekly" || activePeriod === "weekly"
-                  ? ">"
-                  : " "}
-              </span>
-              <button
-                ref={weeklyRef}
-                onFocus={() => setFocusedElement("weekly")}
-                onBlur={() => setFocusedElement(null)}
-                onClick={() => setActivePeriod("weekly")}
-                className="text-sm font-medium focus:outline-none focus:ring-none"
-                style={{
-                  backgroundColor: "var(--color-primary)",
-                  color: "var(--color-text)",
-                }}
-              >
-                <span className="underline">W</span>eekly
-              </button>
-            </div>
-            <div className="flex items-center">
-              <span
-                className="mr-2 w-4 text-xs"
-                style={{ color: "var(--color-text)" }}
-              >
-                {focusedElement === "monthly" || activePeriod === "monthly"
-                  ? ">"
-                  : " "}
-              </span>
-              <button
-                ref={monthlyRef}
-                onFocus={() => setFocusedElement("monthly")}
-                onBlur={() => setFocusedElement(null)}
-                onClick={() => setActivePeriod("monthly")}
-                className="text-sm font-medium focus:outline-none focus:ring-none"
-                style={{
-                  backgroundColor: "var(--color-primary)",
-                  color: "var(--color-text)",
-                }}
-              >
-                <span className="underline">M</span>onthly
-              </button>
-            </div>
-            <div className="flex items-center">
-              <span
-                className="mr-2 w-4 text-xs"
-                style={{ color: "var(--color-text)" }}
-              >
-                {focusedElement === "yearly" || activePeriod === "yearly"
-                  ? ">"
-                  : " "}
-              </span>
-              <button
-                ref={yearlyRef}
-                onFocus={() => setFocusedElement("yearly")}
-                onBlur={() => setFocusedElement(null)}
-                onClick={() => setActivePeriod("yearly")}
-                className="text-sm font-medium focus:outline-none focus:ring-none"
-                style={{
-                  backgroundColor: "var(--color-primary)",
-                  color: "var(--color-text)",
-                }}
-              >
-                <span className="underline">Y</span>early
-              </button>
+                <span>Use keyboard shortcuts: D/W/M/Y, V/I, G/L</span>
+              </div>
             </div>
           </div>
 
-          {data && (
-            <div className="flex items-center">
-              <span
-                className="mr-2 w-4 text-xs"
-                style={{ color: "var(--color-text)" }}
-              >
-                {" "}
-              </span>
-              <label
-                className="text-sm pr-2"
-                style={{
-                  color: "var(--color-text)",
-                  backgroundColor: "var(--color-primary)",
-                }}
-              >
-                period
-              </label>
-              <span className="text-sm" style={{ color: "var(--color-text)" }}>
-                {formatDate(data.startDate)} - present
-              </span>
-            </div>
-          )}
-
+          {/* Content Area */}
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div
-                className="font-mono text-lg"
-                style={{ color: "var(--color-text)" }}
-              >
-                loading_leaderboard...
+            <div className="flex items-center justify-center py-24">
+              <div className="text-center">
+                <div
+                  className="font-mono text-sm"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  loading_leaderboard...
+                </div>
               </div>
             </div>
           ) : error ? (
-            <div className="text-center py-12">
-              <div className="flex items-center justify-center mb-4">
+            <div className="text-center py-24">
+              <div className="mb-6">
                 <span
-                  className="mr-2 w-4 text-xs"
-                  style={{ color: "var(--color-text)" }}
+                  className="text-sm block mb-2"
+                  style={{ color: "var(--color-highlight)" }}
                 >
-                  {" "}
+                  Error Loading Data
                 </span>
                 <span
                   className="text-sm"
-                  style={{ color: "var(--color-highlight)" }}
-                >
-                  ! {error}
-                </span>
-              </div>
-              <div className="flex items-center justify-center">
-                <span
-                  className="mr-2 w-4 text-xs"
                   style={{ color: "var(--color-text)" }}
                 >
-                  {focusedElement === "retry" ? ">" : " "}
+                  {error}
                 </span>
-                <button
-                  onFocus={() => setFocusedElement("retry")}
-                  onBlur={() => setFocusedElement(null)}
-                  onClick={fetchLeaderboard}
-                  className="font-medium text-sm focus:outline-none"
-                  style={{ color: "var(--color-text)" }}
-                >
-                  retry
-                </button>
               </div>
+              <button
+                onFocus={() => setFocusedElement("retry")}
+                onBlur={() => setFocusedElement(null)}
+                onClick={fetchLeaderboard}
+                className="px-6 py-3 font-medium text-sm"
+                style={{
+                  backgroundColor: "var(--color-highlight)",
+                  color: "var(--color-primary)",
+                  border:
+                    focusedElement === "retry"
+                      ? "2px solid var(--color-text)"
+                      : "2px solid transparent",
+                }}
+              >
+                retry
+              </button>
             </div>
           ) : data ? (
-            <>
-              {/* Vote/View Tabs */}
-              <div className="space-y-2">
-                <div className="flex items-center">
+            <div className="space-y-6">
+              {/* Results Header */}
+              <div
+                className="flex items-center justify-between p-4"
+                style={{ backgroundColor: "var(--color-secondary)" }}
+              >
+                <div className="flex items-center space-x-4">
                   <span
-                    className="mr-2 w-4 text-xs"
-                    style={{ color: "var(--color-text)" }}
+                    className="text-sm font-bold"
+                    style={{ color: "var(--color-highlight)" }}
                   >
-                    {focusedElement === "votes" || activeTab === "votes"
-                      ? ">"
-                      : " "}
+                    {activeTab === "votes" ? "Most Voted" : "Most Viewed"}
                   </span>
-                  <button
-                    ref={votesTabRef}
-                    onFocus={() => setFocusedElement("votes")}
-                    onBlur={() => setFocusedElement(null)}
-                    onClick={() => setActiveTab("votes")}
-                    className="text-sm font-medium focus:outline-none focus:ring-none"
+                  <span
+                    className="text-sm px-3 py-1"
                     style={{
                       backgroundColor: "var(--color-primary)",
                       color: "var(--color-text)",
                     }}
                   >
-                    🗳️ Most <span className="underline">V</span>oted
-                  </button>
+                    {activePeriod} period
+                  </span>
                 </div>
-                <div className="flex items-center">
-                  <span
-                    className="mr-2 w-4 text-xs"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    {focusedElement === "views" || activeTab === "views"
-                      ? ">"
-                      : " "}
-                  </span>
-                  <button
-                    ref={viewsTabRef}
-                    onFocus={() => setFocusedElement("views")}
-                    onBlur={() => setFocusedElement(null)}
-                    onClick={() => setActiveTab("views")}
-                    className="text-sm font-medium focus:outline-none focus:ring-none"
-                    style={{
-                      backgroundColor: "var(--color-primary)",
-                      color: "var(--color-text)",
-                    }}
-                  >
-                    👁️ Most V<span className="underline">i</span>ewed
-                  </button>
+
+                <div
+                  className="text-sm"
+                  style={{ color: "var(--color-accent)" }}
+                >
+                  Showing{" "}
+                  {Math.min(
+                    parseInt(displayLimit),
+                    activeTab === "votes"
+                      ? data.voteLeaderboard.length
+                      : data.viewLeaderboard.length
+                  )}{" "}
+                  of{" "}
+                  {activeTab === "votes"
+                    ? data.voteLeaderboard.length
+                    : data.viewLeaderboard.length}{" "}
+                  results
                 </div>
               </div>
 
               {/* Leaderboard Content */}
-              <div className="pt-4">
-                {activeTab === "votes"
-                  ? renderLeaderboardTable(data.voteLeaderboard, "votes")
-                  : renderLeaderboardTable(data.viewLeaderboard, "views")}
-              </div>
-            </>
+              {activeTab === "votes"
+                ? renderLeaderboardTable(data.voteLeaderboard, "votes")
+                : renderLeaderboardTable(data.viewLeaderboard, "views")}
+            </div>
           ) : null}
         </div>
       </div>
