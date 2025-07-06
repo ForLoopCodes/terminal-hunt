@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 
 interface Collection {
@@ -32,11 +32,50 @@ export function CollectionsModal({
   const [newCollectionName, setNewCollectionName] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
 
+  // Refs for keyboard navigation
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     if (isOpen && session) {
       fetchCollections();
     }
   }, [isOpen, session]);
+
+  // Handle keyboard navigation and escape
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyPress = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case "Escape":
+          e.preventDefault();
+          onClose();
+          break;
+        case "x":
+          // Allow 'x' to close if not in an input
+          const activeElement = document.activeElement;
+          if (
+            activeElement?.tagName !== "INPUT" &&
+            activeElement?.tagName !== "TEXTAREA"
+          ) {
+            e.preventDefault();
+            onClose();
+          }
+          break;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [isOpen, onClose]);
+
+  // Focus management
+  useEffect(() => {
+    if (isOpen && closeButtonRef.current) {
+      closeButtonRef.current.focus();
+    }
+  }, [isOpen]);
 
   const fetchCollections = async () => {
     setLoading(true);
@@ -108,15 +147,20 @@ export function CollectionsModal({
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 text-sm flex items-center justify-center z-50 p-4"
       style={{ backgroundColor: "rgba(0, 0, 0, 0.8)" }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div
+        ref={modalRef}
         className="border max-w-md w-full max-h-[80vh] overflow-hidden"
         style={{
           backgroundColor: "var(--color-primary)",
           borderColor: "var(--color-accent)",
         }}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div
@@ -125,17 +169,19 @@ export function CollectionsModal({
         >
           <div className="flex items-center justify-between">
             <h3
-              className="text-sm font-mono font-semibold"
+              className="text-sm font-mono"
               style={{ color: "var(--color-text)" }}
             >
-              {"> add_to_collection"}
+              {"> add to collection"}
             </h3>
             <button
+              ref={closeButtonRef}
               onClick={onClose}
-              className="focus:outline-none font-mono"
+              className="focus:outline-none focus:underline font-mono"
               style={{ color: "var(--color-text)" }}
+              title="Close (Esc or X)"
             >
-              [x]
+              [<span className="underline">x</span>]
             </button>
           </div>
           <p
@@ -147,7 +193,7 @@ export function CollectionsModal({
         </div>
 
         {/* Content */}
-        <div className="p-6 max-h-96 overflow-y-auto">
+        <div className="p-2 max-h-96 overflow-y-auto">
           {loading ? (
             <div className="flex justify-center py-8">
               <div
@@ -161,7 +207,7 @@ export function CollectionsModal({
             <>
               {/* Collections List */}
               {collections.length > 0 ? (
-                <div className="space-y-2 mb-4">
+                <div className="space-y-2 mb-2">
                   {collections.map((collection) => (
                     <button
                       key={collection.id}
@@ -180,13 +226,7 @@ export function CollectionsModal({
                       }}
                     >
                       <div className="flex items-center">
-                        <div
-                          className="w-3 h-3 mr-3 border"
-                          style={{
-                            backgroundColor: collection.color,
-                            borderColor: "var(--color-accent)",
-                          }}
-                        ></div>
+                       
                         <div>
                           <div
                             className="font-medium text-sm"
@@ -232,7 +272,7 @@ export function CollectionsModal({
               {!showCreateForm ? (
                 <button
                   onClick={() => setShowCreateForm(true)}
-                  className="w-full flex items-center justify-center p-3 border-2 border-dashed transition-colors focus:outline-none font-mono"
+                  className="w-full flex items-center justify-center p-3 border transition-colors focus:outline-none font-mono"
                   style={{
                     borderColor: "var(--color-accent)",
                     backgroundColor: "var(--color-primary)",
@@ -246,7 +286,7 @@ export function CollectionsModal({
                   }}
                 >
                   <span className="text-sm mr-2">[+]</span>
-                  create_new_collection
+                  new
                 </button>
               ) : (
                 <div
@@ -261,7 +301,7 @@ export function CollectionsModal({
                       className="text-xs font-mono block"
                       style={{ color: "var(--color-text)" }}
                     >
-                      collection_name
+                      name
                     </label>
                     <input
                       type="text"

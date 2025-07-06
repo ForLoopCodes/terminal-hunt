@@ -656,7 +656,7 @@ export default function LeaderboardPage() {
                 onFocus={() => setFocusedElement("retry")}
                 onBlur={() => setFocusedElement(null)}
                 onClick={fetchLeaderboard}
-                className="px-6 py-3 font-medium text-sm"
+                className="px-2 py-1 font-medium text-sm"
                 style={{
                   backgroundColor: "var(--color-highlight)",
                   color: "var(--color-primary)",

@@ -56,7 +56,7 @@ export default function SignInPage() {
           e.preventDefault();
           passwordRef.current?.focus();
           break;
-        case "u":
+        case "i":
           e.preventDefault();
           submitRef.current?.click();
           break;
@@ -318,7 +318,10 @@ export default function SignInPage() {
                   style={{
                     backgroundColor: "var(--color-primary)",
                     color: "var(--color-text)",
-                    borderColor: "var(--color-accent)",
+                    borderColor:
+                      focusedElement === "email"
+                        ? "var(--color-highlight)"
+                        : "var(--color-accent)",
                   }}
                   placeholder="_"
                 />
@@ -391,7 +394,7 @@ export default function SignInPage() {
                     "Signing in..."
                   ) : (
                     <>
-                      Sign <span className="underline ml-1">u</span>p
+                      Sign <span className="underline ml-1">i</span>n
                     </>
                   )}
                 </button>

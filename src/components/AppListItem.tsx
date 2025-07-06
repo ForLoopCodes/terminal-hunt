@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRef, useEffect } from "react";
 import {
   formatAsciiArt,
   TERMHUNT_ASCII,
@@ -38,6 +39,11 @@ export function AppListItem({
   showRanking = false,
   className = "",
 }: AppListItemProps) {
+  // Refs for keyboard navigation
+  const appLinkRef = useRef<HTMLAnchorElement>(null);
+  const profileLinkRef = useRef<HTMLAnchorElement>(null);
+  const websiteLinkRef = useRef<HTMLAnchorElement>(null);
+
   // Normalize the app data to handle different prop names
   const normalizedApp = {
     id: app.id || app.appId || "",
@@ -50,6 +56,58 @@ export function AppListItem({
     asciiArt: app.asciiArt || "",
   };
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Only handle shortcuts when this item is focused or contains focused element
+      const activeElement = document.activeElement;
+      if (!activeElement) return;
+
+      const itemElement = appLinkRef.current?.closest(".app-list-item");
+      if (!itemElement?.contains(activeElement)) return;
+
+      // Ignore shortcuts when typing in inputs
+      if (
+        activeElement.tagName === "INPUT" ||
+        activeElement.tagName === "TEXTAREA"
+      ) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+
+      switch (key) {
+        case "enter":
+          if (activeElement === appLinkRef.current) {
+            e.preventDefault();
+            appLinkRef.current?.click();
+          } else if (activeElement === profileLinkRef.current) {
+            e.preventDefault();
+            profileLinkRef.current?.click();
+          } else if (activeElement === websiteLinkRef.current) {
+            e.preventDefault();
+            websiteLinkRef.current?.click();
+          }
+          break;
+        case "p":
+          if (profileLinkRef.current) {
+            e.preventDefault();
+            profileLinkRef.current.focus();
+          }
+          break;
+        case "w":
+          if (websiteLinkRef.current) {
+            e.preventDefault();
+            websiteLinkRef.current.focus();
+          }
+          break;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, []);
+
   const getRankingColor = (index: number) => {
     if (index === 0) return "var(--color-highlight)";
     if (index === 1) return "var(--color-accent)";
@@ -59,11 +117,12 @@ export function AppListItem({
 
   return (
     <div
-      className={`p-3 border ${className}`}
+      className={`p-3 border app-list-item ${className}`}
       style={{
         borderColor: "var(--color-accent)",
         borderWidth: "1px",
       }}
+      tabIndex={-1}
     >
       <div className="flex items-start justify-between">
         <div className="flex items-start space-x-4 flex-1 min-w-0">
@@ -105,20 +164,22 @@ export function AppListItem({
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2 mb-2">
               <Link
+                ref={appLinkRef}
                 href={`/app/${normalizedApp.id}`}
-                className="text-sm font-medium focus:outline-none hover:underline"
+                className="text-sm font-medium focus:outline-none focus:underline hover:underline"
                 style={{ color: "var(--color-text)" }}
               >
                 {normalizedApp.name}
               </Link>
               {normalizedApp.website && (
                 <a
+                  ref={websiteLinkRef}
                   href={normalizedApp.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs focus:outline-none hover:underline truncate max-w-20"
+                  className="text-xs focus:outline-none focus:underline hover:underline truncate max-w-20"
                   style={{ color: "var(--color-accent)" }}
-                  title={normalizedApp.website}
+                  title={`${normalizedApp.website} (W)`}
                 >
                   {normalizedApp.website.replace(/^https?:\/\//, "")}
                 </a>
@@ -139,9 +200,11 @@ export function AppListItem({
               <div className="flex items-center text-xs">
                 <span style={{ color: "var(--color-accent)" }}>by </span>
                 <Link
+                  ref={profileLinkRef}
                   href={`/profile/${normalizedApp.creatorUserTag}`}
-                  className="ml-1 focus:outline-none hover:underline"
+                  className="ml-1 focus:outline-none focus:underline hover:underline"
                   style={{ color: "var(--color-text)" }}
+                  title={`@${normalizedApp.creatorUserTag} (P)`}
                 >
                   @{normalizedApp.creatorUserTag}
                 </Link>

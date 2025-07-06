@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef } from "react";
 
 interface DeleteAppButtonProps {
   appId: string;
@@ -9,12 +9,10 @@ interface DeleteAppButtonProps {
   onDelete: () => void;
 }
 
-export function DeleteAppButton({
-  appId,
-  creatorId,
-  userEmail,
-  onDelete,
-}: DeleteAppButtonProps) {
+export const DeleteAppButton = forwardRef<
+  HTMLButtonElement,
+  DeleteAppButtonProps
+>(function DeleteAppButton({ appId, creatorId, userEmail, onDelete }, ref) {
   const [isCreator, setIsCreator] = useState(false);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
@@ -73,17 +71,32 @@ export function DeleteAppButton({
 
   return (
     <button
+      ref={ref}
       onClick={handleDelete}
       disabled={deleting}
-      className="w-full px-3 py-1 text-sm font-medium focus:outline-none disabled:opacity-50"
+      className="w-full px-3 py-1 text-sm font-medium focus:outline-none disabled:opacity-50 transition-colors"
       style={{
         backgroundColor: "var(--color-primary)",
         color: "var(--color-text)",
         border: "1px solid var(--color-accent)",
       }}
-      title="Delete this app"
+      onFocus={(e) => {
+        e.target.style.borderColor = "var(--color-highlight)";
+        e.target.style.boxShadow = "0 0 0 1px var(--color-highlight)";
+      }}
+      onBlur={(e) => {
+        e.target.style.borderColor = "var(--color-accent)";
+        e.target.style.boxShadow = "none";
+      }}
+      title="Delete this app (D)"
     >
-      {deleting ? "Deleting..." : "Delete"}
+      {deleting ? (
+        "Deleting..."
+      ) : (
+        <>
+          <span className="underline">D</span>elete
+        </>
+      )}
     </button>
   );
-}
+});

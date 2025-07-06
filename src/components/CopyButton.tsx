@@ -23,14 +23,14 @@ export function CopyButton({ text, className = "" }: CopyButtonProps) {
   return (
     <button
       onClick={handleCopy}
-      className={`p-1 text-xs focus:outline-none transition-colors ${className}`}
+      className={`p-1 text-xs focus:outline-none focus:underline transition-colors ${className}`}
       style={{
         color: copied ? "var(--color-highlight)" : "var(--color-accent)",
         backgroundColor: "transparent",
       }}
       title={copied ? "Copied!" : "Copy to clipboard"}
     >
-      {copied ? "✓" : "📋"}
+      {copied ? "copied" : "copy"}
     </button>
   );
 }

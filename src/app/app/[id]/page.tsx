@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import ReactMarkdown from "react-markdown";
 import Link from "next/link";
@@ -55,6 +55,63 @@ export default function ViewAppPage() {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [voting, setVoting] = useState(false);
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
+  const [focusedElement, setFocusedElement] = useState<string | null>(null);
+
+  // Refs for keyboard navigation
+  const voteRef = useRef<HTMLButtonElement>(null);
+  const collectionsRef = useRef<HTMLButtonElement>(null);
+  const editRef = useRef<HTMLButtonElement>(null);
+  const deleteRef = useRef<HTMLButtonElement>(null);
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ignore shortcuts when typing in inputs
+      const activeElement = document.activeElement;
+      if (
+        activeElement &&
+        (activeElement.tagName === "INPUT" ||
+          activeElement.tagName === "TEXTAREA" ||
+          activeElement.tagName === "SELECT")
+      ) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+
+      switch (key) {
+        case "v":
+          e.preventDefault();
+          if (session && !voting) {
+            handleVote();
+            voteRef.current?.focus();
+          }
+          break;
+        case "c":
+          e.preventDefault();
+          if (session) {
+            setShowCollectionsModal(true);
+            collectionsRef.current?.focus();
+          }
+          break;
+        case "e":
+          e.preventDefault();
+          editRef.current?.click();
+          break;
+        case "d":
+          e.preventDefault();
+          deleteRef.current?.click();
+          break;
+        case "escape":
+          e.preventDefault();
+          setFocusedElement(null);
+          break;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [session, voting]);
 
   useEffect(() => {
     fetchApp();
@@ -325,8 +382,9 @@ export default function ViewAppPage() {
             </h3>
             <Link
               href={`/profile/${app.creatorUserTag}`}
-              className="text-sm font-medium focus:outline-none"
+              className="text-sm font-medium focus:outline-none focus:underline"
               style={{ color: "var(--color-text)" }}
+              title={`View profile of @${app.creatorUserTag}`}
             >
               @{app.creatorUserTag}
             </Link>
@@ -345,8 +403,9 @@ export default function ViewAppPage() {
                 href={app.repoUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block text-sm font-medium focus:outline-none"
+                className="block text-sm font-medium focus:outline-none focus:underline"
                 style={{ color: "var(--color-text)" }}
+                title="View repository"
               >
                 Repository
               </a>
@@ -355,8 +414,9 @@ export default function ViewAppPage() {
                   href={app.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block text-sm font-medium focus:outline-none"
+                  className="block text-sm font-medium focus:outline-none focus:underline"
                   style={{ color: "var(--color-text)" }}
+                  title="Visit website"
                 >
                   Website
                 </a>
@@ -366,8 +426,9 @@ export default function ViewAppPage() {
                   href={app.documentationUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block text-sm font-medium focus:outline-none"
+                  className="block text-sm font-medium focus:outline-none focus:underline"
                   style={{ color: "var(--color-text)" }}
+                  title="View documentation"
                 >
                   Documentation
                 </a>
@@ -386,9 +447,10 @@ export default function ViewAppPage() {
               </h3>
               <div className="space-y-2">
                 <button
+                  ref={voteRef}
                   onClick={handleVote}
                   disabled={voting}
-                  className="w-full px-3 py-1 text-sm font-medium focus:outline-none disabled:opacity-50"
+                  className="w-full px-3 py-1 text-sm font-medium focus:outline-none disabled:opacity-50 transition-colors"
                   style={{
                     backgroundColor: app.userHasVoted
                       ? "var(--color-highlight)"
@@ -398,26 +460,58 @@ export default function ViewAppPage() {
                       : "var(--color-text)",
                     border: "1px solid var(--color-accent)",
                   }}
-                  title={app.userHasVoted ? "Remove vote" : "Vote for this app"}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = "var(--color-highlight)";
+                    e.target.style.boxShadow =
+                      "0 0 0 1px var(--color-highlight)";
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = "var(--color-accent)";
+                    e.target.style.boxShadow = "none";
+                  }}
+                  title={
+                    app.userHasVoted
+                      ? "Remove vote (V)"
+                      : "Vote for this app (V)"
+                  }
                 >
-                  {app.userHasVoted ? "↓ Remove Vote" : "↑ Vote"} (
-                  {app.voteCount})
+                  {app.userHasVoted ? (
+                    <>
+                      ↓ Remove <span className="underline">V</span>ote
+                    </>
+                  ) : (
+                    <>
+                      ↑ <span className="underline">V</span>ote
+                    </>
+                  )}
                 </button>
                 <button
+                  ref={collectionsRef}
                   onClick={() => setShowCollectionsModal(true)}
-                  className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
+                  className="w-full px-3 py-1 text-sm font-medium focus:outline-none transition-colors"
                   style={{
                     backgroundColor: "var(--color-primary)",
                     color: "var(--color-text)",
                     border: "1px solid var(--color-accent)",
                   }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = "var(--color-highlight)";
+                    e.target.style.boxShadow =
+                      "0 0 0 1px var(--color-highlight)";
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = "var(--color-accent)";
+                    e.target.style.boxShadow = "none";
+                  }}
+                  title="Add to Collection (C)"
                 >
-                  + Add to Collection
+                  + Add to <span className="underline">C</span>ollection
                 </button>
 
                 {/* Edit button for app creator */}
                 {session?.user?.email && app && (
                   <EditAppButton
+                    ref={editRef}
                     appId={app.id}
                     creatorId={app.creatorId}
                     userEmail={session.user.email}
@@ -427,6 +521,7 @@ export default function ViewAppPage() {
                 {/* Delete button for app creator */}
                 {session?.user?.email && app && (
                   <DeleteAppButton
+                    ref={deleteRef}
                     appId={app.id}
                     creatorId={app.creatorId}
                     userEmail={session.user.email}

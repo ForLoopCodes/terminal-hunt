@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { CollectionsModal } from "./CollectionsModal";
 
@@ -31,12 +31,65 @@ export function AppCard({ app }: AppCardProps) {
   const [isVoting, setIsVoting] = useState(false);
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
 
+  // Refs for keyboard navigation
+  const voteRef = useRef<HTMLButtonElement>(null);
+  const collectionsRef = useRef<HTMLButtonElement>(null);
+  const appLinkRef = useRef<HTMLAnchorElement>(null);
+
   // Check vote status on mount
   useEffect(() => {
     if (session) {
       checkVoteStatus();
     }
   }, [session, app.id]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Only handle shortcuts when this card is focused or contains focused element
+      const activeElement = document.activeElement;
+      if (!activeElement) return;
+
+      const cardElement = appLinkRef.current?.closest(".app-card");
+      if (!cardElement?.contains(activeElement)) return;
+
+      // Ignore shortcuts when typing in inputs
+      if (
+        activeElement.tagName === "INPUT" ||
+        activeElement.tagName === "TEXTAREA"
+      ) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+
+      switch (key) {
+        case "v":
+          if (session && voteRef.current) {
+            e.preventDefault();
+            voteRef.current.focus();
+            voteRef.current.click();
+          }
+          break;
+        case "c":
+          if (session && collectionsRef.current) {
+            e.preventDefault();
+            collectionsRef.current.focus();
+            collectionsRef.current.click();
+          }
+          break;
+        case "enter":
+          if (activeElement === appLinkRef.current) {
+            e.preventDefault();
+            appLinkRef.current?.click();
+          }
+          break;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [session]);
 
   const checkVoteStatus = async () => {
     try {
@@ -116,7 +169,7 @@ export function AppCard({ app }: AppCardProps) {
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 app-card" tabIndex={-1}>
       <div className="flex items-center">
         <span
           className="mr-2 w-4 text-xs"
@@ -125,9 +178,10 @@ export function AppCard({ app }: AppCardProps) {
           {" "}
         </span>
         <Link
+          ref={appLinkRef}
           href={`/app/${app.id}`}
           onClick={handleView}
-          className="text-sm focus:outline-none font-semibold"
+          className="text-sm focus:outline-none focus:underline font-semibold"
           style={{ color: "var(--color-text)" }}
         >
           {app.name}
@@ -142,15 +196,16 @@ export function AppCard({ app }: AppCardProps) {
             </span>
             <div className="flex items-center space-x-1">
               <button
+                ref={voteRef}
                 onClick={handleVote}
                 disabled={isVoting}
-                className="text-xs font-medium focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-xs font-medium focus:outline-none focus:underline disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
                   color: hasVoted
                     ? "var(--color-highlight)"
                     : "var(--color-text)",
                 }}
-                title={hasVoted ? "Remove vote" : "Vote"}
+                title={hasVoted ? "Remove vote (V)" : "Vote (V)"}
               >
                 {hasVoted ? "↓" : "↑"}
               </button>
@@ -177,7 +232,7 @@ export function AppCard({ app }: AppCardProps) {
             <span style={{ color: "var(--color-text)" }}>by</span>
             <Link
               href={`/profile/${app.creatorUserTag}`}
-              className="focus:outline-none"
+              className="focus:outline-none focus:underline"
               style={{ color: "var(--color-text)" }}
             >
               @{app.creatorUserTag}
@@ -195,7 +250,7 @@ export function AppCard({ app }: AppCardProps) {
               href={app.repoUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="focus:outline-none"
+              className="focus:outline-none focus:underline"
               style={{ color: "var(--color-text)" }}
             >
               repo
@@ -207,7 +262,7 @@ export function AppCard({ app }: AppCardProps) {
                   href={app.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="focus:outline-none"
+                  className="focus:outline-none focus:underline"
                   style={{ color: "var(--color-text)" }}
                 >
                   site
@@ -218,15 +273,16 @@ export function AppCard({ app }: AppCardProps) {
               <>
                 <span style={{ color: "var(--color-text)" }}>•</span>
                 <button
+                  ref={collectionsRef}
                   onClick={(e) => {
                     e.preventDefault();
                     setShowCollectionsModal(true);
                   }}
-                  className="focus:outline-none"
+                  className="focus:outline-none focus:underline"
                   style={{ color: "var(--color-text)" }}
-                  title="Add to collection"
+                  title="Add to collection (C)"
                 >
-                  +collection
+                  +<span className="underline">c</span>ollection
                 </button>
               </>
             )}

@@ -215,7 +215,7 @@ export function EditAppForm({ app, onSuccess }: EditAppFormProps) {
               backgroundColor: "var(--color-primary)",
             }}
           >
-            <span className="underline">n</span>ame
+            <span className="underline">1</span>-name
           </label>
           <input
             ref={nameRef}

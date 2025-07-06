@@ -52,6 +52,8 @@ export default function Home() {
   const newestRef = useRef<HTMLButtonElement>(null);
   const votesRef = useRef<HTMLButtonElement>(null);
   const viewsRef = useRef<HTMLButtonElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const tagRef = useRef<HTMLSelectElement>(null);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -92,6 +94,14 @@ export default function Home() {
         case "l":
           e.preventDefault();
           setViewMode("list");
+          break;
+        case "s":
+          e.preventDefault();
+          searchRef.current?.focus();
+          break;
+        case "t":
+          e.preventDefault();
+          tagRef.current?.focus();
           break;
         case "escape":
           e.preventDefault();
@@ -200,11 +210,12 @@ export default function Home() {
               Search & Filters
             </h3>
             <div className="space-y-3">
-              <SearchBar onSearch={setSearchQuery} />
+              <SearchBar onSearch={setSearchQuery} ref={searchRef} />
               <TagFilter
                 tags={tags}
                 selectedTag={selectedTag}
                 onTagSelect={setSelectedTag}
+                ref={tagRef}
               />
             </div>
           </div>
@@ -386,7 +397,11 @@ export default function Home() {
                 className="flex items-center space-x-2 text-xs"
                 style={{ color: "var(--color-accent)" }}
               >
-                <span>Use keyboard shortcuts: N/V/I, G/L</span>
+                <span>Use keyboard shortcuts: N/V/I, G/L, S/T</span>
+                <span>•</span>
+                <span>
+                  Per app: V (vote), C (collections), P (profile), W (website)
+                </span>
               </div>
             </div>
           </div>
@@ -424,7 +439,7 @@ export default function Home() {
               {!searchQuery && !selectedTag && (
                 <Link
                   href="/submit"
-                  className="inline-block px-6 py-3 font-medium text-sm focus:outline-none"
+                  className="inline-block px-2 py-1 font-medium text-sm focus:outline-none"
                   style={{
                     backgroundColor: "var(--color-highlight)",
                     color: "var(--color-primary)",
