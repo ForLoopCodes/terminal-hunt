@@ -2,11 +2,6 @@
 
 import Link from "next/link";
 import { useRef, useEffect } from "react";
-import {
-  formatAsciiArt,
-  TERMHUNT_ASCII,
-  TERMHUNT_TITLE,
-} from "@/lib/ascii-utils";
 
 interface AppListItemProps {
   app: {

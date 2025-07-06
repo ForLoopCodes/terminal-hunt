@@ -7,7 +7,7 @@ interface Achievement {
   title: string;
   description: string;
   type: string;
-  criteria: any;
+  criteria: string;
   iconUrl?: string;
   badgeColor: string;
   awardedAt: string;
@@ -70,7 +70,7 @@ export function AppAchievements({ appId }: AppAchievementsProps) {
       <div className="bg-black border border-gray-800 rounded-lg p-6">
         <h3 className="text-sm font-semibold text-white mb-4">Achievements</h3>
         <p className="text-gray-400 text-center py-4">
-          No achievements yet. Keep growing your app's community!
+          No achievements yet. Keep growing your app&apos;s community!
         </p>
       </div>
     );

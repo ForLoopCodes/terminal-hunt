@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { formatAsciiArt, TERMHUNT_ASCII } from "@/lib/ascii-utils";
-import ReactMarkdown from "react-markdown";
+import { formatAsciiArt } from "@/lib/ascii-utils";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 
 interface App {
@@ -37,7 +36,7 @@ export function EditAppForm({ app, onSuccess }: EditAppFormProps) {
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showAsciiPreview, setShowAsciiPreview] = useState(false);
+  // const [showAsciiPreview, setShowAsciiPreview] = useState(false);
   const [focusedElement, setFocusedElement] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState<
     "description" | "install" | null
@@ -462,7 +461,7 @@ export function EditAppForm({ app, onSuccess }: EditAppFormProps) {
               placeholder="Enter custom ASCII art (leave empty for default)"
             />
           </div>
-          {showAsciiPreview && (
+          {false && (
             <div
               className="mt-2 p-3 font-mono text-xs text-center border"
               style={{

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { db } from "@/lib/db";
-import { reports, users } from "@/lib/db/schema";
+import { reports } from "@/lib/db/schema";
 import { authOptions } from "../auth/[...nextauth]/route";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session: { user: { id: string } } | null = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -15,8 +15,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { reason, description, appId, commentId, userId } =
-      await request.json();
+    const { reason, appId, commentId, userId } = await request.json();
 
     if (!reason || (!appId && !commentId && !userId)) {
       return NextResponse.json(

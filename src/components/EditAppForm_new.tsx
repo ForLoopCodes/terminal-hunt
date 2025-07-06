@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatAsciiArt, TERMHUNT_ASCII } from "@/lib/ascii-utils";
+import { formatAsciiArt } from "@/lib/ascii-utils";
 
 interface App {
   id: string;

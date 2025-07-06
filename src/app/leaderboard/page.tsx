@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { AppListItem } from "@/components/AppListItem";
 
 interface LeaderboardEntry {
   appId: string;

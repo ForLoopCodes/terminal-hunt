@@ -78,9 +78,10 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user) {
-        token.userTag = (user as any).userTag;
+        const userWithTag = user as { userTag?: string };
+        token.userTag = userWithTag.userTag || "";
         token.userId = user.id;
       }
       return token;
@@ -165,12 +166,14 @@ export const authOptions: NextAuthOptions = {
             console.log("Created new user:", newUser[0]);
 
             // Update the user object with the userTag
-            (user as any).userTag = newUser[0].userTag;
+            const userWithTag = user as { userTag?: string };
+            userWithTag.userTag = newUser[0].userTag;
             user.id = newUser[0].id;
           } else {
             console.log("Found existing user:", existingUser);
             // Update the user object with existing userTag
-            (user as any).userTag = existingUser.userTag;
+            const userWithTag = user as { userTag?: string };
+            userWithTag.userTag = existingUser.userTag;
             user.id = existingUser.id;
           }
         } catch (error) {

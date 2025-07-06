@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { tags, appTags } from "@/lib/db/schema";
-import { sql, desc, like, ilike } from "drizzle-orm";
+import { sql, desc, ilike } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   try {

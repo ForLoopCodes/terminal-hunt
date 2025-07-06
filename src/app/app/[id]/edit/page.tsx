@@ -19,7 +19,7 @@ interface AppDetail {
 }
 
 export default function EditAppPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const params = useParams();
   const appId = params.id as string;

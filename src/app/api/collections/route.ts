@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { db } from "@/lib/db";
-import { collections, users, collectionApps, apps } from "@/lib/db/schema";
+import { collections, users, collectionApps } from "@/lib/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 
 // GET user's collections
-export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions);
+export async function GET() {
+  const session: { user: { email: string } } | null = await getServerSession(authOptions);
 
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
 
 // POST - Create new collection
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session: { user: { email: string } } | null = await getServerSession(authOptions);
 
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

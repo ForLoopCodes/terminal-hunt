@@ -129,30 +129,6 @@ export function AppCard({ app }: AppCardProps) {
     }
   };
 
-  const handleDownvote = async () => {
-    if (!session || isVoting || !hasVoted) return;
-
-    setIsVoting(true);
-    try {
-      const response = await fetch(`/api/apps/${app.id}/vote`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setHasVoted(data.voted);
-        setVoteCount(data.voteCount);
-      } else {
-        const errorData = await response.json();
-        console.error("Downvote error:", errorData.error);
-      }
-    } catch (error) {
-      console.error("Error downvoting:", error);
-    } finally {
-      setIsVoting(false);
-    }
-  };
-
   const handleView = async () => {
     try {
       await fetch(`/api/apps/${app.id}/view`, {

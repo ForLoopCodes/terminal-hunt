@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { db } from "@/lib/db";
 import { comments, users } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 // GET comment by ID
 export async function GET(
@@ -48,7 +48,7 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ commentId: string }> }
 ) {
-  const session = await getServerSession(authOptions);
+  const session: { user: { email: string } } | null = await getServerSession(authOptions);
 
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -131,7 +131,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ commentId: string }> }
 ) {
-  const session = await getServerSession(authOptions);
+  const session: { user: { email: string } } | null = await getServerSession(authOptions);
 
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { db } from "@/lib/db";
-import { apps, users, votes, appTags, tags } from "@/lib/db/schema";
-import { eq, desc, or, sql } from "drizzle-orm";
+import { apps, users, votes, appTags } from "@/lib/db/schema";
+import { eq, desc } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

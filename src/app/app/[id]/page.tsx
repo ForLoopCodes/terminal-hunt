@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
-import ReactMarkdown from "react-markdown";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { CollectionsModal } from "@/components/CollectionsModal";
@@ -62,8 +61,6 @@ export default function ViewAppPage() {
     id: string;
     userTag: string;
   } | null>(null);
-  const [focusedElement, setFocusedElement] = useState<string | null>(null);
-
   // Refs for keyboard navigation
   const voteRef = useRef<HTMLButtonElement>(null);
   const collectionsRef = useRef<HTMLButtonElement>(null);
@@ -119,7 +116,6 @@ export default function ViewAppPage() {
           break;
         case "escape":
           e.preventDefault();
-          setFocusedElement(null);
           break;
       }
     };

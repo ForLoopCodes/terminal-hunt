@@ -163,7 +163,7 @@ export function ReportModal({
               className="text-sm mb-4"
               style={{ color: "var(--color-accent)" }}
             >
-              Thank you for your report. We'll review it as soon as possible.
+              Thank you for your report. We&apos;ll review it as soon as possible.
             </p>
             <div
               className="w-6 h-6 mx-auto animate-spin rounded-full border-2 border-t-transparent"

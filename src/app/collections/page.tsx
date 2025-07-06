@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { DragDropCollections } from "@/components/DragDropCollections";
 import { DragDropApps } from "@/components/DragDropApps";
 
@@ -33,7 +32,7 @@ interface App {
 }
 
 export default function MyCollectionsPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedCollection, setSelectedCollection] =
@@ -548,7 +547,7 @@ C O L L E C T I O N S
                         This collection is empty
                       </div>
                       <div className="text-xs">
-                        Browse apps and click "Add to Collection" to add them
+                        Browse apps and click &quot;Add to Collection&quot; to add them
                         here
                       </div>
                     </div>

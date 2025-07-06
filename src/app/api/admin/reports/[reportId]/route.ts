@@ -7,7 +7,7 @@ import { authOptions } from "../../../auth/[...nextauth]/route";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { reportId: string } }
+  { params }: { params: Promise<{ reportId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -28,7 +28,7 @@ export async function PUT(
     }
 
     const { action, adminNotes } = await request.json();
-    const reportId = params.reportId;
+    const { reportId } = await params;
 
     if (!reportId || !action) {
       return NextResponse.json(

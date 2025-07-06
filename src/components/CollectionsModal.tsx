@@ -188,7 +188,7 @@ export function CollectionsModal({
             className="text-xs sm:text-sm mt-1 font-mono break-words"
             style={{ color: "var(--color-text)" }}
           >
-            add "{appName}" to collection
+            add &quot;{appName}&quot; to collection
           </p>
         </div>
 

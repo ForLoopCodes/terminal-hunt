@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import ReactMarkdown from "react-markdown";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 
 interface Tag {
@@ -940,7 +939,7 @@ export default function SubmitAppPage() {
                                 e.currentTarget.style.opacity = "1";
                               }}
                             >
-                              + Create "{tagSearch.trim()}"
+                              + Create &quot;{tagSearch.trim()}&quot;
                             </button>
                           )}
                       </>
@@ -963,7 +962,7 @@ export default function SubmitAppPage() {
                           e.currentTarget.style.opacity = "1";
                         }}
                       >
-                        + Create "{tagSearch.trim()}"
+                        + Create &quot;{tagSearch.trim()}&quot;
                       </button>
                     ) : null}
                   </div>
