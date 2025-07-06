@@ -70,7 +70,7 @@ export function DragDropApps({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-1 font-mono">
       {apps.map((app, index) => (
         <div
           key={app.collectionAppId}
@@ -80,61 +80,93 @@ export function DragDropApps({
           onDragLeave={handleDragLeave}
           onDrop={(e) => handleDrop(e, index)}
           onDragEnd={handleDragEnd}
-          className={`border border-gray-700 rounded-lg p-4 transition-all cursor-grab ${
+          className={`p-2 px-3 border transition-all cursor-grab ${
             draggedIndex === index ? "opacity-50" : ""
-          } ${
-            dragOverIndex === index && draggedIndex !== index
-              ? "border-green-500 bg-green-900/20"
-              : ""
           }`}
+          style={{
+            borderColor:
+              dragOverIndex === index && draggedIndex !== index
+                ? "var(--color-success)"
+                : "var(--color-accent)",
+            borderWidth: "1px",
+            backgroundColor:
+              dragOverIndex === index && draggedIndex !== index
+                ? "var(--color-bg-alt)"
+                : "transparent",
+          }}
         >
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center mb-2">
-                <svg
-                  className="w-4 h-4 text-gray-500 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 8h16M4 16h16"
-                  />
-                </svg>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3 flex-1">
+              <svg
+                className="w-4 h-4 flex-shrink-0"
+                style={{ color: "var(--color-accent)" }}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 8h16M4 16h16"
+                />
+              </svg>
+
+              <div className="flex-1 min-w-0">
                 <Link
                   href={`/app/${app.appId}`}
-                  className="text-lg font-medium text-blue-400 hover:text-blue-300 hover:underline"
+                  className="text-sm font-medium focus:outline-none hover:underline block truncate"
+                  style={{ color: "var(--color-text)" }}
                 >
                   {app.appName}
                 </Link>
-              </div>
-              <p className="text-gray-300 mt-1 ml-6">
-                {app.appDescription.substring(0, 200)}
-                {app.appDescription.length > 200 ? "..." : ""}
-              </p>
-              <div className="flex items-center space-x-4 text-sm text-gray-500 mt-2 ml-6">
-                <span>{app.appViewCount} views</span>
-                <span>Added {formatDate(app.addedAt)}</span>
-              </div>
-              {app.notes && (
-                <div className="mt-2 ml-6 p-2 bg-gray-900 rounded text-sm text-gray-300">
-                  <strong>Note:</strong> {app.notes}
+
+                <p
+                  className="text-xs mt-1 line-clamp-2"
+                  style={{ color: "var(--color-text-secondary)" }}
+                >
+                  {app.appDescription.substring(0, 150)}
+                  {app.appDescription.length > 150 ? "..." : ""}
+                </p>
+
+                <div className="flex items-center space-x-3 text-xs mt-1">
+                  <span style={{ color: "var(--color-accent)" }}>
+                    {app.appViewCount} views
+                  </span>
+                  <span style={{ color: "var(--color-accent)" }}>
+                    Added {formatDate(app.addedAt)}
+                  </span>
                 </div>
-              )}
+
+                {app.notes && (
+                  <div
+                    className="mt-2 p-2 border text-xs"
+                    style={{
+                      borderColor: "var(--color-accent)",
+                      backgroundColor: "var(--color-bg-alt)",
+                      color: "var(--color-text-secondary)",
+                    }}
+                  >
+                    <strong style={{ color: "var(--color-text)" }}>
+                      Note:
+                    </strong>{" "}
+                    {app.notes}
+                  </div>
+                )}
+              </div>
             </div>
+
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onAppRemove(app.appId);
               }}
-              className="text-gray-400 hover:text-red-400 p-2 ml-4"
+              className="p-1 ml-3 opacity-75 hover:opacity-100 transition-opacity"
+              style={{ color: "var(--color-accent)" }}
               title="Remove from collection"
             >
               <svg
-                className="w-5 h-5"
+                className="w-4 h-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

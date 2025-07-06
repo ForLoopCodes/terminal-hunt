@@ -85,12 +85,23 @@ export function DragDropCollections({
       {collections.map((collection, index) => (
         <div key={collection.id}>
           {editingCollection === collection.id ? (
-            <div className="p-3 border border-blue-600 rounded-lg bg-blue-900/20">
+            <div
+              className="p-3 border"
+              style={{
+                borderColor: "var(--color-accent)",
+                backgroundColor: "var(--color-primary)",
+              }}
+            >
               <input
                 type="text"
                 defaultValue={collection.name}
                 placeholder="Collection name"
-                className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded text-white placeholder-gray-400 focus:outline-none focus:border-blue-600 mb-2"
+                className="w-full px-3 py-2 mb-2 text-sm focus:outline-none"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-text)",
+                  border: "1px solid var(--color-accent)",
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     const target = e.target as HTMLInputElement;
@@ -109,13 +120,23 @@ export function DragDropCollections({
                       ?.previousElementSibling as HTMLInputElement;
                     onCollectionUpdate(collection.id, { name: input.value });
                   }}
-                  className="flex-1 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                  className="flex-1 px-3 py-1 text-sm focus:outline-none"
+                  style={{
+                    backgroundColor: "var(--color-highlight)",
+                    color: "var(--color-primary)",
+                    border: "1px solid var(--color-highlight)",
+                  }}
                 >
                   Save
                 </button>
                 <button
                   onClick={() => setEditingCollection(null)}
-                  className="px-3 py-1 text-sm border border-gray-600 text-gray-400 rounded hover:bg-gray-800"
+                  className="px-3 py-1 text-sm focus:outline-none"
+                  style={{
+                    backgroundColor: "var(--color-primary)",
+                    color: "var(--color-text)",
+                    border: "1px solid var(--color-accent)",
+                  }}
                 >
                   Cancel
                 </button>
@@ -129,26 +150,32 @@ export function DragDropCollections({
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, index)}
               onDragEnd={handleDragEnd}
-              className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                selectedCollection?.id === collection.id
-                  ? "border-blue-600 bg-blue-900/20"
-                  : "border-gray-700 hover:border-gray-600 hover:bg-gray-900/50"
+              className={`p-3 border cursor-pointer transition-all ${
+                selectedCollection?.id === collection.id ? "" : ""
               } ${draggedIndex === index ? "opacity-50" : ""} ${
-                dragOverIndex === index && draggedIndex !== index
-                  ? "border-green-500 bg-green-900/20"
-                  : ""
+                dragOverIndex === index && draggedIndex !== index ? "" : ""
               }`}
+              style={{
+                borderColor:
+                  selectedCollection?.id === collection.id
+                    ? "var(--color-highlight)"
+                    : "var(--color-accent)",
+                backgroundColor:
+                  selectedCollection?.id === collection.id
+                    ? "var(--color-highlight)"
+                    : "var(--color-primary)",
+                color:
+                  selectedCollection?.id === collection.id
+                    ? "var(--color-primary)"
+                    : "var(--color-text)",
+              }}
               onClick={() => onCollectionSelect(collection)}
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div
-                    className="w-3 h-3 rounded mr-3"
-                    style={{ backgroundColor: collection.color }}
-                  ></div>
+                <div className="flex items-center flex-1">
                   <div className="flex items-center">
                     <svg
-                      className="w-4 h-4 text-gray-500 mr-2 cursor-grab"
+                      className="w-4 h-4 mr-2 cursor-grab opacity-50"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -161,10 +188,10 @@ export function DragDropCollections({
                       />
                     </svg>
                     <div>
-                      <div className="text-white font-medium">
+                      <div className="text-sm font-medium">
                         {collection.name}
                       </div>
-                      <div className="text-sm text-gray-400">
+                      <div className="text-xs opacity-75">
                         {collection.appCount} apps
                       </div>
                     </div>
@@ -176,7 +203,7 @@ export function DragDropCollections({
                       e.stopPropagation();
                       onCollectionEdit(collection.id);
                     }}
-                    className="text-gray-400 hover:text-white p-1"
+                    className="p-1 opacity-75 hover:opacity-100"
                   >
                     <svg
                       className="w-4 h-4"
@@ -197,7 +224,7 @@ export function DragDropCollections({
                       e.stopPropagation();
                       onCollectionDelete(collection.id);
                     }}
-                    className="text-gray-400 hover:text-red-400 p-1"
+                    className="p-1 opacity-75 hover:opacity-100"
                   >
                     <svg
                       className="w-4 h-4"

@@ -52,24 +52,26 @@ export default function ViewAppPage() {
 
   const fetchApp = async () => {
     try {
-      const response = await fetch(`/api/apps/${appId}`);
-      const data = await response.json();
+      // Log a view
+      await fetch(`/api/apps/${appId}/view`, { method: "POST" });
 
-      if (response.ok) {
-        setApp(data);
-      } else {
-        setError(data.error || "App not found");
+      const response = await fetch(`/api/apps/${appId}`);
+      if (!response.ok) {
+        throw new Error("App not found");
       }
+
+      const appData = await response.json();
+      setApp(appData);
     } catch (error) {
       console.error("Error fetching app:", error);
-      setError("Failed to load app");
+      setError("App not found");
     } finally {
       setLoading(false);
     }
   };
 
   const handleVote = async () => {
-    if (!session) return;
+    if (!session || voting) return;
 
     setVoting(true);
     try {
@@ -84,7 +86,7 @@ export default function ViewAppPage() {
             ? {
                 ...prev,
                 voteCount: data.voteCount,
-                userHasVoted: data.userHasVoted,
+                userHasVoted: data.hasVoted,
               }
             : null
         );
@@ -96,7 +98,7 @@ export default function ViewAppPage() {
     }
   };
 
-  const handleComment = async (e: React.FormEvent) => {
+  const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!session || !commentContent.trim()) return;
 
@@ -144,7 +146,7 @@ export default function ViewAppPage() {
         style={{ backgroundColor: "var(--color-primary)" }}
       >
         <div
-          className="font-mono text-lg"
+          className="font-mono text-sm"
           style={{ color: "var(--color-text)" }}
         >
           loading_app...
@@ -162,7 +164,7 @@ export default function ViewAppPage() {
         <div className="max-w-4xl mx-auto px-6 py-8">
           <div className="text-center py-12">
             <p
-              className="text-lg font-mono"
+              className="text-sm font-mono"
               style={{ color: "var(--color-highlight)" }}
             >
               ! {error}
@@ -177,434 +179,327 @@ export default function ViewAppPage() {
 
   return (
     <div
-      className="min-h-screen pt-20 pb-8"
+      className="min-h-screen pt-20 pb-8 flex"
       style={{ backgroundColor: "var(--color-primary)" }}
     >
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <pre
-            className="text-xs md:text-sm whitespace-pre-wrap font-semibold mb-6"
-            style={{ color: "var(--color-accent)" }}
+      {/* Sidebar */}
+      <div className="fixed left-0 top-20 h-[calc(100vh-5rem)] z-40 w-80">
+        <div
+          className="p-4 border-b"
+          style={{ borderColor: "var(--color-accent)" }}
+        >
+          <h2
+            className="font-bold text-sm"
+            style={{ color: "var(--color-highlight)" }}
           >
-            {`
- ___                                   ___                      ___      
-(   )                                 (   )                    (   )     
- | |_     .--.  ___ .-.  ___ .-. .-.   | | .-. ___  ___ ___ .-. | |_     
-(   __)  /    \\(   )   \\(   )   '   \\  | |/   (   )(   |   )   (   __)   
- | |    |  .-. ;| ' .-. ;|  .-.  .-. ; |  .-. .| |  | | |  .-. .| |      
- | | ___|  | | ||  / (___) |  | |  | | | |  | || |  | | | |  | || | ___  
- | |(   )  |/  || |      | |  | |  | | | |  | || |  | | | |  | || |(   ) 
- | | | ||  ' _.'| |      | |  | |  | | | |  | || |  | | | |  | || | | |  
- | ' | ||  .'.-.| |      | |  | |  | | | |  | || |  ; ' | |  | || ' | |  
- ' \`-' ;'  \`-' /| |      | |  | |  | | | |  | |' \`-'  / | |  | |' \`-' ;  
-  \`.__.  \`.__.'(___)    (___)(___)(___|___)(___)'.__.' (___)(___)\`.__.   
-                  
-  ${app.name.toUpperCase()}
-  `}
-          </pre>
+            PACKAGE INFO
+          </h2>
         </div>
 
-        <div className="space-y-6 max-w-[650px] mx-auto">
-          {/* App Info */}
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <span
-                className="mr-2 w-4 text-xs"
-                style={{ color: "var(--color-text)" }}
-              >
-                {" "}
-              </span>
-              <label
-                className="text-sm pr-2"
-                style={{
-                  color: "var(--color-text)",
-                  backgroundColor: "var(--color-primary)",
-                }}
-              >
-                name
-              </label>
-              <span className="text-sm" style={{ color: "var(--color-text)" }}>
-                {app.name}
-              </span>
+        <div className="p-4 space-y-6 overflow-y-auto h-full">
+          {/* Installation */}
+          <div>
+            <h3
+              className="text-xs font-semibold mb-3 uppercase tracking-wider"
+              style={{ color: "var(--color-accent)" }}
+            >
+              Installation
+            </h3>
+            <div
+              className="p-3 text-xs font-mono border"
+              style={{
+                backgroundColor: "var(--color-primary)",
+                borderColor: "var(--color-accent)",
+                color: "var(--color-text)",
+              }}
+            >
+              {app.installCommands}
             </div>
+          </div>
 
-            {app.shortDescription && (
-              <div className="flex items-start">
-                <span
-                  className="mr-2 w-4 text-xs mt-1"
-                  style={{ color: "var(--color-text)" }}
-                >
-                  {" "}
+          {/* Stats */}
+          <div>
+            <h3
+              className="text-xs font-semibold mb-3 uppercase tracking-wider"
+              style={{ color: "var(--color-accent)" }}
+            >
+              Stats
+            </h3>
+            <div
+              className="space-y-2 text-sm"
+              style={{ color: "var(--color-text)" }}
+            >
+              <div className="flex justify-between">
+                <span>Votes:</span>
+                <span style={{ color: "var(--color-highlight)" }}>
+                  {app.voteCount}
                 </span>
-                <div className="flex-1">
-                  <label
-                    className="text-sm pr-2 block mb-1"
-                    style={{
-                      color: "var(--color-text)",
-                      backgroundColor: "var(--color-primary)",
-                    }}
-                  >
-                    description
-                  </label>
-                  <p className="text-sm" style={{ color: "var(--color-text)" }}>
-                    {app.shortDescription}
-                  </p>
-                </div>
               </div>
-            )}
-
-            <div className="flex items-center">
-              <span
-                className="mr-2 w-4 text-xs"
-                style={{ color: "var(--color-text)" }}
-              >
-                {" "}
-              </span>
-              <label
-                className="text-sm pr-2"
-                style={{
-                  color: "var(--color-text)",
-                  backgroundColor: "var(--color-primary)",
-                }}
-              >
-                creator
-              </label>
-              <Link
-                href={`/profile/${app.creatorUserTag}`}
-                className="text-sm focus:outline-none"
-                style={{ color: "var(--color-text)" }}
-              >
-                @{app.creatorUserTag}
-              </Link>
+              <div className="flex justify-between">
+                <span>Views:</span>
+                <span style={{ color: "var(--color-accent)" }}>
+                  {app.viewCount}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Published:</span>
+                <span>{formatDate(app.createdAt)}</span>
+              </div>
             </div>
+          </div>
 
-            <div className="flex items-center">
-              <span
-                className="mr-2 w-4 text-xs"
+          {/* Author */}
+          <div>
+            <h3
+              className="text-xs font-semibold mb-3 uppercase tracking-wider"
+              style={{ color: "var(--color-accent)" }}
+            >
+              Author
+            </h3>
+            <Link
+              href={`/profile/${app.creatorUserTag}`}
+              className="text-sm font-medium focus:outline-none"
+              style={{ color: "var(--color-text)" }}
+            >
+              @{app.creatorUserTag}
+            </Link>
+          </div>
+
+          {/* Links */}
+          <div>
+            <h3
+              className="text-xs font-semibold mb-3 uppercase tracking-wider"
+              style={{ color: "var(--color-accent)" }}
+            >
+              Links
+            </h3>
+            <div className="space-y-2">
+              <a
+                href={app.repoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-sm font-medium focus:outline-none"
                 style={{ color: "var(--color-text)" }}
               >
-                {" "}
-              </span>
-              <label
-                className="text-sm pr-2"
-                style={{
-                  color: "var(--color-text)",
-                  backgroundColor: "var(--color-primary)",
-                }}
-              >
-                stats
-              </label>
-              <span className="text-sm" style={{ color: "var(--color-text)" }}>
-                {app.voteCount} votes • {app.viewCount} views •{" "}
-                {formatDate(app.createdAt)}
-              </span>
-            </div>
-
-            <div className="flex items-center">
-              <span
-                className="mr-2 w-4 text-xs"
-                style={{ color: "var(--color-text)" }}
-              >
-                {" "}
-              </span>
-              <label
-                className="text-sm pr-2"
-                style={{
-                  color: "var(--color-text)",
-                  backgroundColor: "var(--color-primary)",
-                }}
-              >
-                links
-              </label>
-              <div className="flex space-x-4 text-sm">
+                Repository
+              </a>
+              {app.website && (
                 <a
-                  href={app.repoUrl}
+                  href={app.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="focus:outline-none"
+                  className="block text-sm font-medium focus:outline-none"
                   style={{ color: "var(--color-text)" }}
                 >
-                  repository
+                  Website
                 </a>
-                {app.website && (
-                  <>
-                    <span style={{ color: "var(--color-text)" }}>•</span>
-                    <a
-                      href={app.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="focus:outline-none"
-                      style={{ color: "var(--color-text)" }}
-                    >
-                      website
-                    </a>
-                  </>
-                )}
-              </div>
+              )}
             </div>
+          </div>
 
-            {session && (
-              <div className="flex items-center space-x-4">
-                <span
-                  className="mr-2 w-4 text-xs"
-                  style={{ color: "var(--color-text)" }}
-                >
-                  {" "}
-                </span>
+          {/* Actions */}
+          {session && (
+            <div>
+              <h3
+                className="text-xs font-semibold mb-3 uppercase tracking-wider"
+                style={{ color: "var(--color-accent)" }}
+              >
+                Actions
+              </h3>
+              <div className="space-y-2">
                 <button
                   onClick={handleVote}
                   disabled={voting}
-                  className="text-sm font-medium focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 text-sm font-medium focus:outline-none disabled:opacity-50"
                   style={{
-                    color: app.userHasVoted
+                    backgroundColor: app.userHasVoted
                       ? "var(--color-highlight)"
+                      : "var(--color-primary)",
+                    color: app.userHasVoted
+                      ? "var(--color-primary)"
                       : "var(--color-text)",
+                    border: "1px solid var(--color-accent)",
                   }}
                 >
-                  {app.userHasVoted ? "voted ↑" : "vote ↑"} ({app.voteCount})
+                  {app.userHasVoted ? "★ Voted" : "☆ Vote"}
                 </button>
-                <span style={{ color: "var(--color-text)" }}>•</span>
                 <button
                   onClick={() => setShowCollectionsModal(true)}
-                  className="text-sm font-medium focus:outline-none"
-                  style={{ color: "var(--color-text)" }}
+                  className="w-full px-3 py-2 text-sm font-medium focus:outline-none"
+                  style={{
+                    backgroundColor: "var(--color-primary)",
+                    color: "var(--color-text)",
+                    border: "1px solid var(--color-accent)",
+                  }}
                 >
-                  +collection
+                  + Add to Collection
                 </button>
               </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 ml-80">
+        <div className="max-w-4xl mx-auto px-6 lg:px-8">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center space-x-4 mb-4">
+              <h1
+                className="text-2xl font-bold"
+                style={{ color: "var(--color-text)" }}
+              >
+                {app.name}
+              </h1>
+              <div className="flex items-center space-x-2">
+                <span
+                  className="px-2 py-1 text-xs font-medium"
+                  style={{
+                    backgroundColor: "var(--color-accent)",
+                    color: "var(--color-primary)",
+                  }}
+                >
+                  v1.0.0
+                </span>
+              </div>
+            </div>
+
+            {app.shortDescription && (
+              <p
+                className="text-sm mb-4"
+                style={{ color: "var(--color-accent)" }}
+              >
+                {app.shortDescription}
+              </p>
             )}
+
+            <div
+              className="flex items-center space-x-4 text-sm"
+              style={{ color: "var(--color-text)" }}
+            >
+              <span>Published {formatDate(app.createdAt)}</span>
+              <span>•</span>
+              <span>{app.viewCount} views</span>
+              <span>•</span>
+              <span>{app.voteCount} votes</span>
+            </div>
           </div>
 
-          {/* Description */}
-          <div className="space-y-4 pt-4">
-            <div className="flex items-start">
-              <span
-                className="mr-2 w-4 text-xs mt-1"
+          {/* README / Description */}
+          <div className="mb-8">
+            <div className="flex items-center mb-4">
+              <h2
+                className="text-sm font-semibold"
                 style={{ color: "var(--color-text)" }}
               >
-                {" "}
-              </span>
-              <div className="flex-1">
-                <label
-                  className="text-sm pr-2 block mb-2"
-                  style={{
-                    color: "var(--color-text)",
-                    backgroundColor: "var(--color-primary)",
-                  }}
-                >
-                  about
-                </label>
+                README
+              </h2>
+            </div>
+            <div
+              className="prose prose-sm max-w-none p-4 border"
+              style={{
+                backgroundColor: "var(--color-primary)",
+                borderColor: "var(--color-accent)",
+                color: "var(--color-text)",
+              }}
+            >
+              <ReactMarkdown>{app.description}</ReactMarkdown>
+            </div>
+          </div>
+
+          {/* Comments Section */}
+          <div>
+            <div className="flex items-center mb-4">
+              <h2
+                className="text-sm font-semibold"
+                style={{ color: "var(--color-text)" }}
+              >
+                Comments ({app.comments.length})
+              </h2>
+            </div>
+
+            {/* Add Comment Form */}
+            {session && (
+              <form onSubmit={handleCommentSubmit} className="mb-6">
                 <div
-                  className="prose prose-sm max-w-none text-sm leading-relaxed"
-                  style={{ color: "var(--color-text)" }}
+                  className="border p-4"
+                  style={{ borderColor: "var(--color-accent)" }}
                 >
-                  <ReactMarkdown>{app.description}</ReactMarkdown>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Installation */}
-          <div className="space-y-4">
-            <div className="flex items-start">
-              <span
-                className="mr-2 w-4 text-xs mt-1"
-                style={{ color: "var(--color-text)" }}
-              >
-                {" "}
-              </span>
-              <div className="flex-1">
-                <label
-                  className="text-sm pr-2 block mb-2"
-                  style={{
-                    color: "var(--color-text)",
-                    backgroundColor: "var(--color-primary)",
-                  }}
-                >
-                  installation
-                </label>
-                <div
-                  className="text-sm leading-relaxed font-mono"
-                  style={{ color: "var(--color-text)" }}
-                >
-                  <ReactMarkdown>{app.installCommands}</ReactMarkdown>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Comments */}
-          <div className="space-y-4 pt-4">
-            <div className="flex items-center">
-              <span
-                className="mr-2 w-4 text-xs"
-                style={{ color: "var(--color-text)" }}
-              >
-                {" "}
-              </span>
-              <label
-                className="text-sm pr-2"
-                style={{
-                  color: "var(--color-text)",
-                  backgroundColor: "var(--color-primary)",
-                }}
-              >
-                comments
-              </label>
-              <span className="text-sm" style={{ color: "var(--color-text)" }}>
-                ({app.comments.length})
-              </span>
-            </div>
-
-            {/* Add Comment */}
-            {session ? (
-              <form onSubmit={handleComment} className="space-y-4">
-                <div className="flex items-start">
-                  <span
-                    className="mr-2 w-4 text-xs mt-1"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    {" "}
-                  </span>
-                  <div className="flex-1">
-                    <label
-                      className="text-sm pr-2 block mb-1"
+                  <textarea
+                    value={commentContent}
+                    onChange={(e) => setCommentContent(e.target.value)}
+                    placeholder="Write a comment..."
+                    className="w-full p-3 text-sm focus:outline-none resize-none"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-text)",
+                      border: "1px solid var(--color-accent)",
+                    }}
+                    rows={3}
+                  />
+                  <div className="flex justify-end mt-3">
+                    <button
+                      type="submit"
+                      disabled={submittingComment || !commentContent.trim()}
+                      className="px-4 py-2 text-sm font-medium focus:outline-none disabled:opacity-50"
                       style={{
-                        color: "var(--color-text)",
-                        backgroundColor: "var(--color-primary)",
+                        backgroundColor: "var(--color-highlight)",
+                        color: "var(--color-primary)",
+                        border: "1px solid var(--color-highlight)",
                       }}
                     >
-                      new comment
-                    </label>
-                    <textarea
-                      value={commentContent}
-                      onChange={(e) => setCommentContent(e.target.value)}
-                      rows={4}
-                      className="w-full px-2 py-1 focus:outline-none text-sm resize-vertical"
-                      style={{
-                        backgroundColor: "var(--color-primary)",
-                        color: "var(--color-text)",
-                      }}
-                      placeholder="_"
-                    />
+                      {submittingComment ? "Posting..." : "Post Comment"}
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center">
-                  <span
-                    className="mr-2 w-4 text-xs"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    {" "}
-                  </span>
-                  <button
-                    type="submit"
-                    disabled={!commentContent.trim() || submittingComment}
-                    className="px-2 py-1 font-medium focus:outline-none transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{
-                      backgroundColor: "var(--color-highlight)",
-                      color: "var(--color-primary)",
-                    }}
-                  >
-                    {submittingComment ? "posting..." : "post comment"}
-                  </button>
-                </div>
               </form>
-            ) : (
-              <div className="flex items-center">
-                <span
-                  className="mr-2 w-4 text-xs"
-                  style={{ color: "var(--color-text)" }}
-                >
-                  {" "}
-                </span>
-                <span
-                  className="text-sm"
-                  style={{ color: "var(--color-text)" }}
-                >
-                  <Link
-                    href="/auth/signin"
-                    className="focus:outline-none"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    sign in
-                  </Link>{" "}
-                  to post a comment
-                </span>
-              </div>
             )}
 
             {/* Comments List */}
-            {app.comments.length === 0 ? (
-              <div className="flex items-center">
-                <span
-                  className="mr-2 w-4 text-xs"
-                  style={{ color: "var(--color-text)" }}
+            <div className="space-y-4">
+              {app.comments.length === 0 ? (
+                <div
+                  className="text-center py-8 border"
+                  style={{
+                    borderColor: "var(--color-accent)",
+                    color: "var(--color-text)",
+                  }}
                 >
-                  {" "}
-                </span>
-                <span
-                  className="text-sm"
-                  style={{ color: "var(--color-text)" }}
-                >
-                  no comments yet
-                </span>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {app.comments.map((comment, index) => (
-                  <div key={comment.id} className="space-y-2">
-                    <div className="flex items-center">
-                      <span
-                        className="mr-2 w-4 text-xs"
-                        style={{ color: "var(--color-text)" }}
-                      >
-                        {" "}
-                      </span>
+                  No comments yet. Be the first to comment!
+                </div>
+              ) : (
+                app.comments.map((comment) => (
+                  <div
+                    key={comment.id}
+                    className="p-4 border"
+                    style={{ borderColor: "var(--color-accent)" }}
+                  >
+                    <div className="flex items-center justify-between mb-2">
                       <Link
                         href={`/profile/${comment.userTag}`}
-                        className="text-sm focus:outline-none font-semibold mr-2"
+                        className="font-medium text-sm focus:outline-none"
                         style={{ color: "var(--color-text)" }}
                       >
                         @{comment.userTag}
                       </Link>
                       <span
                         className="text-xs"
-                        style={{ color: "var(--color-text)" }}
+                        style={{ color: "var(--color-accent)" }}
                       >
                         {formatDate(comment.createdAt)}
                       </span>
                     </div>
-
-                    <div className="flex items-start">
-                      <span
-                        className="mr-2 w-4 text-xs mt-1"
-                        style={{ color: "var(--color-text)" }}
-                      >
-                        {" "}
-                      </span>
-                      <div className="flex-1">
-                        <p
-                          className="text-sm leading-relaxed"
-                          style={{ color: "var(--color-text)" }}
-                        >
-                          {comment.content}
-                        </p>
-                      </div>
-                    </div>
-
-                    {index < app.comments.length - 1 && (
-                      <div className="mx-6">
-                        <div
-                          className="h-px"
-                          style={{ backgroundColor: "var(--color-accent)" }}
-                        />
-                      </div>
-                    )}
+                    <p
+                      className="text-sm"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      {comment.content}
+                    </p>
                   </div>
-                ))}
-              </div>
-            )}
+                ))
+              )}
+            </div>
           </div>
         </div>
       </div>

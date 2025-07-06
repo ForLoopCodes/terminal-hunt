@@ -69,6 +69,7 @@ export default function ProfilePage() {
   const nameInputRef = useRef<HTMLInputElement>(null);
   const bioInputRef = useRef<HTMLTextAreaElement>(null);
   const saveButtonRef = useRef<HTMLButtonElement>(null);
+  const collectionsRef = useRef<HTMLAnchorElement>(null);
 
   const isOwnProfile = (session as any)?.user?.userTag === userTag;
 
@@ -102,6 +103,12 @@ export default function ProfilePage() {
           e.preventDefault();
           setActiveTab("achievements");
           achievementsTabRef.current?.focus();
+          break;
+        case "m":
+          e.preventDefault();
+          if (isOwnProfile) {
+            collectionsRef.current?.click();
+          }
           break;
         case "e":
           e.preventDefault();
@@ -247,134 +254,40 @@ export default function ProfilePage() {
 
   return (
     <div
-      className="min-h-screen pt-20 pb-8"
+      className="min-h-screen pt-20 pb-8 flex font-mono"
       style={{ backgroundColor: "var(--color-primary)" }}
     >
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <pre
-            className="text-xs md:text-sm whitespace-pre-wrap font-semibold mb-6"
-            style={{ color: "var(--color-accent)" }}
+      {/* Fixed Sidebar */}
+      <div className="fixed left-0 top-20 h-[calc(100vh-5rem)] z-40 w-80">
+        <div
+          className="p-4 border-b"
+          style={{ borderColor: "var(--color-accent)" }}
+        >
+          <h2
+            className="font-bold text-sm"
+            style={{ color: "var(--color-highlight)" }}
           >
-            {termhuntText}
-          </pre>
+            USER PROFILE
+          </h2>
         </div>
 
-        <div className="space-y-6 max-w-[650px] mx-auto">
-          {/* Navigation tabs */}
-          <div className="space-y-2">
-            <div className="flex items-center">
-              <span
-                className="mr-2 w-4 text-xs"
-                style={{ color: "var(--color-text)" }}
-              >
-                {focusedElement === "apps" || activeTab === "apps" ? ">" : " "}
-              </span>
-              <button
-                ref={appsTabRef}
-                onFocus={() => setFocusedElement("apps")}
-                onBlur={() => setFocusedElement(null)}
-                onClick={() => setActiveTab("apps")}
-                className="text-sm font-medium focus:outline-none focus:ring-none"
-                style={{
-                  backgroundColor: "var(--color-primary)",
-                  color: "var(--color-text)",
-                }}
-              >
-                <span className="underline">A</span>pps ({profile.apps.length})
-              </button>
-            </div>
-            <div className="flex items-center">
-              <span
-                className="mr-2 w-4 text-xs"
-                style={{ color: "var(--color-text)" }}
-              >
-                {focusedElement === "activity" || activeTab === "activity"
-                  ? ">"
-                  : " "}
-              </span>
-              <button
-                ref={activityTabRef}
-                onFocus={() => setFocusedElement("activity")}
-                onBlur={() => setFocusedElement(null)}
-                onClick={() => setActiveTab("activity")}
-                className="text-sm font-medium focus:outline-none focus:ring-none"
-                style={{
-                  backgroundColor: "var(--color-primary)",
-                  color: "var(--color-text)",
-                }}
-              >
-                <span className="underline">C</span>omments (
-                {profile.comments.length})
-              </button>
-            </div>
-            <div className="flex items-center">
-              <span
-                className="mr-2 w-4 text-xs"
-                style={{ color: "var(--color-text)" }}
-              >
-                {focusedElement === "achievements" ||
-                activeTab === "achievements"
-                  ? ">"
-                  : " "}
-              </span>
-              <button
-                ref={achievementsTabRef}
-                onFocus={() => setFocusedElement("achievements")}
-                onBlur={() => setFocusedElement(null)}
-                onClick={() => setActiveTab("achievements")}
-                className="text-sm font-medium focus:outline-none focus:ring-none"
-                style={{
-                  backgroundColor: "var(--color-primary)",
-                  color: "var(--color-text)",
-                }}
-              >
-                Ac<span className="underline">h</span>ievements (
-                {profile.achievements.length})
-              </button>
-            </div>
-          </div>
-
+        <div className="p-4 space-y-6 overflow-y-auto h-full">
           {/* Profile Info */}
-          <div className="space-y-4 pt-4">
-            <div className="flex items-center">
-              <span
-                className="mr-2 w-4 text-xs"
-                style={{ color: "var(--color-text)" }}
-              >
-                {" "}
-              </span>
-              <label
-                className="text-sm pr-2"
-                style={{
-                  color: "var(--color-text)",
-                  backgroundColor: "var(--color-primary)",
-                }}
-              >
-                user
-              </label>
-              <span className="text-sm" style={{ color: "var(--color-text)" }}>
-                @{profile.userTag}
-              </span>
-            </div>
+          <div>
+            <h3
+              className="text-xs font-semibold mb-3 uppercase tracking-wider"
+              style={{ color: "var(--color-accent)" }}
+            >
+              User Info
+            </h3>
 
             {editing ? (
-              <>
-                <div className="flex items-center">
-                  <span
-                    className="mr-2 w-4 text-xs"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    {focusedElement === "name" ? ">" : " "}
-                  </span>
+              <div className="space-y-4">
+                <div>
                   <label
                     htmlFor="name"
-                    className="text-sm pr-2"
-                    style={{
-                      color: "var(--color-text)",
-                      backgroundColor: "var(--color-primary)",
-                    }}
+                    className="text-xs font-mono block mb-2"
+                    style={{ color: "var(--color-text)" }}
                   >
                     <span className="underline">n</span>ame
                   </label>
@@ -388,280 +301,348 @@ export default function ProfilePage() {
                     onChange={(e) =>
                       setEditData((prev) => ({ ...prev, name: e.target.value }))
                     }
-                    className="flex-1 px-2 py-1 focus:outline-none text-sm"
+                    className="w-full px-3 py-1 text-sm focus:outline-none"
                     style={{
                       backgroundColor: "var(--color-primary)",
                       color: "var(--color-text)",
+                      border: "1px solid var(--color-accent)",
                     }}
-                    placeholder="_"
+                    placeholder="Enter name"
                   />
                 </div>
 
-                <div className="flex items-start">
-                  <span
-                    className="mr-2 w-4 text-xs mt-1"
+                <div>
+                  <label
+                    htmlFor="bio"
+                    className="text-xs font-mono block mb-2"
                     style={{ color: "var(--color-text)" }}
                   >
-                    {focusedElement === "bio" ? ">" : " "}
-                  </span>
-                  <div className="flex-1">
-                    <label
-                      htmlFor="bio"
-                      className="text-sm pr-2 block mb-1"
-                      style={{
-                        color: "var(--color-text)",
-                        backgroundColor: "var(--color-primary)",
-                      }}
-                    >
-                      <span className="underline">b</span>io
-                    </label>
-                    <textarea
-                      ref={bioInputRef}
-                      id="bio"
-                      value={editData.bio}
-                      onFocus={() => setFocusedElement("bio")}
-                      onBlur={() => setFocusedElement(null)}
-                      onChange={(e) =>
-                        setEditData((prev) => ({
-                          ...prev,
-                          bio: e.target.value,
-                        }))
-                      }
-                      rows={4}
-                      className="w-full px-2 py-1 focus:outline-none text-sm resize-vertical"
-                      style={{
-                        backgroundColor: "var(--color-primary)",
-                        color: "var(--color-text)",
-                      }}
-                      placeholder="_"
-                    />
-                  </div>
+                    <span className="underline">b</span>io
+                  </label>
+                  <textarea
+                    ref={bioInputRef}
+                    id="bio"
+                    value={editData.bio}
+                    onFocus={() => setFocusedElement("bio")}
+                    onBlur={() => setFocusedElement(null)}
+                    onChange={(e) =>
+                      setEditData((prev) => ({ ...prev, bio: e.target.value }))
+                    }
+                    rows={4}
+                    className="w-full px-3 py-1 text-sm focus:outline-none resize-vertical"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-text)",
+                      border: "1px solid var(--color-accent)",
+                    }}
+                    placeholder="Tell us about yourself"
+                  />
                 </div>
 
-                <div className="flex items-center justify-start space-x-4">
-                  <div className="flex items-center">
-                    <span
-                      className="mr-2 w-4 text-xs"
-                      style={{ color: "var(--color-text)" }}
-                    >
-                      {focusedElement === "save" ? ">" : " "}
-                    </span>
-                    <button
-                      ref={saveButtonRef}
-                      type="button"
-                      onClick={handleSaveProfile}
-                      onFocus={() => setFocusedElement("save")}
-                      onBlur={() => setFocusedElement(null)}
-                      className="px-2 py-1 font-medium focus:outline-none transition-colors text-sm"
-                      style={{
-                        backgroundColor: "var(--color-highlight)",
-                        color: "var(--color-primary)",
-                      }}
-                    >
-                      <span className="underline">S</span>ave
-                    </button>
-                  </div>
-                  <div className="flex items-center">
-                    <span
-                      className="mr-2 w-4 text-xs"
-                      style={{ color: "var(--color-text)" }}
-                    >
-                      {focusedElement === "cancel" ? ">" : " "}
-                    </span>
-                    <button
-                      onFocus={() => setFocusedElement("cancel")}
-                      onBlur={() => setFocusedElement(null)}
-                      onClick={() => setEditing(false)}
-                      className="font-medium text-sm focus:outline-none"
-                      style={{ color: "var(--color-text)" }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
+                <div className="flex flex-col gap-2">
+                  <button
+                    ref={saveButtonRef}
+                    type="button"
+                    onClick={handleSaveProfile}
+                    onFocus={() => setFocusedElement("save")}
+                    onBlur={() => setFocusedElement(null)}
+                    className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
+                    style={{
+                      backgroundColor: "var(--color-highlight)",
+                      color: "var(--color-primary)",
+                      border: "1px solid var(--color-highlight)",
+                    }}
+                  >
+                    <span className="underline">S</span>ave Changes
+                  </button>
+                  <button
+                    onFocus={() => setFocusedElement("cancel")}
+                    onBlur={() => setFocusedElement(null)}
+                    onClick={() => setEditing(false)}
+                    className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-text)",
+                      border: "1px solid var(--color-accent)",
+                    }}
+                  >
+                    Cancel
+                  </button>
                 </div>
-              </>
+              </div>
             ) : (
-              <>
+              <div className="space-y-3">
+                <div
+                  className="text-sm font-medium"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  @{profile.userTag}
+                </div>
+
                 {profile.name && (
-                  <div className="flex items-center">
-                    <span
-                      className="mr-2 w-4 text-xs"
-                      style={{ color: "var(--color-text)" }}
+                  <div>
+                    <div
+                      className="text-xs mb-1"
+                      style={{ color: "var(--color-accent)" }}
                     >
-                      {" "}
-                    </span>
-                    <label
-                      className="text-sm pr-2"
-                      style={{
-                        color: "var(--color-text)",
-                        backgroundColor: "var(--color-primary)",
-                      }}
-                    >
-                      name
-                    </label>
-                    <span
+                      Name:
+                    </div>
+                    <div
                       className="text-sm"
                       style={{ color: "var(--color-text)" }}
                     >
                       {profile.name}
-                    </span>
-                  </div>
-                )}
-
-                {profile.bio && (
-                  <div className="flex items-start">
-                    <span
-                      className="mr-2 w-4 text-xs mt-1"
-                      style={{ color: "var(--color-text)" }}
-                    >
-                      {" "}
-                    </span>
-                    <div className="flex-1">
-                      <label
-                        className="text-sm pr-2 block mb-1"
-                        style={{
-                          color: "var(--color-text)",
-                          backgroundColor: "var(--color-primary)",
-                        }}
-                      >
-                        bio
-                      </label>
-                      <p
-                        className="text-sm"
-                        style={{ color: "var(--color-text)" }}
-                      >
-                        {profile.bio}
-                      </p>
                     </div>
                   </div>
                 )}
 
-                <div className="flex items-center">
-                  <span
-                    className="mr-2 w-4 text-xs"
-                    style={{ color: "var(--color-text)" }}
+                {profile.bio && (
+                  <div>
+                    <div
+                      className="text-xs mb-1"
+                      style={{ color: "var(--color-accent)" }}
+                    >
+                      Bio:
+                    </div>
+                    <div
+                      className="text-sm"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      {profile.bio}
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <div
+                    className="text-xs mb-1"
+                    style={{ color: "var(--color-accent)" }}
                   >
-                    {" "}
-                  </span>
-                  <label
-                    className="text-sm pr-2"
-                    style={{
-                      color: "var(--color-text)",
-                      backgroundColor: "var(--color-primary)",
-                    }}
-                  >
-                    joined
-                  </label>
-                  <span
+                    Joined:
+                  </div>
+                  <div
                     className="text-sm"
                     style={{ color: "var(--color-text)" }}
                   >
                     {formatDate(profile.createdAt)}
-                  </span>
-                </div>
-
-                {isOwnProfile && (
-                  <div className="flex items-center">
-                    <span
-                      className="mr-2 w-4 text-xs"
-                      style={{ color: "var(--color-text)" }}
-                    >
-                      {focusedElement === "edit" ? ">" : " "}
-                    </span>
-                    <button
-                      ref={editButtonRef}
-                      onFocus={() => setFocusedElement("edit")}
-                      onBlur={() => setFocusedElement(null)}
-                      onClick={() => setEditing(true)}
-                      className="font-medium text-sm focus:outline-none"
-                      style={{ color: "var(--color-text)" }}
-                    >
-                      <span className="underline">E</span>dit Profile
-                    </button>
                   </div>
-                )}
-              </>
+                </div>
+              </div>
             )}
           </div>
 
-          {/* Tab Content */}
-          <div className="space-y-6 pt-6">
+          {/* Actions */}
+          <div>
+            <h3
+              className="text-xs font-semibold mb-3 uppercase tracking-wider"
+              style={{ color: "var(--color-accent)" }}
+            >
+              Actions
+            </h3>
+            <div className="space-y-2">
+              {isOwnProfile && !editing && (
+                <button
+                  ref={editButtonRef}
+                  onFocus={() => setFocusedElement("edit")}
+                  onBlur={() => setFocusedElement(null)}
+                  onClick={() => setEditing(true)}
+                  className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
+                  style={{
+                    backgroundColor: "var(--color-primary)",
+                    color: "var(--color-text)",
+                    border: "1px solid var(--color-accent)",
+                  }}
+                >
+                  <span className="underline">E</span>dit Profile
+                </button>
+              )}
+
+              {isOwnProfile && (
+                <Link
+                  ref={collectionsRef}
+                  href="/collections"
+                  className="block w-full px-3 py-1 text-sm font-medium text-center focus:outline-none"
+                  style={{
+                    backgroundColor: "var(--color-primary)",
+                    color: "var(--color-text)",
+                    border: "1px solid var(--color-accent)",
+                  }}
+                >
+                  <span className="underline">M</span>y Collections
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <div>
+            <h3
+              className="text-xs font-semibold mb-3 uppercase tracking-wider"
+              style={{ color: "var(--color-accent)" }}
+            >
+              Navigation
+            </h3>
+            <div className="space-y-2">
+              <button
+                ref={appsTabRef}
+                onFocus={() => setFocusedElement("apps")}
+                onBlur={() => setFocusedElement(null)}
+                onClick={() => setActiveTab("apps")}
+                className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
+                style={{
+                  backgroundColor:
+                    activeTab === "apps"
+                      ? "var(--color-highlight)"
+                      : "var(--color-primary)",
+                  color:
+                    activeTab === "apps"
+                      ? "var(--color-primary)"
+                      : "var(--color-text)",
+                  border: "1px solid var(--color-accent)",
+                }}
+              >
+                <span className="underline">A</span>pps ({profile.apps.length})
+              </button>
+
+              <button
+                ref={activityTabRef}
+                onFocus={() => setFocusedElement("activity")}
+                onBlur={() => setFocusedElement(null)}
+                onClick={() => setActiveTab("activity")}
+                className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
+                style={{
+                  backgroundColor:
+                    activeTab === "activity"
+                      ? "var(--color-highlight)"
+                      : "var(--color-primary)",
+                  color:
+                    activeTab === "activity"
+                      ? "var(--color-primary)"
+                      : "var(--color-text)",
+                  border: "1px solid var(--color-accent)",
+                }}
+              >
+                <span className="underline">C</span>omments (
+                {profile.comments.length})
+              </button>
+
+              <button
+                ref={achievementsTabRef}
+                onFocus={() => setFocusedElement("achievements")}
+                onBlur={() => setFocusedElement(null)}
+                onClick={() => setActiveTab("achievements")}
+                className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
+                style={{
+                  backgroundColor:
+                    activeTab === "achievements"
+                      ? "var(--color-highlight)"
+                      : "var(--color-primary)",
+                  color:
+                    activeTab === "achievements"
+                      ? "var(--color-primary)"
+                      : "var(--color-text)",
+                  border: "1px solid var(--color-accent)",
+                }}
+              >
+                Ac<span className="underline">h</span>ievements (
+                {profile.achievements.length})
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 ml-80">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <pre
+              className="text-xs md:text-sm whitespace-pre-wrap font-semibold mb-6"
+              style={{ color: "var(--color-accent)" }}
+            >
+              {termhuntText}
+            </pre>
+          </div>
+
+          {/* Content Area */}
+          <div>
             {activeTab === "apps" && (
               <div>
                 {profile.apps.length === 0 ? (
-                  <div className="flex items-center">
-                    <span
-                      className="mr-2 w-4 text-xs"
+                  <div className="flex items-center justify-center py-14">
+                    <div
+                      className="text-center"
                       style={{ color: "var(--color-text)" }}
                     >
-                      {" "}
-                    </span>
-                    <span
-                      className="text-sm"
-                      style={{ color: "var(--color-text)" }}
-                    >
-                      no apps published yet
-                    </span>
+                      <div className="text-lg font-mono mb-2">[ empty ]</div>
+                      <div className="text-sm">No apps published yet</div>
+                    </div>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-1">
                     {profile.apps.map((app, index) => (
-                      <div key={app.id} className="space-y-2">
-                        <div className="flex items-center">
-                          <span
-                            className="mr-2 w-4 text-xs"
-                            style={{ color: "var(--color-text)" }}
-                          >
-                            {" "}
-                          </span>
-                          <Link
-                            href={`/app/${app.id}`}
-                            className="text-sm focus:outline-none"
-                            style={{ color: "var(--color-text)" }}
-                          >
-                            {app.name}
-                          </Link>
-                        </div>
-
-                        <div className="flex items-start">
-                          <span
-                            className="mr-2 w-4 text-xs mt-1"
-                            style={{ color: "var(--color-text)" }}
-                          >
-                            {" "}
-                          </span>
-                          <div className="flex-1">
-                            <p
-                              className="text-sm"
+                      <div
+                        key={app.id}
+                        className="p-3 border"
+                        style={{
+                          borderColor: "var(--color-accent)",
+                          borderWidth: "1px",
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4 flex-1">
+                            <span
+                              className="text-sm font-bold w-12"
                               style={{ color: "var(--color-text)" }}
                             >
-                              {app.description}
-                            </p>
+                              #{index + 1}
+                            </span>
+
+                            <Link
+                              href={`/app/${app.id}`}
+                              className="text-sm font-medium focus:outline-none flex-1"
+                              style={{ color: "var(--color-text)" }}
+                            >
+                              {app.name}
+                            </Link>
+
+                            <div
+                              className="text-xs"
+                              style={{ color: "var(--color-accent)" }}
+                            >
+                              {formatDate(app.createdAt)}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-4">
+                            <span
+                              className="text-sm px-3 py-1"
+                              style={{
+                                backgroundColor: "var(--color-primary)",
+                                color: "var(--color-highlight)",
+                              }}
+                            >
+                              {app.voteCount} votes
+                            </span>
+                            <span
+                              className="text-sm px-3 py-1"
+                              style={{
+                                backgroundColor: "var(--color-primary)",
+                                color: "var(--color-accent)",
+                              }}
+                            >
+                              {app.viewCount} views
+                            </span>
                           </div>
                         </div>
 
-                        <div className="flex items-center">
-                          <span
-                            className="mr-2 w-4 text-xs"
+                        {app.shortDescription && (
+                          <div
+                            className="mt-2 text-sm ml-16"
                             style={{ color: "var(--color-text)" }}
                           >
-                            {" "}
-                          </span>
-                          <span
-                            className="text-xs"
-                            style={{ color: "var(--color-text)" }}
-                          >
-                            {app.viewCount} views • {app.voteCount} votes •{" "}
-                            {formatDate(app.createdAt)}
-                          </span>
-                        </div>
-
-                        {index < profile.apps.length - 1 && (
-                          <div className="mx-6">
-                            <div
-                              className="h-px"
-                              style={{ backgroundColor: "var(--color-accent)" }}
-                            />
+                            {app.shortDescription}
                           </div>
                         )}
                       </div>
@@ -674,70 +655,56 @@ export default function ProfilePage() {
             {activeTab === "activity" && (
               <div>
                 {profile.comments.length === 0 ? (
-                  <div className="flex items-center">
-                    <span
-                      className="mr-2 w-4 text-xs"
+                  <div className="flex items-center justify-center py-14">
+                    <div
+                      className="text-center"
                       style={{ color: "var(--color-text)" }}
                     >
-                      {" "}
-                    </span>
-                    <span
-                      className="text-sm"
-                      style={{ color: "var(--color-text)" }}
-                    >
-                      no comments yet
-                    </span>
+                      <div className="text-lg font-mono mb-2">[ empty ]</div>
+                      <div className="text-sm">No comments yet</div>
+                    </div>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-1">
                     {profile.comments.map((comment, index) => (
-                      <div key={comment.id} className="space-y-2">
-                        <div className="flex items-start">
-                          <span
-                            className="mr-2 w-4 text-xs mt-1"
-                            style={{ color: "var(--color-text)" }}
-                          >
-                            {" "}
-                          </span>
+                      <div
+                        key={comment.id}
+                        className="p-3 border"
+                        style={{
+                          borderColor: "var(--color-accent)",
+                          borderWidth: "1px",
+                        }}
+                      >
+                        <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <p
-                              className="text-sm mb-1"
+                            <div
+                              className="text-sm mb-2"
                               style={{ color: "var(--color-text)" }}
                             >
                               {comment.content}
-                            </p>
-                            <div className="flex items-center space-x-2">
-                              <span
-                                className="text-xs"
-                                style={{ color: "var(--color-text)" }}
-                              >
+                            </div>
+
+                            <div className="flex items-center space-x-2 text-xs">
+                              <span style={{ color: "var(--color-accent)" }}>
                                 on
                               </span>
                               <Link
                                 href={`/app/${comment.appId}`}
-                                className="text-xs focus:outline-none"
+                                className="hover:underline focus:outline-none"
                                 style={{ color: "var(--color-text)" }}
                               >
                                 {comment.appName}
                               </Link>
-                              <span
-                                className="text-xs"
-                                style={{ color: "var(--color-text)" }}
-                              >
-                                • {formatDate(comment.createdAt)}
-                              </span>
                             </div>
                           </div>
-                        </div>
 
-                        {index < profile.comments.length - 1 && (
-                          <div className="mx-6">
-                            <div
-                              className="h-px"
-                              style={{ backgroundColor: "var(--color-accent)" }}
-                            />
+                          <div
+                            className="text-xs ml-4"
+                            style={{ color: "var(--color-accent)" }}
+                          >
+                            {formatDate(comment.createdAt)}
                           </div>
-                        )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -748,83 +715,56 @@ export default function ProfilePage() {
             {activeTab === "achievements" && (
               <div>
                 {profile.achievements.length === 0 ? (
-                  <div className="flex items-center">
-                    <span
-                      className="mr-2 w-4 text-xs"
+                  <div className="flex items-center justify-center py-14">
+                    <div
+                      className="text-center"
                       style={{ color: "var(--color-text)" }}
                     >
-                      {" "}
-                    </span>
-                    <span
-                      className="text-sm"
-                      style={{ color: "var(--color-text)" }}
-                    >
-                      no achievements yet
-                    </span>
+                      <div className="text-lg font-mono mb-2">[ empty ]</div>
+                      <div className="text-sm">No achievements yet</div>
+                    </div>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-1">
                     {profile.achievements.map((achievement, index) => (
-                      <div key={achievement.id} className="space-y-2">
-                        <div className="flex items-center">
-                          <span
-                            className="mr-2 w-4 text-xs"
-                            style={{ color: "var(--color-text)" }}
-                          >
-                            {" "}
-                          </span>
-                          <span
-                            className="text-sm mr-2"
-                            style={{ color: "var(--color-text)" }}
-                          >
-                            {achievement.type === "first_app"
-                              ? "📱"
-                              : achievement.type === "popular_app"
-                              ? "⭐"
-                              : achievement.type === "veteran"
-                              ? "🏆"
-                              : "🎖️"}
-                          </span>
-                          <span
-                            className="text-sm font-semibold"
-                            style={{ color: "var(--color-text)" }}
-                          >
-                            {achievement.title}
-                          </span>
-                        </div>
-
-                        <div className="flex items-start">
-                          <span
-                            className="mr-2 w-4 text-xs mt-1"
-                            style={{ color: "var(--color-text)" }}
-                          >
-                            {" "}
-                          </span>
+                      <div
+                        key={achievement.id}
+                        className="p-3 border"
+                        style={{
+                          borderColor: "var(--color-accent)",
+                          borderWidth: "1px",
+                        }}
+                      >
+                        <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <p
-                              className="text-sm mb-1"
+                            <div
+                              className="text-sm font-medium mb-1"
+                              style={{ color: "var(--color-text)" }}
+                            >
+                              {achievement.title}
+                            </div>
+
+                            <div
+                              className="text-sm mb-2"
                               style={{ color: "var(--color-text)" }}
                             >
                               {achievement.description}
-                            </p>
-                            <div className="flex items-center space-x-2">
-                              <span
-                                className="text-xs"
-                                style={{ color: "var(--color-text)" }}
-                              >
+                            </div>
+
+                            <div className="flex items-center space-x-2 text-xs">
+                              <span style={{ color: "var(--color-accent)" }}>
                                 earned {formatDate(achievement.awardedAt)}
                               </span>
                               {achievement.appName && (
                                 <>
                                   <span
-                                    className="text-xs"
-                                    style={{ color: "var(--color-text)" }}
+                                    style={{ color: "var(--color-accent)" }}
                                   >
                                     for
                                   </span>
                                   <Link
                                     href={`/app/${achievement.appId}`}
-                                    className="text-xs focus:outline-none"
+                                    className="hover:underline focus:outline-none"
                                     style={{ color: "var(--color-text)" }}
                                   >
                                     {achievement.appName}
@@ -834,15 +774,6 @@ export default function ProfilePage() {
                             </div>
                           </div>
                         </div>
-
-                        {index < profile.achievements.length - 1 && (
-                          <div className="mx-6">
-                            <div
-                              className="h-px"
-                              style={{ backgroundColor: "var(--color-accent)" }}
-                            />
-                          </div>
-                        )}
                       </div>
                     ))}
                   </div>

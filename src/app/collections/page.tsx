@@ -241,131 +241,147 @@ export default function MyCollectionsPage() {
 
   return (
     <div
-      className="min-h-screen pt-20 pb-8"
+      className="min-h-screen pt-20 pb-8 flex font-mono"
       style={{ backgroundColor: "var(--color-primary)" }}
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <pre
-            className="text-xs md:text-sm whitespace-pre-wrap font-semibold mb-6"
-            style={{ color: "var(--color-accent)" }}
+      {/* Fixed Sidebar */}
+      <div className="fixed left-0 top-20 h-[calc(100vh-5rem)] z-40 w-80">
+        <div
+          className="p-4 border-b"
+          style={{ borderColor: "var(--color-accent)" }}
+        >
+          <h2
+            className="font-bold text-sm"
+            style={{ color: "var(--color-highlight)" }}
           >
-            {`
-  ___           _ _           _   _                 
- / __\\___  _ __| | |___  ___| |_(_) ___  _ __  ___ 
-/ /  / _ \\| '__| | / _ \\/ _ \\ __| |/ _ \\| '_ \\/ __|
-/ /__| (_) | |  | | (_) |  __/ |_| | (_) | | | \\__ \\
-\\____/\\___/|_|  |_|\\___/ \\___|\\__|_|\\___/|_| |_|___/
-                                                  
-  COLLECTION MANAGER
-  `}
-          </pre>
+            COLLECTIONS
+          </h2>
         </div>
 
-        <div className="flex gap-6 max-w-[1000px] mx-auto">
-          {/* Collections Sidebar */}
-          <div className="w-1/3">
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <h1
-                  className="text-lg font-mono font-semibold"
-                  style={{ color: "var(--color-text)" }}
-                >
-                  {"> collections"}
-                </h1>
-                <button
-                  onClick={() => setShowCreateForm(true)}
-                  className="font-mono text-sm focus:outline-none"
-                  style={{ color: "var(--color-text)" }}
-                >
-                  [+new]
-                </button>
-              </div>
+        <div className="p-4 space-y-6 overflow-y-auto h-full">
+          {/* Create New Collection */}
+          <div>
+            <h3
+              className="text-xs font-semibold mb-3 uppercase tracking-wider"
+              style={{ color: "var(--color-accent)" }}
+            >
+              Actions
+            </h3>
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
+              style={{
+                backgroundColor: "var(--color-primary)",
+                color: "var(--color-text)",
+                border: "1px solid var(--color-accent)",
+              }}
+            >
+              + Create Collection
+            </button>
+          </div>
 
-              {/* Create Form */}
-              {showCreateForm && (
-                <div
-                  className="mb-6 pb-4 border-b"
-                  style={{ borderColor: "var(--color-accent)" }}
-                >
-                  <div className="space-y-3">
-                    <div>
-                      <label
-                        className="text-xs font-mono block mb-1"
-                        style={{ color: "var(--color-text)" }}
-                      >
-                        name
-                      </label>
-                      <input
-                        type="text"
-                        value={newCollection.name}
-                        onChange={(e) =>
-                          setNewCollection({
-                            ...newCollection,
-                            name: e.target.value,
-                          })
-                        }
-                        placeholder="_"
-                        className="w-full px-2 py-1 text-sm font-mono focus:outline-none"
-                        style={{
-                          backgroundColor: "var(--color-primary)",
-                          color: "var(--color-text)",
-                          borderBottom: "1px solid var(--color-accent)",
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <label
-                        className="text-xs font-mono block mb-1"
-                        style={{ color: "var(--color-text)" }}
-                      >
-                        description
-                      </label>
-                      <textarea
-                        value={newCollection.description}
-                        onChange={(e) =>
-                          setNewCollection({
-                            ...newCollection,
-                            description: e.target.value,
-                          })
-                        }
-                        placeholder="_"
-                        className="w-full px-2 py-1 text-sm font-mono focus:outline-none resize-vertical"
-                        style={{
-                          backgroundColor: "var(--color-primary)",
-                          color: "var(--color-text)",
-                          border: "1px solid var(--color-accent)",
-                        }}
-                        rows={2}
-                      />
-                    </div>
-                    <div className="flex space-x-4">
-                      <button
-                        onClick={createCollection}
-                        disabled={!newCollection.name.trim()}
-                        className="px-2 py-1 font-mono text-sm focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                        style={{
-                          backgroundColor: "var(--color-highlight)",
-                          color: "var(--color-primary)",
-                        }}
-                      >
-                        create
-                      </button>
-                      <button
-                        onClick={() => setShowCreateForm(false)}
-                        className="font-mono text-sm focus:outline-none"
-                        style={{ color: "var(--color-text)" }}
-                      >
-                        cancel
-                      </button>
-                    </div>
-                  </div>
+          {/* Create Form */}
+          {showCreateForm && (
+            <div>
+              <h3
+                className="text-xs font-semibold mb-3 uppercase tracking-wider"
+                style={{ color: "var(--color-accent)" }}
+              >
+                New Collection
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label
+                    className="text-xs block mb-2"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    value={newCollection.name}
+                    onChange={(e) =>
+                      setNewCollection({
+                        ...newCollection,
+                        name: e.target.value,
+                      })
+                    }
+                    placeholder="Enter collection name"
+                    className="w-full px-3 py-1 text-sm focus:outline-none"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-text)",
+                      border: "1px solid var(--color-accent)",
+                    }}
+                  />
                 </div>
-              )}
 
-              {/* Collections List */}
-              {collections.length > 0 ? (
+                <div>
+                  <label
+                    className="text-xs block mb-2"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    Description
+                  </label>
+                  <textarea
+                    value={newCollection.description}
+                    onChange={(e) =>
+                      setNewCollection({
+                        ...newCollection,
+                        description: e.target.value,
+                      })
+                    }
+                    placeholder="Enter description (optional)"
+                    className="w-full px-3 py-1 text-sm focus:outline-none resize-vertical"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-text)",
+                      border: "1px solid var(--color-accent)",
+                    }}
+                    rows={3}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={createCollection}
+                    disabled={!newCollection.name.trim()}
+                    className="w-full px-3 py-1 text-sm font-medium focus:outline-none disabled:opacity-50"
+                    style={{
+                      backgroundColor: "var(--color-highlight)",
+                      color: "var(--color-primary)",
+                      border: "1px solid var(--color-highlight)",
+                    }}
+                  >
+                    Create
+                  </button>
+                  <button
+                    onClick={() => setShowCreateForm(false)}
+                    className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-text)",
+                      border: "1px solid var(--color-accent)",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Collections List */}
+          <div>
+            <h3
+              className="text-xs font-semibold mb-3 uppercase tracking-wider"
+              style={{ color: "var(--color-accent)" }}
+            >
+              My Collections ({collections.length})
+            </h3>
+
+            {collections.length > 0 ? (
+              <div className="space-y-2">
                 <DragDropCollections
                   collections={collections}
                   selectedCollection={selectedCollection}
@@ -380,140 +396,142 @@ export default function MyCollectionsPage() {
                   onCollectionReorder={reorderCollections}
                   setEditingCollection={setEditingCollection}
                 />
-              ) : !showCreateForm ? (
-                <div className="text-center py-8">
-                  <div
-                    className="text-sm font-mono mb-4"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    [ ] empty
-                  </div>
-                  <p
-                    className="font-mono mb-4 text-sm"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    no collections yet
-                  </p>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div
+                  className="text-sm mb-4"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  [ empty ]
+                </div>
+                <p
+                  className="text-sm mb-4"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  No collections yet
+                </p>
+                {!showCreateForm && (
                   <button
                     onClick={() => setShowCreateForm(true)}
-                    className="px-3 py-1 font-mono text-sm focus:outline-none"
+                    className="px-3 py-1 text-sm font-medium focus:outline-none"
                     style={{
                       backgroundColor: "var(--color-highlight)",
                       color: "var(--color-primary)",
+                      border: "1px solid var(--color-highlight)",
                     }}
                   >
-                    create_first_collection
+                    Create your first collection
                   </button>
-                </div>
-              ) : null}
-            </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 ml-80">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <pre
+              className="text-xs md:text-sm whitespace-pre-wrap font-semibold mb-6"
+              style={{ color: "var(--color-accent)" }}
+            >
+              {`
+ ___           _ _           _   _                 
+/ __\\___  _ __| | |___  ___| |_(_) ___  _ __  ___ 
+/ /  / _ \\| '__| | / _ \\/ _ \\ __| |/ _ \\| '_ \\/ __|
+/ /__| (_) | |  | | (_) |  __/ |_| | (_) | | | \\__ \\
+\\____/\\___/|_|  |_|\\___/ \\___|\\__|_|\\___/|_| |_|___/
+                                                  
+  COLLECTION MANAGER
+  `}
+            </pre>
           </div>
 
-          {/* Collection Content */}
-          <div className="flex-1">
+          {/* Content Area */}
+          <div>
             {selectedCollection ? (
-              <div
-                className="border p-6"
-                style={{
-                  backgroundColor: "var(--color-primary)",
-                  borderColor: "var(--color-accent)",
-                }}
-              >
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2
-                      className="text-lg font-mono font-semibold"
-                      style={{ color: "var(--color-text)" }}
-                    >
-                      {"> " + selectedCollection.name}
-                    </h2>
-                    {selectedCollection.description && (
-                      <p
-                        className="mt-1 text-sm font-mono"
-                        style={{ color: "var(--color-text)" }}
-                      >
-                        {selectedCollection.description}
-                      </p>
-                    )}
+              <div>
+                {/* Collection Header */}
+                <div className="mb-6">
+                  <h1
+                    className="text-xl font-medium mb-2"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    {selectedCollection.name}
+                  </h1>
+                  {selectedCollection.description && (
                     <p
-                      className="text-xs font-mono mt-2"
+                      className="text-sm mb-3"
                       style={{ color: "var(--color-text)" }}
                     >
-                      {selectedCollection.appCount} apps • created{" "}
-                      {formatDate(selectedCollection.createdAt)}
+                      {selectedCollection.description}
                     </p>
+                  )}
+                  <div
+                    className="text-xs"
+                    style={{ color: "var(--color-accent)" }}
+                  >
+                    {selectedCollection.appCount} apps • created{" "}
+                    {formatDate(selectedCollection.createdAt)}
                   </div>
                 </div>
 
                 {/* Apps in Collection */}
                 {appsLoading ? (
-                  <div className="flex justify-center py-12">
+                  <div className="flex items-center justify-center py-14">
                     <div
-                      className="font-mono text-sm"
+                      className="text-lg font-mono"
                       style={{ color: "var(--color-text)" }}
                     >
                       loading_apps...
                     </div>
                   </div>
                 ) : collectionApps.length > 0 ? (
-                  <DragDropApps
-                    apps={collectionApps}
-                    onAppRemove={(appId) =>
-                      removeAppFromCollection(selectedCollection.id, appId)
-                    }
-                    onAppReorder={reorderApps}
-                    formatDate={formatDate}
-                  />
+                  <div className="space-y-1">
+                    <DragDropApps
+                      apps={collectionApps}
+                      onAppRemove={(appId) =>
+                        removeAppFromCollection(selectedCollection.id, appId)
+                      }
+                      onAppReorder={reorderApps}
+                      formatDate={formatDate}
+                    />
+                  </div>
                 ) : (
-                  <div className="text-center py-12">
+                  <div className="flex items-center justify-center py-14">
                     <div
-                      className="text-sm font-mono mb-4"
+                      className="text-center"
                       style={{ color: "var(--color-text)" }}
                     >
-                      [ ] empty_collection
+                      <div className="text-lg font-mono mb-2">[ empty ]</div>
+                      <div className="text-sm mb-4">
+                        This collection is empty
+                      </div>
+                      <div className="text-xs">
+                        Browse apps and click "Add to Collection" to add them
+                        here
+                      </div>
                     </div>
-                    <p
-                      className="font-mono mb-4 text-sm"
-                      style={{ color: "var(--color-text)" }}
-                    >
-                      this collection is empty
-                    </p>
-                    <p
-                      className="text-xs font-mono"
-                      style={{ color: "var(--color-text)" }}
-                    >
-                      browse apps and click +collection to add them here
-                    </p>
                   </div>
                 )}
               </div>
             ) : (
-              <div
-                className="border p-6"
-                style={{
-                  backgroundColor: "var(--color-primary)",
-                  borderColor: "var(--color-accent)",
-                }}
-              >
-                <div className="text-center py-12">
-                  <div
-                    className="text-sm font-mono mb-4"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    [ ? ] select_collection
+              <div className="flex items-center justify-center py-14">
+                <div
+                  className="text-center"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  <div className="text-lg font-mono mb-2">[ ? ]</div>
+                  <div className="text-lg font-medium mb-2">
+                    Choose Collection
                   </div>
-                  <h3
-                    className="text-lg font-mono font-semibold mb-2"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    choose collection
-                  </h3>
-                  <p
-                    className="font-mono text-sm"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    select a collection from sidebar to view and manage apps
-                  </p>
+                  <div className="text-sm">
+                    Select a collection from the sidebar to view and manage apps
+                  </div>
                 </div>
               </div>
             )}
