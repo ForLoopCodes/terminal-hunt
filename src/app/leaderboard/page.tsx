@@ -179,7 +179,7 @@ export default function LeaderboardPage() {
           {limitedEntries.map((entry, index) => (
             <div
               key={entry.appId}
-              className="p-4 border"
+              className="p-2 border"
               style={{
                 borderColor: "var(--color-accent)",
                 borderWidth: "1px",
@@ -242,7 +242,7 @@ export default function LeaderboardPage() {
         {limitedEntries.map((entry, index) => (
           <div
             key={entry.appId}
-            className="p-4 border"
+            className="p-2 px-3 border"
             style={{
               borderColor: "var(--color-accent)",
               borderWidth: "1px",
@@ -313,7 +313,10 @@ export default function LeaderboardPage() {
           className="p-4 border-b"
           style={{ borderColor: "var(--color-accent)" }}
         >
-          <h2 className="font-bold" style={{ color: "var(--color-highlight)" }}>
+          <h2
+            className="font-bold text-sm"
+            style={{ color: "var(--color-highlight)" }}
+          >
             FILTERS
           </h2>
         </div>
@@ -411,7 +414,7 @@ export default function LeaderboardPage() {
                           : "2px solid transparent",
                     }}
                   >
-                    most{" "}
+                    most {sort.key === "votes" ? "" : "v"}
                     <span className="underline">
                       {sort.key === "votes" ? "v" : "i"}
                     </span>
@@ -639,52 +642,76 @@ export default function LeaderboardPage() {
             </div>
           ) : data ? (
             <div className="space-y-6">
-              {/* Results Header */}
-              <div
-                className="flex items-center justify-between p-4"
-                style={{ backgroundColor: "var(--color-secondary)" }}
-              >
-                <div className="flex items-center space-x-4">
-                  <span
-                    className="text-sm font-bold"
-                    style={{ color: "var(--color-highlight)" }}
-                  >
-                    {activeTab === "votes" ? "Most Voted" : "Most Viewed"}
-                  </span>
-                  <span
-                    className="text-sm px-3 py-1"
-                    style={{
-                      backgroundColor: "var(--color-primary)",
-                      color: "var(--color-text)",
-                    }}
-                  >
-                    {activePeriod} period
-                  </span>
-                </div>
-
-                <div
-                  className="text-sm"
-                  style={{ color: "var(--color-accent)" }}
-                >
-                  Showing{" "}
-                  {Math.min(
-                    parseInt(displayLimit),
-                    activeTab === "votes"
-                      ? data.voteLeaderboard.length
-                      : data.viewLeaderboard.length
-                  )}{" "}
-                  of{" "}
-                  {activeTab === "votes"
-                    ? data.voteLeaderboard.length
-                    : data.viewLeaderboard.length}{" "}
-                  results
-                </div>
-              </div>
-
               {/* Leaderboard Content */}
               {activeTab === "votes"
                 ? renderLeaderboardTable(data.voteLeaderboard, "votes")
                 : renderLeaderboardTable(data.viewLeaderboard, "views")}
+
+              {/* Pagination */}
+              {data && (
+                <div className="flex items-center justify-center mt-8 space-x-4">
+                  {(activeTab === "votes"
+                    ? data.voteLeaderboard.length > parseInt(displayLimit)
+                    : data.viewLeaderboard.length > parseInt(displayLimit)) && (
+                    <button
+                      onClick={() => {
+                        const currentEntries =
+                          activeTab === "votes"
+                            ? data.voteLeaderboard
+                            : data.viewLeaderboard;
+                        const currentLimit = parseInt(displayLimit);
+                        const hasMore = currentEntries.length > currentLimit;
+                        if (hasMore) {
+                          const nextLimit = Math.min(
+                            currentLimit + 25,
+                            currentEntries.length
+                          );
+                          setDisplayLimit(nextLimit.toString());
+                        }
+                      }}
+                      className="px-2 py-1 text-sm font-medium focus:outline-none"
+                      style={{
+                        backgroundColor: "var(--color-accent)",
+                        color: "var(--color-primary)",
+                        border: "1px solid var(--color-accent)",
+                      }}
+                    >
+                      load more
+                    </button>
+                  )}
+
+                  <span
+                    className="text-xs"
+                    style={{ color: "var(--color-text)" }}
+                  >
+                    showing{" "}
+                    {Math.min(
+                      parseInt(displayLimit),
+                      activeTab === "votes"
+                        ? data.voteLeaderboard.length
+                        : data.viewLeaderboard.length
+                    )}{" "}
+                    of{" "}
+                    {activeTab === "votes"
+                      ? data.voteLeaderboard.length
+                      : data.viewLeaderboard.length}
+                  </span>
+
+                  {parseInt(displayLimit) > 25 && (
+                    <button
+                      onClick={() => setDisplayLimit("25")}
+                      className="px-4 py-2 text-sm font-medium focus:outline-none"
+                      style={{
+                        backgroundColor: "var(--color-primary)",
+                        color: "var(--color-text)",
+                        border: "1px solid var(--color-accent)",
+                      }}
+                    >
+                      reset
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           ) : null}
         </div>
