@@ -48,6 +48,8 @@ export async function GET(
       .select({
         appId: votes.appId,
         appName: apps.name,
+        appShortDescription: apps.shortDescription,
+        appWebsite: apps.website,
         creatorName: users.name,
         creatorUserTag: users.userTag,
         voteCount: sql<number>`count(${votes.id})`.as("vote_count"),
@@ -56,7 +58,14 @@ export async function GET(
       .innerJoin(apps, eq(votes.appId, apps.id))
       .innerJoin(users, eq(apps.creatorId, users.id))
       .where(gte(votes.createdAt, startDate))
-      .groupBy(votes.appId, apps.name, users.name, users.userTag)
+      .groupBy(
+        votes.appId,
+        apps.name,
+        apps.shortDescription,
+        apps.website,
+        users.name,
+        users.userTag
+      )
       .orderBy(desc(sql`count(${votes.id})`))
       .limit(10);
 
@@ -65,6 +74,8 @@ export async function GET(
       .select({
         appId: viewLogs.appId,
         appName: apps.name,
+        appShortDescription: apps.shortDescription,
+        appWebsite: apps.website,
         creatorName: users.name,
         creatorUserTag: users.userTag,
         viewCount: sql<number>`count(${viewLogs.id})`.as("view_count"),
@@ -73,7 +84,14 @@ export async function GET(
       .innerJoin(apps, eq(viewLogs.appId, apps.id))
       .innerJoin(users, eq(apps.creatorId, users.id))
       .where(gte(viewLogs.viewedAt, startDate))
-      .groupBy(viewLogs.appId, apps.name, users.name, users.userTag)
+      .groupBy(
+        viewLogs.appId,
+        apps.name,
+        apps.shortDescription,
+        apps.website,
+        users.name,
+        users.userTag
+      )
       .orderBy(desc(sql`count(${viewLogs.id})`))
       .limit(10);
 

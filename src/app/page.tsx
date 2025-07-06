@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { AppCard } from "@/components/AppCard";
 import { SearchBar } from "@/components/SearchBar";
 import { TagFilter } from "@/components/TagFilter";
+import { AppListItem } from "@/components/AppListItem";
 import Link from "next/link";
 
 interface App {
@@ -139,17 +140,15 @@ export default function Home() {
     if (viewMode === "grid") {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {apps.map((app) => (
-            <div
+          {apps.map((app, index) => (
+            <AppListItem
               key={app.id}
-              className="p-2 border"
-              style={{
-                borderColor: "var(--color-accent)",
-                borderWidth: "1px",
-              }}
-            >
-              <AppCard app={app} />
-            </div>
+              app={app}
+              index={index}
+              showRanking={true}
+              showStats={true}
+              statsType="both"
+            />
           ))}
         </div>
       );
@@ -159,65 +158,14 @@ export default function Home() {
     return (
       <div className="space-y-1">
         {apps.map((app, index) => (
-          <div
+          <AppListItem
             key={app.id}
-            className="p-2 px-3 border"
-            style={{
-              borderColor: "var(--color-accent)",
-              borderWidth: "1px",
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4 flex-1">
-                <span
-                  className="text-sm font-bold w-12"
-                  style={{ color: "var(--color-text)" }}
-                >
-                  #{index + 1}
-                </span>
-
-                <Link
-                  href={`/app/${app.id}`}
-                  className="text-sm font-medium focus:outline-none flex-1"
-                  style={{ color: "var(--color-text)" }}
-                >
-                  {app.name}
-                </Link>
-
-                <div className="flex items-center text-xs">
-                  <span style={{ color: "var(--color-accent)" }}>by </span>
-                  <Link
-                    href={`/profile/${app.creatorUserTag}`}
-                    className="ml-1 focus:outline-none"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    @{app.creatorUserTag}
-                  </Link>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-4">
-                <span
-                  className="text-sm px-3 py-1"
-                  style={{
-                    backgroundColor: "var(--color-primary)",
-                    color: "var(--color-highlight)",
-                  }}
-                >
-                  {app.voteCount} votes
-                </span>
-                <span
-                  className="text-sm px-3 py-1"
-                  style={{
-                    backgroundColor: "var(--color-primary)",
-                    color: "var(--color-accent)",
-                  }}
-                >
-                  {app.viewCount} views
-                </span>
-              </div>
-            </div>
-          </div>
+            app={app}
+            index={index}
+            showRanking={true}
+            showStats={true}
+            statsType="both"
+          />
         ))}
       </div>
     );

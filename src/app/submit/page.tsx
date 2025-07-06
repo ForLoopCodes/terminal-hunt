@@ -4,10 +4,12 @@ import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 
 interface Tag {
   id: string;
   name: string;
+  count?: number;
 }
 
 export default function SubmitAppPage() {
@@ -19,12 +21,17 @@ export default function SubmitAppPage() {
     shortDescription: "",
     description: "",
     website: "",
+    documentationUrl: "",
+    asciiArt: "",
     installCommands: "",
     repoUrl: "",
     tagIds: [] as string[],
   });
 
   const [tags, setTags] = useState<Tag[]>([]);
+  const [tagSearch, setTagSearch] = useState("");
+  const [showTagDropdown, setShowTagDropdown] = useState(false);
+  const [searchResults, setSearchResults] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [previewMode, setPreviewMode] = useState<
@@ -34,9 +41,14 @@ export default function SubmitAppPage() {
 
   // Refs for programmatic focus
   const nameRef = useRef<HTMLInputElement>(null);
+  const shortDescRef = useRef<HTMLInputElement>(null);
+  const websiteRef = useRef<HTMLInputElement>(null);
+  const docRef = useRef<HTMLInputElement>(null);
+  const asciiRef = useRef<HTMLTextAreaElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const installRef = useRef<HTMLTextAreaElement>(null);
   const repoRef = useRef<HTMLInputElement>(null);
+  const tagSearchRef = useRef<HTMLInputElement>(null);
   const submitRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -48,6 +60,19 @@ export default function SubmitAppPage() {
   useEffect(() => {
     fetchTags();
   }, []);
+
+  // Debounced tag search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (tagSearch.trim()) {
+        searchTags(tagSearch);
+      } else {
+        setSearchResults([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [tagSearch]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -69,6 +94,22 @@ export default function SubmitAppPage() {
           e.preventDefault();
           nameRef.current?.focus();
           break;
+        case "s":
+          e.preventDefault();
+          shortDescRef.current?.focus();
+          break;
+        case "w":
+          e.preventDefault();
+          websiteRef.current?.focus();
+          break;
+        case "c":
+          e.preventDefault();
+          docRef.current?.focus();
+          break;
+        case "a":
+          e.preventDefault();
+          asciiRef.current?.focus();
+          break;
         case "d":
           e.preventDefault();
           descriptionRef.current?.focus();
@@ -80,6 +121,10 @@ export default function SubmitAppPage() {
         case "r":
           e.preventDefault();
           repoRef.current?.focus();
+          break;
+        case "t":
+          e.preventDefault();
+          tagSearchRef.current?.focus();
           break;
         case "u":
           e.preventDefault();
@@ -102,11 +147,85 @@ export default function SubmitAppPage() {
 
   const fetchTags = async () => {
     try {
-      const response = await fetch("/api/tags");
+      console.log("Fetching popular tags...");
+      const response = await fetch("/api/tags?limit=15");
+      console.log("Tags response status:", response.status);
       const data = await response.json();
+      console.log("Tags data:", data);
       setTags(data.tags || []);
     } catch (error) {
       console.error("Error fetching tags:", error);
+    }
+  };
+
+  const searchTags = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/tags?search=${encodeURIComponent(query)}&limit=10`
+      );
+      const data = await response.json();
+      setSearchResults(data.tags || []);
+    } catch (error) {
+      console.error("Error searching tags:", error);
+      setSearchResults([]);
+    }
+  };
+
+  const createNewTag = async (tagName: string) => {
+    try {
+      const response = await fetch("/api/tags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: tagName }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const newTag = data.tag;
+
+        // Add to selected tags
+        setFormData((prev) => ({
+          ...prev,
+          tagIds: [...prev.tagIds, newTag.id],
+        }));
+
+        // Add to tags list and search results
+        setTags((prev) => [newTag, ...prev]);
+        setSearchResults((prev) => [newTag, ...prev]);
+
+        // Clear search
+        setTagSearch("");
+        setShowTagDropdown(false);
+
+        return newTag;
+      } else {
+        const errorData = await response.json();
+        if (response.status === 409) {
+          // Tag already exists, try to find and select it
+          await searchTags(tagName);
+
+          // Try to find the existing tag in current results or tags
+          const existingTag = [...tags, ...searchResults].find(
+            (tag) => tag.name.toLowerCase() === tagName.toLowerCase()
+          );
+
+          if (existingTag && !formData.tagIds.includes(existingTag.id)) {
+            handleTagToggle(existingTag.id);
+          }
+
+          setTagSearch("");
+          setShowTagDropdown(false);
+        } else {
+          console.error("Error creating tag:", errorData.error);
+        }
+      }
+    } catch (error) {
+      console.error("Error creating tag:", error);
     }
   };
 
@@ -193,7 +312,7 @@ export default function SubmitAppPage() {
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-400 font-mono text-lg">loading_submit...</div>
+        <div className="text-gray-400 font-mono text-sm">loading_submit...</div>
       </div>
     );
   }
@@ -311,6 +430,7 @@ export default function SubmitAppPage() {
               <span className="underline">s</span>hort description
             </label>
             <input
+              ref={shortDescRef}
               type="text"
               id="shortDescription"
               value={formData.shortDescription}
@@ -337,6 +457,99 @@ export default function SubmitAppPage() {
               style={{ color: "var(--color-highlight)" }}
             >
               ! {errors.shortDescription}
+            </div>
+          )}
+
+          {/* Website */}
+          <div className="flex items-center">
+            <span
+              className="mr-2 w-4 text-xs"
+              style={{ color: "var(--color-text)" }}
+            >
+              {focusedElement === "website" ? ">" : " "}
+            </span>
+            <label
+              htmlFor="website"
+              className="text-sm pr-2"
+              style={{
+                color: "var(--color-text)",
+                backgroundColor: "var(--color-primary)",
+              }}
+            >
+              <span className="underline">w</span>ebsite
+            </label>
+            <input
+              ref={websiteRef}
+              type="url"
+              id="website"
+              value={formData.website}
+              onFocus={() => setFocusedElement("website")}
+              onBlur={() => setFocusedElement(null)}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, website: e.target.value }))
+              }
+              className="flex-1 px-2 py-1 focus:outline-none text-sm"
+              style={{
+                backgroundColor: "var(--color-primary)",
+                color: "var(--color-text)",
+              }}
+              placeholder="_"
+            />
+          </div>
+          {errors.website && (
+            <div
+              className="ml-6 text-sm"
+              style={{ color: "var(--color-highlight)" }}
+            >
+              ! {errors.website}
+            </div>
+          )}
+
+          {/* Documentation URL */}
+          <div className="flex items-center">
+            <span
+              className="mr-2 w-4 text-xs"
+              style={{ color: "var(--color-text)" }}
+            >
+              {focusedElement === "doc" ? ">" : " "}
+            </span>
+            <label
+              htmlFor="documentationUrl"
+              className="text-sm pr-2"
+              style={{
+                color: "var(--color-text)",
+                backgroundColor: "var(--color-primary)",
+              }}
+            >
+              do<span className="underline">c</span>s
+            </label>
+            <input
+              ref={docRef}
+              type="url"
+              id="documentationUrl"
+              value={formData.documentationUrl}
+              onFocus={() => setFocusedElement("doc")}
+              onBlur={() => setFocusedElement(null)}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  documentationUrl: e.target.value,
+                }))
+              }
+              className="flex-1 px-2 py-1 focus:outline-none text-sm"
+              style={{
+                backgroundColor: "var(--color-primary)",
+                color: "var(--color-text)",
+              }}
+              placeholder="_"
+            />
+          </div>
+          {errors.documentationUrl && (
+            <div
+              className="ml-6 text-sm"
+              style={{ color: "var(--color-highlight)" }}
+            >
+              ! {errors.documentationUrl}
             </div>
           )}
 
@@ -432,9 +645,11 @@ export default function SubmitAppPage() {
                       color: "var(--color-text)",
                     }}
                   >
-                    <ReactMarkdown>
-                      {formData.description || "*No content to preview*"}
-                    </ReactMarkdown>
+                    <MarkdownRenderer
+                      content={
+                        formData.description || "*No content to preview*"
+                      }
+                    />
                   </div>
                 ) : (
                   <textarea
@@ -519,10 +734,12 @@ export default function SubmitAppPage() {
                       color: "var(--color-text)",
                     }}
                   >
-                    <ReactMarkdown>
-                      {formData.installCommands ||
-                        "*No installation instructions*"}
-                    </ReactMarkdown>
+                    <MarkdownRenderer
+                      content={
+                        formData.installCommands ||
+                        "*No installation instructions*"
+                      }
+                    />
                   </div>
                 ) : (
                   <textarea
@@ -561,51 +778,275 @@ export default function SubmitAppPage() {
             )}
           </div>
 
+          {/* ASCII Art */}
+          <div>
+            <div className="flex items-start">
+              <span
+                className="mr-2 w-4 text-xs mt-1"
+                style={{ color: "var(--color-text)" }}
+              >
+                {focusedElement === "ascii" ? ">" : " "}
+              </span>
+              <div className="flex-1">
+                <label
+                  htmlFor="asciiArt"
+                  className="text-sm block mb-2"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  <span className="underline">a</span>scii art (optional)
+                </label>
+                <textarea
+                  ref={asciiRef}
+                  id="asciiArt"
+                  value={formData.asciiArt}
+                  onFocus={() => setFocusedElement("ascii")}
+                  onBlur={() => setFocusedElement(null)}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      asciiArt: e.target.value,
+                    }))
+                  }
+                  rows={6}
+                  className="w-full px-3 py-2 border focus:outline-none text-xs font-mono"
+                  style={{
+                    backgroundColor: "var(--color-primary)",
+                    border: "1px solid var(--color-accent)",
+                    color: "var(--color-text)",
+                    resize: "vertical",
+                  }}
+                  placeholder="create custom ascii art for your app..."
+                />
+              </div>
+            </div>
+            {errors.asciiArt && (
+              <div
+                className="ml-6 text-sm"
+                style={{ color: "var(--color-highlight)" }}
+              >
+                ! {errors.asciiArt}
+              </div>
+            )}
+          </div>
+
           {/* Tags */}
-          <div className="mx-6">
+          <div className="ml-6">
             <label
               className="block text-sm mb-2"
               style={{ color: "var(--color-text)" }}
             >
-              tags (select multiple)
+              <span className="underline">t</span>ags (select multiple)
             </label>
+
+            {/* Tag Search */}
+            <div className="relative mb-3">
+              <div className="flex items-center">
+                <span
+                  className="-ml-6 mr-2 w-4 text-xs"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  {showTagDropdown ? ">" : " "}
+                </span>
+                <input
+                  ref={tagSearchRef}
+                  type="text"
+                  value={tagSearch}
+                  onChange={(e) => setTagSearch(e.target.value)}
+                  onFocus={() => setShowTagDropdown(true)}
+                  onBlur={() => {
+                    // Delay hiding dropdown to allow clicks
+                    setTimeout(() => setShowTagDropdown(false), 200);
+                  }}
+                  className="flex-1 px-2 py-1 focus:outline-none text-sm"
+                  style={{
+                    backgroundColor: "var(--color-primary)",
+                    color: "var(--color-text)",
+                    border: "1px solid var(--color-accent)",
+                  }}
+                  placeholder="search tags or create new..."
+                />
+              </div>
+
+              {/* Search Dropdown */}
+              {showTagDropdown &&
+                (tagSearch.trim() || searchResults.length > 0) && (
+                  <div
+                    className="absolute top-full left-6 right-0 mt-1 border max-h-48 overflow-y-auto z-10"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      border: "1px solid var(--color-accent)",
+                    }}
+                  >
+                    {searchResults.length > 0 ? (
+                      <>
+                        {searchResults.map((tag) => (
+                          <button
+                            key={tag.id}
+                            type="button"
+                            onClick={() => {
+                              handleTagToggle(tag.id);
+                              setTagSearch("");
+                              setShowTagDropdown(false);
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-opacity-50 transition-colors flex items-center justify-between"
+                            style={{
+                              color: formData.tagIds.includes(tag.id)
+                                ? "var(--color-highlight)"
+                                : "var(--color-text)",
+                              backgroundColor: "transparent",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor =
+                                "var(--color-accent)";
+                              e.currentTarget.style.opacity = "0.3";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor =
+                                "transparent";
+                              e.currentTarget.style.opacity = "1";
+                            }}
+                          >
+                            <span>{tag.name}</span>
+                            <span style={{ color: "var(--color-accent)" }}>
+                              {formData.tagIds.includes(tag.id)
+                                ? "✓"
+                                : `${tag.count || 0}`}
+                            </span>
+                          </button>
+                        ))}
+                        {tagSearch.trim() &&
+                          !searchResults.some(
+                            (tag) =>
+                              tag.name.toLowerCase() ===
+                              tagSearch.trim().toLowerCase()
+                          ) && (
+                            <button
+                              type="button"
+                              onClick={() => createNewTag(tagSearch.trim())}
+                              className="w-full text-left px-3 py-2 text-sm transition-colors border-t"
+                              style={{
+                                color: "var(--color-accent)",
+                                backgroundColor: "transparent",
+                                borderTop: "1px solid var(--color-accent)",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                  "var(--color-accent)";
+                                e.currentTarget.style.opacity = "0.3";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                  "transparent";
+                                e.currentTarget.style.opacity = "1";
+                              }}
+                            >
+                              + Create "{tagSearch.trim()}"
+                            </button>
+                          )}
+                      </>
+                    ) : tagSearch.trim() ? (
+                      <button
+                        type="button"
+                        onClick={() => createNewTag(tagSearch.trim())}
+                        className="w-full text-left px-3 py-2 text-sm transition-colors"
+                        style={{
+                          color: "var(--color-accent)",
+                          backgroundColor: "transparent",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor =
+                            "var(--color-accent)";
+                          e.currentTarget.style.opacity = "0.3";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = "transparent";
+                          e.currentTarget.style.opacity = "1";
+                        }}
+                      >
+                        + Create "{tagSearch.trim()}"
+                      </button>
+                    ) : null}
+                  </div>
+                )}
+            </div>
+
+            {/* Selected Tags */}
+            {formData.tagIds.length > 0 && (
+              <div className="mb-3">
+                <span
+                  className="text-xs mb-2 block"
+                  style={{ color: "var(--color-accent)" }}
+                >
+                  selected tags:
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {formData.tagIds.map((tagId) => {
+                    const tag = [...tags, ...searchResults].find(
+                      (t) => t.id === tagId
+                    );
+                    if (!tag) return null;
+                    return (
+                      <button
+                        key={tag.id}
+                        type="button"
+                        onClick={() => handleTagToggle(tag.id)}
+                        className="px-3 py-1 text-sm transition-colors flex items-center gap-2"
+                        style={{
+                          backgroundColor: "var(--color-highlight)",
+                          color: "var(--color-primary)",
+                        }}
+                      >
+                        {tag.name}
+                        <span className="text-xs">×</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Popular Tags */}
             {tags.length === 0 ? (
               <div className="text-sm" style={{ color: "var(--color-accent)" }}>
                 Loading tags...
               </div>
             ) : (
-              <div
-                className="flex flex-wrap gap-2 min-h-[2.5rem] p-3"
-                style={{
-                  backgroundColor: "var(--color-primary)",
-                }}
-              >
-                {tags.map((tag) => (
-                  <button
-                    key={tag.id}
-                    type="button"
-                    onClick={() => handleTagToggle(tag.id)}
-                    className="px-3 py-1 text-sm transition-colors"
-                    style={{
-                      backgroundColor: formData.tagIds.includes(tag.id)
-                        ? "var(--color-highlight)"
-                        : "var(--color-primary)",
-                      color: formData.tagIds.includes(tag.id)
-                        ? "var(--color-primary)"
-                        : "var(--color-text)",
-                    }}
-                  >
-                    {tag.name}
-                  </button>
-                ))}
-                {tags.length === 0 && (
-                  <span
-                    className="text-sm"
-                    style={{ color: "var(--color-accent)" }}
-                  >
-                    No tags available
-                  </span>
-                )}
+              <div>
+                <span
+                  className="text-xs mb-2 block"
+                  style={{ color: "var(--color-accent)" }}
+                >
+                  popular tags:
+                </span>
+                <div
+                  className="flex flex-wrap gap-2 min-h-[2.5rem] p-3"
+                  style={{
+                    backgroundColor: "var(--color-primary)",
+                    border: "1px solid var(--color-accent)",
+                  }}
+                >
+                  {tags.map((tag) => (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      onClick={() => handleTagToggle(tag.id)}
+                      className="px-3 py-1 text-sm transition-colors"
+                      style={{
+                        backgroundColor: formData.tagIds.includes(tag.id)
+                          ? "var(--color-highlight)"
+                          : "transparent",
+                        color: formData.tagIds.includes(tag.id)
+                          ? "var(--color-primary)"
+                          : "var(--color-text)",
+                        border: formData.tagIds.includes(tag.id)
+                          ? "none"
+                          : "1px solid var(--color-accent)",
+                      }}
+                    >
+                      {tag.name}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -631,8 +1072,41 @@ export default function SubmitAppPage() {
                 color: "var(--color-primary)",
               }}
             >
-              {loading ? "uploading..." : "[upload app]"}
+              {loading ? (
+                "uploading..."
+              ) : (
+                <>
+                  [<span className="underline">u</span>pload app]
+                </>
+              )}
             </button>
+          </div>
+
+          {/* Keyboard Shortcuts Help */}
+          <div
+            className="mt-8 ml-6 p-3 text-xs"
+            style={{
+              backgroundColor: "var(--color-primary)",
+              border: "1px solid var(--color-accent)",
+              color: "var(--color-accent)",
+            }}
+          >
+            <div className="font-mono mb-1">keyboard shortcuts:</div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono">
+              <span>[n] name</span>
+              <span>[s] short desc</span>
+              <span>[w] website</span>
+              <span>[c] docs</span>
+              <span>[a] ascii art</span>
+              <span>[d] description</span>
+              <span>[i] install</span>
+              <span>[r] repo</span>
+              <span>[t] tags</span>
+              <span>[p] preview desc</span>
+              <span>[v] preview install</span>
+              <span>[u] upload</span>
+              <span>[u] upload</span>
+            </div>
           </div>
         </div>
       </div>

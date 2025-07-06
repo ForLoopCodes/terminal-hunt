@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { db } from "@/lib/db";
-import { users, apps, comments, achievements } from "@/lib/db/schema";
+import { users, apps, comments, achievements, votes } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function GET(
@@ -37,12 +37,30 @@ export async function GET(
       .select({
         id: apps.id,
         name: apps.name,
+        shortDescription: apps.shortDescription,
         description: apps.description,
+        website: apps.website,
+        asciiArt: apps.asciiArt,
         viewCount: apps.viewCount,
         createdAt: apps.createdAt,
       })
       .from(apps)
       .where(eq(apps.creatorId, userProfile.id));
+
+    // Get vote counts for each app
+    const appsWithVotes = await Promise.all(
+      userApps.map(async (app) => {
+        const voteCount = await db
+          .select()
+          .from(votes)
+          .where(eq(votes.appId, app.id));
+
+        return {
+          ...app,
+          voteCount: voteCount.length,
+        };
+      })
+    );
 
     // Get user's comments
     const userComments = await db
@@ -74,7 +92,7 @@ export async function GET(
 
     return NextResponse.json({
       ...userProfile,
-      apps: userApps,
+      apps: appsWithVotes,
       comments: userComments,
       achievements: userAchievements,
     });

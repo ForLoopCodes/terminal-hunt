@@ -2,16 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { db } from "@/lib/db";
-import { votes, users } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { votes, users, apps } from "@/lib/db/schema";
+import { eq, and, sql } from "drizzle-orm";
 
+// POST method for voting (upvote)
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
 
-  if (!session?.user) {
+  if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -19,54 +20,90 @@ export async function POST(
     const { id: appId } = await params;
 
     // Get user from database
-    const user = await db
-      .select()
+    const userResult = await db
+      .select({ id: users.id })
       .from(users)
       .where(eq(users.email, session.user.email))
       .limit(1);
 
-    if (!user.length) {
+    if (!userResult.length) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const userId = userResult[0].id;
+
+    // Check if app exists
+    const appExists = await db
+      .select({ id: apps.id })
+      .from(apps)
+      .where(eq(apps.id, appId))
+      .limit(1);
+
+    if (!appExists.length) {
+      return NextResponse.json({ error: "App not found" }, { status: 404 });
     }
 
     // Check if user already voted
     const existingVote = await db
-      .select()
+      .select({ id: votes.id })
       .from(votes)
-      .where(and(eq(votes.userId, user[0].id), eq(votes.appId, appId)))
+      .where(and(eq(votes.userId, userId), eq(votes.appId, appId)))
       .limit(1);
 
     if (existingVote.length > 0) {
-      return NextResponse.json({ error: "Already voted" }, { status: 400 });
-    }
+      // User already voted, remove the vote (toggle off)
+      await db
+        .delete(votes)
+        .where(and(eq(votes.userId, userId), eq(votes.appId, appId)));
 
-    // Create vote
-    const [newVote] = await db
-      .insert(votes)
-      .values({
-        userId: user[0].id,
+      // Get updated vote count
+      const voteCountResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(votes)
+        .where(eq(votes.appId, appId));
+
+      return NextResponse.json({
+        voted: false,
+        voteCount: Number(voteCountResult[0]?.count || 0),
+        message: "Vote removed",
+      });
+    } else {
+      // User hasn't voted, create new vote
+      await db.insert(votes).values({
+        userId,
         appId,
-      })
-      .returning();
+        createdAt: new Date(),
+      });
 
-    return NextResponse.json(newVote, { status: 201 });
+      // Get updated vote count
+      const voteCountResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(votes)
+        .where(eq(votes.appId, appId));
+
+      return NextResponse.json({
+        voted: true,
+        voteCount: Number(voteCountResult[0]?.count || 0),
+        message: "Vote added",
+      });
+    }
   } catch (error) {
-    console.error("Error creating vote:", error);
+    console.error("Error handling vote:", error);
     return NextResponse.json(
-      { error: "Failed to create vote" },
+      { error: "Failed to process vote" },
       { status: 500 }
     );
   }
 }
 
-// DELETE method for unliking
+// DELETE method for removing vote (downvote)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
 
-  if (!session?.user) {
+  if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -74,31 +111,39 @@ export async function DELETE(
     const { id: appId } = await params;
 
     // Get user from database
-    const user = await db
-      .select()
+    const userResult = await db
+      .select({ id: users.id })
       .from(users)
       .where(eq(users.email, session.user.email))
       .limit(1);
 
-    if (!user.length) {
+    if (!userResult.length) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Delete the vote
+    const userId = userResult[0].id;
+
+    // Delete the vote if it exists
     const deletedVote = await db
       .delete(votes)
-      .where(and(eq(votes.userId, user[0].id), eq(votes.appId, appId)))
+      .where(and(eq(votes.userId, userId), eq(votes.appId, appId)))
       .returning();
 
-    if (!deletedVote.length) {
-      return NextResponse.json({ error: "Vote not found" }, { status: 404 });
-    }
+    // Get updated vote count
+    const voteCountResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(votes)
+      .where(eq(votes.appId, appId));
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      voted: false,
+      voteCount: Number(voteCountResult[0]?.count || 0),
+      message: deletedVote.length > 0 ? "Vote removed" : "No vote to remove",
+    });
   } catch (error) {
-    console.error("Error deleting vote:", error);
+    console.error("Error removing vote:", error);
     return NextResponse.json(
-      { error: "Failed to delete vote" },
+      { error: "Failed to remove vote" },
       { status: 500 }
     );
   }

@@ -12,3 +12,6 @@ export { CommentActions } from "./CommentActions";
 export { CollectionsModal } from "./CollectionsModal";
 export { DragDropCollections } from "./DragDropCollections";
 export { DragDropApps } from "./DragDropApps";
+export { MarkdownRenderer } from "./MarkdownRenderer";
+export { EditAppButton } from "./EditAppButton";
+export { AppListItem } from "./AppListItem";

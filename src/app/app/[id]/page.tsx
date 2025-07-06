@@ -6,6 +6,9 @@ import ReactMarkdown from "react-markdown";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { CollectionsModal } from "@/components/CollectionsModal";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
+import { formatAsciiArt } from "@/lib/ascii-utils";
+import { EditAppButton } from "@/components/EditAppButton";
 
 interface AppDetail {
   id: string;
@@ -13,10 +16,13 @@ interface AppDetail {
   shortDescription?: string;
   description: string;
   website?: string;
+  documentationUrl?: string;
+  asciiArt?: string;
   installCommands: string;
   repoUrl: string;
   viewCount: number;
   createdAt: string;
+  creatorId: string;
   creatorName: string;
   creatorUserTag: string;
   voteCount: number;
@@ -48,7 +54,10 @@ export default function ViewAppPage() {
 
   useEffect(() => {
     fetchApp();
-  }, [appId]);
+    if (session) {
+      checkVoteStatus();
+    }
+  }, [appId, session]);
 
   const fetchApp = async () => {
     try {
@@ -70,6 +79,24 @@ export default function ViewAppPage() {
     }
   };
 
+  const checkVoteStatus = async () => {
+    try {
+      const response = await fetch(`/api/apps/${appId}/vote-status`);
+      const data = await response.json();
+      setApp((prev) =>
+        prev
+          ? {
+              ...prev,
+              userHasVoted: data.hasVoted,
+              voteCount: data.voteCount,
+            }
+          : null
+      );
+    } catch (error) {
+      console.error("Error checking vote status:", error);
+    }
+  };
+
   const handleVote = async () => {
     if (!session || voting) return;
 
@@ -85,11 +112,16 @@ export default function ViewAppPage() {
           prev
             ? {
                 ...prev,
+                userHasVoted: data.voted,
                 voteCount: data.voteCount,
-                userHasVoted: data.hasVoted,
+                // Keep the same view count to prevent increment
+                viewCount: prev.viewCount,
               }
             : null
         );
+      } else {
+        const errorData = await response.json();
+        console.error("Voting error:", errorData.error);
       }
     } catch (error) {
       console.error("Error voting:", error);
@@ -294,6 +326,17 @@ export default function ViewAppPage() {
                   Website
                 </a>
               )}
+              {app.documentationUrl && (
+                <a
+                  href={app.documentationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-sm font-medium focus:outline-none"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  Documentation
+                </a>
+              )}
             </div>
           </div>
 
@@ -310,7 +353,7 @@ export default function ViewAppPage() {
                 <button
                   onClick={handleVote}
                   disabled={voting}
-                  className="w-full px-3 py-2 text-sm font-medium focus:outline-none disabled:opacity-50"
+                  className="w-full px-3 py-1 text-sm font-medium focus:outline-none disabled:opacity-50"
                   style={{
                     backgroundColor: app.userHasVoted
                       ? "var(--color-highlight)"
@@ -320,12 +363,14 @@ export default function ViewAppPage() {
                       : "var(--color-text)",
                     border: "1px solid var(--color-accent)",
                   }}
+                  title={app.userHasVoted ? "Remove vote" : "Vote for this app"}
                 >
-                  {app.userHasVoted ? "★ Voted" : "☆ Vote"}
+                  {app.userHasVoted ? "↓ Remove Vote" : "↑ Vote"} (
+                  {app.voteCount})
                 </button>
                 <button
                   onClick={() => setShowCollectionsModal(true)}
-                  className="w-full px-3 py-2 text-sm font-medium focus:outline-none"
+                  className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
                   style={{
                     backgroundColor: "var(--color-primary)",
                     color: "var(--color-text)",
@@ -334,6 +379,15 @@ export default function ViewAppPage() {
                 >
                   + Add to Collection
                 </button>
+
+                {/* Edit button for app creator */}
+                {session?.user?.email && app && (
+                  <EditAppButton
+                    appId={app.id}
+                    creatorId={app.creatorId}
+                    userEmail={session.user.email}
+                  />
+                )}
               </div>
             </div>
           )}
@@ -343,6 +397,21 @@ export default function ViewAppPage() {
       {/* Main Content */}
       <div className="flex-1 ml-80">
         <div className="max-w-4xl mx-auto px-6 lg:px-8">
+          {/* ASCII Art */}
+          <div className="mb-16">
+           
+            <div
+              className="p-4 font-mono text-xs text-center overflow-x-auto"
+              style={{
+                backgroundColor: "var(--color-primary)",
+                color: "var(--color-accent)",
+              }}
+            >
+              <pre className="whitespace-pre">
+                {formatAsciiArt(app.asciiArt || "", app.name)}
+              </pre>
+            </div>
+          </div>
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center space-x-4 mb-4">
@@ -386,6 +455,7 @@ export default function ViewAppPage() {
             </div>
           </div>
 
+
           {/* README / Description */}
           <div className="mb-8">
             <div className="flex items-center mb-4">
@@ -397,14 +467,32 @@ export default function ViewAppPage() {
               </h2>
             </div>
             <div
-              className="prose prose-sm max-w-none p-4 border"
+              className="p-4"
               style={{
                 backgroundColor: "var(--color-primary)",
-                borderColor: "var(--color-accent)",
-                color: "var(--color-text)",
               }}
             >
-              <ReactMarkdown>{app.description}</ReactMarkdown>
+              <MarkdownRenderer content={app.description} />
+            </div>
+          </div>
+
+          {/* Installation */}
+          <div className="mb-8">
+            <div className="flex items-center mb-4">
+              <h2
+                className="text-sm font-semibold"
+                style={{ color: "var(--color-text)" }}
+              >
+                INSTALLATION
+              </h2>
+            </div>
+            <div
+              className="p-4"
+              style={{
+                backgroundColor: "var(--color-primary)",
+              }}
+            >
+              <MarkdownRenderer content={app.installCommands} />
             </div>
           </div>
 
@@ -423,8 +511,7 @@ export default function ViewAppPage() {
             {session && (
               <form onSubmit={handleCommentSubmit} className="mb-6">
                 <div
-                  className="border p-4"
-                  style={{ borderColor: "var(--color-accent)" }}
+                  className="p-0"
                 >
                   <textarea
                     value={commentContent}
@@ -438,11 +525,11 @@ export default function ViewAppPage() {
                     }}
                     rows={3}
                   />
-                  <div className="flex justify-end mt-3">
+                  <div className="flex justify-start mt-3">
                     <button
                       type="submit"
                       disabled={submittingComment || !commentContent.trim()}
-                      className="px-4 py-2 text-sm font-medium focus:outline-none disabled:opacity-50"
+                      className="px-4 py-1 text-sm font-medium focus:outline-none disabled:opacity-50"
                       style={{
                         backgroundColor: "var(--color-highlight)",
                         color: "var(--color-primary)",

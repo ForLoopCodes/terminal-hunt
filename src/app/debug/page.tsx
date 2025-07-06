@@ -51,7 +51,7 @@ export default function DebugPage() {
 
         {/* Session Status */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-blue-400 mb-3">
+          <h2 className="text-sm font-semibold text-blue-400 mb-3">
             Session Status
           </h2>
           <div className="bg-gray-900 p-4 rounded border border-gray-700">
@@ -88,7 +88,7 @@ export default function DebugPage() {
 
         {/* Database User */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-blue-400 mb-3">
+          <h2 className="text-sm font-semibold text-blue-400 mb-3">
             Database User
           </h2>
           <div className="bg-gray-900 p-4 rounded border border-gray-700">
@@ -106,7 +106,7 @@ export default function DebugPage() {
 
         {/* Auth Actions */}
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-blue-400">Auth Actions</h2>
+          <h2 className="text-sm font-semibold text-blue-400">Auth Actions</h2>
 
           {!session ? (
             <div className="space-x-4">
@@ -143,7 +143,7 @@ export default function DebugPage() {
 
         {/* Environment Info */}
         <div className="mt-6">
-          <h2 className="text-lg font-semibold text-blue-400 mb-3">
+          <h2 className="text-sm font-semibold text-blue-400 mb-3">
             Environment Info
           </h2>
           <div className="bg-gray-900 p-4 rounded border border-gray-700">

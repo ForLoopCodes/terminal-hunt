@@ -2,10 +2,13 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { AppListItem } from "@/components/AppListItem";
 
 interface LeaderboardEntry {
   appId: string;
   appName: string;
+  appShortDescription?: string;
+  appWebsite?: string;
   creatorName: string;
   creatorUserTag: string;
   voteCount?: number;
@@ -242,16 +245,16 @@ export default function LeaderboardPage() {
         {limitedEntries.map((entry, index) => (
           <div
             key={entry.appId}
-            className="p-2 px-3 border"
+            className="p-3 border"
             style={{
               borderColor: "var(--color-accent)",
               borderWidth: "1px",
             }}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4 flex-1">
+            <div className="flex items-start justify-between">
+              <div className="flex items-start space-x-4 flex-1 min-w-0">
                 <span
-                  className="text-sm font-bold w-12"
+                  className="text-sm font-bold w-8 flex-shrink-0 mt-1"
                   style={{
                     color:
                       index === 0
@@ -266,28 +269,54 @@ export default function LeaderboardPage() {
                   #{index + 1}
                 </span>
 
-                <Link
-                  href={`/app/${entry.appId}`}
-                  className="text-sm font-medium focus:outline-none flex-1"
-                  style={{ color: "var(--color-text)" }}
-                >
-                  {entry.appName}
-                </Link>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Link
+                      href={`/app/${entry.appId}`}
+                      className="text-sm font-medium focus:outline-none hover:underline"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      {entry.appName}
+                    </Link>
+                    {entry.appWebsite && (
+                      <a
+                        href={entry.appWebsite}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs focus:outline-none hover:underline truncate max-w-20"
+                        style={{ color: "var(--color-accent)" }}
+                        title={entry.appWebsite}
+                      >
+                        {entry.appWebsite.replace(/^https?:\/\//, "")}
+                      </a>
+                    )}
+                  </div>
 
-                <div className="flex items-center text-xs">
-                  <span style={{ color: "var(--color-accent)" }}>by </span>
-                  <Link
-                    href={`/profile/${entry.creatorUserTag}`}
-                    className="ml-1 focus:outline-none"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    @{entry.creatorUserTag}
-                  </Link>
+                  {entry.appShortDescription && (
+                    <div
+                      className="text-xs mb-2 leading-relaxed"
+                      style={{ color: "var(--color-text-secondary)" }}
+                      title={entry.appShortDescription}
+                    >
+                      {entry.appShortDescription}
+                    </div>
+                  )}
+
+                  <div className="flex items-center text-xs">
+                    <span style={{ color: "var(--color-accent)" }}>by </span>
+                    <Link
+                      href={`/profile/${entry.creatorUserTag}`}
+                      className="ml-1 focus:outline-none hover:underline"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      @{entry.creatorUserTag}
+                    </Link>
+                  </div>
                 </div>
               </div>
 
               <span
-                className="text-sm px-3 py-1 ml-4"
+                className="text-sm px-3 py-1 ml-4 flex-shrink-0"
                 style={{
                   backgroundColor: "var(--color-primary)",
                   color: "var(--color-highlight)",
@@ -671,7 +700,7 @@ export default function LeaderboardPage() {
                       }}
                       className="px-2 py-1 text-sm font-medium focus:outline-none"
                       style={{
-                        backgroundColor: "var(--color-accent)",
+                        backgroundColor: "var(--color-primary)",
                         color: "var(--color-primary)",
                         border: "1px solid var(--color-accent)",
                       }}

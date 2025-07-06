@@ -7,7 +7,7 @@ export default function AboutPage() {
         </h1>
 
         <div className="prose dark:prose-invert max-w-none">
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
             Terminal Hunt is a community-driven platform for discovering and
             sharing amazing terminal-based applications. Think of it as Product
             Hunt, but specifically for command-line tools and terminal
@@ -37,7 +37,7 @@ export default function AboutPage() {
           </h2>
           <div className="grid md:grid-cols-2 gap-6 mb-6">
             <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                 📝 Easy Submission
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
@@ -47,7 +47,7 @@ export default function AboutPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                 ⭐ Community Voting
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
@@ -57,7 +57,7 @@ export default function AboutPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                 🏆 Leaderboards
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
@@ -67,7 +67,7 @@ export default function AboutPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                 💬 Community Discussion
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
@@ -77,7 +77,7 @@ export default function AboutPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                 🏷️ Smart Tagging
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
@@ -87,7 +87,7 @@ export default function AboutPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                 🔍 Powerful Search
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
@@ -148,7 +148,7 @@ export default function AboutPage() {
           </p>
 
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-blue-900 dark:text-blue-100 mb-2">
+            <h3 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
               Ready to explore?
             </h3>
             <p className="text-blue-700 dark:text-blue-200 mb-4">

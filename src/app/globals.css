@@ -9,6 +9,7 @@
   --color-accent: #4b6688;
   --color-highlight: #5bc0be;
   --color-text: #6fffe9;
+  --color-text-secondary: #4b6688;
 
   --background: var(--color-primary);
   --foreground: var(--color-text);
@@ -30,4 +31,114 @@ body {
 
 * {
   font-family: var(--font-geist-mono), "geist mono", monospace !important;
+}
+
+/* Markdown Styles for ReactMarkdown components */
+.markdown-content {
+  font-family: var(--font-geist-mono), monospace;
+  color: var(--color-text);
+}
+
+.markdown-content h1 {
+  font-size: 0.875rem; /* text-sm */
+  font-weight: bold;
+  text-decoration: underline;
+  color: var(--color-highlight);
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
+}
+
+.markdown-content h2 {
+  font-size: 0.875rem; /* text-sm */
+  font-weight: bold;
+  text-decoration: underline;
+  color: var(--color-accent);
+  margin-bottom: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  font-size: 0.75rem; /* text-xs */
+  font-weight: bold;
+  text-decoration: underline;
+  color: var(--color-text);
+  margin-bottom: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.markdown-content p {
+  font-size: 0.75rem; /* text-xs */
+  color: var(--color-text);
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.markdown-content code {
+  font-size: 0.75rem; /* text-xs */
+  background-color: var(--color-secondary);
+  color: var(--color-highlight);
+  padding: 0.125rem 0.25rem;
+  border: 1px solid var(--color-accent);
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.markdown-content pre {
+  font-size: 0.75rem; /* text-xs */
+  background-color: var(--color-secondary);
+  color: var(--color-text);
+  padding: 0.75rem;
+  border: 1px solid var(--color-accent);
+  overflow-x: auto;
+  margin: 0.5rem 0;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.markdown-content pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-text);
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  font-size: 0.75rem; /* text-xs */
+  color: var(--color-text);
+  margin-left: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-content li {
+  margin-bottom: 0.125rem;
+}
+
+.markdown-content blockquote {
+  font-size: 0.75rem; /* text-xs */
+  border-left: 2px solid var(--color-accent);
+  padding-left: 0.75rem;
+  margin: 0.5rem 0;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.markdown-content a {
+  color: var(--color-highlight);
+  text-decoration: underline;
+}
+
+.markdown-content a:hover {
+  color: var(--color-accent);
+}
+
+.markdown-content strong {
+  font-weight: bold;
+  color: var(--color-highlight);
+}
+
+.markdown-content em {
+  font-style: italic;
+  color: var(--color-text-secondary);
 }

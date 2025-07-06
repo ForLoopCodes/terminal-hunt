@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { AppListItem } from "@/components/AppListItem";
 
 interface UserProfile {
   id: string;
@@ -23,6 +24,7 @@ interface App {
   shortDescription?: string;
   description: string;
   website?: string;
+  asciiArt?: string;
   viewCount: number;
   voteCount: number;
   createdAt: string;
@@ -205,7 +207,7 @@ export default function ProfilePage() {
         style={{ backgroundColor: "var(--color-primary)" }}
       >
         <div
-          className="font-mono text-lg"
+          className="font-mono text-sm"
           style={{ color: "var(--color-text)" }}
         >
           loading_profile...
@@ -223,7 +225,7 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto px-6 py-8">
           <div className="text-center py-12">
             <p
-              className="text-lg font-mono"
+              className="text-sm font-mono"
               style={{ color: "var(--color-highlight)" }}
             >
               ! {error}
@@ -249,7 +251,7 @@ export default function ProfilePage() {
  ' \`-' ;'  \`-' /| |      | |  | |  | | | |  | |' \`-'  / | |  | |' \`-' ;  
   \`.__.  \`.__.'(___)    (___)(___)(___|___)(___)'.__.' (___)(___)\`.__.   
                   
-  P R O F I L E   @${profile.userTag}
+P R O F I L E   @ ${profile.userTag.toLocaleUpperCase().split('').join(' ').trim()}
   `;
 
   return (
@@ -575,77 +577,30 @@ export default function ProfilePage() {
                       className="text-center"
                       style={{ color: "var(--color-text)" }}
                     >
-                      <div className="text-lg font-mono mb-2">[ empty ]</div>
+                      <div className="text-sm font-mono mb-2">[ empty ]</div>
                       <div className="text-sm">No apps published yet</div>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-1">
                     {profile.apps.map((app, index) => (
-                      <div
+                      <AppListItem
                         key={app.id}
-                        className="p-3 border"
-                        style={{
-                          borderColor: "var(--color-accent)",
-                          borderWidth: "1px",
+                        app={{
+                          id: app.id,
+                          name: app.name,
+                          shortDescription: app.shortDescription,
+                          website: app.website,
+                          voteCount: app.voteCount,
+                          viewCount: app.viewCount,
+                          creatorUserTag: profile.userTag,
+                          asciiArt: app.asciiArt,
                         }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-4 flex-1">
-                            <span
-                              className="text-sm font-bold w-12"
-                              style={{ color: "var(--color-text)" }}
-                            >
-                              #{index + 1}
-                            </span>
-
-                            <Link
-                              href={`/app/${app.id}`}
-                              className="text-sm font-medium focus:outline-none flex-1"
-                              style={{ color: "var(--color-text)" }}
-                            >
-                              {app.name}
-                            </Link>
-
-                            <div
-                              className="text-xs"
-                              style={{ color: "var(--color-accent)" }}
-                            >
-                              {formatDate(app.createdAt)}
-                            </div>
-                          </div>
-
-                          <div className="flex items-center space-x-4">
-                            <span
-                              className="text-sm px-3 py-1"
-                              style={{
-                                backgroundColor: "var(--color-primary)",
-                                color: "var(--color-highlight)",
-                              }}
-                            >
-                              {app.voteCount} votes
-                            </span>
-                            <span
-                              className="text-sm px-3 py-1"
-                              style={{
-                                backgroundColor: "var(--color-primary)",
-                                color: "var(--color-accent)",
-                              }}
-                            >
-                              {app.viewCount} views
-                            </span>
-                          </div>
-                        </div>
-
-                        {app.shortDescription && (
-                          <div
-                            className="mt-2 text-sm ml-16"
-                            style={{ color: "var(--color-text)" }}
-                          >
-                            {app.shortDescription}
-                          </div>
-                        )}
-                      </div>
+                        index={index}
+                        showStats={true}
+                        statsType="both"
+                        showRanking={true}
+                      />
                     ))}
                   </div>
                 )}
@@ -660,7 +615,7 @@ export default function ProfilePage() {
                       className="text-center"
                       style={{ color: "var(--color-text)" }}
                     >
-                      <div className="text-lg font-mono mb-2">[ empty ]</div>
+                      <div className="text-sm font-mono mb-2">[ empty ]</div>
                       <div className="text-sm">No comments yet</div>
                     </div>
                   </div>
@@ -720,7 +675,7 @@ export default function ProfilePage() {
                       className="text-center"
                       style={{ color: "var(--color-text)" }}
                     >
-                      <div className="text-lg font-mono mb-2">[ empty ]</div>
+                      <div className="text-sm font-mono mb-2">[ empty ]</div>
                       <div className="text-sm">No achievements yet</div>
                     </div>
                   </div>

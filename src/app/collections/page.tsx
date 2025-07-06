@@ -26,6 +26,8 @@ interface App {
   appId: string;
   appName: string;
   appDescription: string;
+  appShortDescription?: string;
+  appWebsite?: string;
   appViewCount: number;
   appCreatedAt: string;
 }
@@ -230,7 +232,7 @@ export default function MyCollectionsPage() {
         style={{ backgroundColor: "var(--color-primary)" }}
       >
         <div
-          className="font-mono text-lg"
+          className="font-mono text-sm"
           style={{ color: "var(--color-text)" }}
         >
           loading_collections...
@@ -440,13 +442,19 @@ export default function MyCollectionsPage() {
               style={{ color: "var(--color-accent)" }}
             >
               {`
- ___           _ _           _   _                 
-/ __\\___  _ __| | |___  ___| |_(_) ___  _ __  ___ 
-/ /  / _ \\| '__| | / _ \\/ _ \\ __| |/ _ \\| '_ \\/ __|
-/ /__| (_) | |  | | (_) |  __/ |_| | (_) | | | \\__ \\
-\\____/\\___/|_|  |_|\\___/ \\___|\\__|_|\\___/|_| |_|___/
-                                                  
-  COLLECTION MANAGER
+ ___                                   ___                      ___      
+(   )                                 (   )                    (   )     
+ | |_     .--.  ___ .-.  ___ .-. .-.   | | .-. ___  ___ ___ .-. | |_     
+(   __)  /    \\(   )   \\(   )   '   \\  | |/   (   )(   |   )   (   __)   
+ | |    |  .-. ;| ' .-. ;|  .-.  .-. ; |  .-. .| |  | | |  .-. .| |      
+ | | ___|  | | ||  / (___) |  | |  | | | |  | || |  | | | |  | || | ___  
+ | |(   )  |/  || |      | |  | |  | | | |  | || |  | | | |  | || |(   ) 
+ | | | ||  ' _.'| |      | |  | |  | | | |  | || |  | | | |  | || | | |  
+ | ' | ||  .'.-.| |      | |  | |  | | | |  | || |  ; ' | |  | || ' | |  
+ ' \`-' ;'  \`-' /| |      | |  | |  | | | |  | |' \`-'  / | |  | |' \`-' ;  
+  \`.__.  \`.__.'(___)    (___)(___)(___|___)(___)'.__.' (___)(___)\`.__.   
+
+C O L L E C T I O N S
   `}
             </pre>
           </div>
@@ -484,7 +492,7 @@ export default function MyCollectionsPage() {
                 {appsLoading ? (
                   <div className="flex items-center justify-center py-14">
                     <div
-                      className="text-lg font-mono"
+                      className="text-sm font-mono"
                       style={{ color: "var(--color-text)" }}
                     >
                       loading_apps...
@@ -507,7 +515,7 @@ export default function MyCollectionsPage() {
                       className="text-center"
                       style={{ color: "var(--color-text)" }}
                     >
-                      <div className="text-lg font-mono mb-2">[ empty ]</div>
+                      <div className="text-sm font-mono mb-2">[ empty ]</div>
                       <div className="text-sm mb-4">
                         This collection is empty
                       </div>
@@ -525,8 +533,8 @@ export default function MyCollectionsPage() {
                   className="text-center"
                   style={{ color: "var(--color-text)" }}
                 >
-                  <div className="text-lg font-mono mb-2">[ ? ]</div>
-                  <div className="text-lg font-medium mb-2">
+                  <div className="text-sm font-mono mb-2">[ ? ]</div>
+                  <div className="text-sm font-medium mb-2">
                     Choose Collection
                   </div>
                   <div className="text-sm">

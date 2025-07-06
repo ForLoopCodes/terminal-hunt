@@ -36,7 +36,7 @@ export function AppCard({ app }: AppCardProps) {
     if (session) {
       checkVoteStatus();
     }
-  }, [session]);
+  }, [session, app.id]);
 
   const checkVoteStatus = async () => {
     try {
@@ -44,6 +44,7 @@ export function AppCard({ app }: AppCardProps) {
       if (response.ok) {
         const data = await response.json();
         setHasVoted(data.hasVoted);
+        setVoteCount(data.voteCount);
       }
     } catch (error) {
       console.error("Error checking vote status:", error);
@@ -55,39 +56,45 @@ export function AppCard({ app }: AppCardProps) {
 
     setIsVoting(true);
     try {
-      if (hasVoted) {
-        // Unlike
-        const response = await fetch(`/api/apps/${app.id}/vote`, {
-          method: "DELETE",
-        });
+      // Use POST for toggle voting (the API handles the logic)
+      const response = await fetch(`/api/apps/${app.id}/vote`, {
+        method: "POST",
+      });
 
-        if (response.ok) {
-          setVoteCount((prev) => prev - 1);
-          setHasVoted(false);
-        } else {
-          const data = await response.json();
-          console.error("Error unliking:", data.error);
-        }
+      if (response.ok) {
+        const data = await response.json();
+        setHasVoted(data.voted);
+        setVoteCount(data.voteCount);
       } else {
-        // Like
-        const response = await fetch(`/api/apps/${app.id}/vote`, {
-          method: "POST",
-        });
-
-        if (response.ok) {
-          setVoteCount((prev) => prev + 1);
-          setHasVoted(true);
-        } else {
-          const data = await response.json();
-          if (data.error === "Already voted") {
-            setHasVoted(true);
-          } else {
-            console.error("Error voting:", data.error);
-          }
-        }
+        const errorData = await response.json();
+        console.error("Voting error:", errorData.error);
       }
     } catch (error) {
       console.error("Error voting:", error);
+    } finally {
+      setIsVoting(false);
+    }
+  };
+
+  const handleDownvote = async () => {
+    if (!session || isVoting || !hasVoted) return;
+
+    setIsVoting(true);
+    try {
+      const response = await fetch(`/api/apps/${app.id}/vote`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setHasVoted(data.voted);
+        setVoteCount(data.voteCount);
+      } else {
+        const errorData = await response.json();
+        console.error("Downvote error:", errorData.error);
+      }
+    } catch (error) {
+      console.error("Error downvoting:", error);
     } finally {
       setIsVoting(false);
     }
@@ -133,18 +140,24 @@ export function AppCard({ app }: AppCardProps) {
             >
               •
             </span>
-            <button
-              onClick={handleVote}
-              disabled={isVoting}
-              className="text-xs font-medium focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{
-                color: hasVoted
-                  ? "var(--color-highlight)"
-                  : "var(--color-text)",
-              }}
-            >
-              {hasVoted ? "voted ↑" : "vote ↑"} ({voteCount})
-            </button>
+            <div className="flex items-center space-x-1">
+              <button
+                onClick={handleVote}
+                disabled={isVoting}
+                className="text-xs font-medium focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  color: hasVoted
+                    ? "var(--color-highlight)"
+                    : "var(--color-text)",
+                }}
+                title={hasVoted ? "Remove vote" : "Vote"}
+              >
+                {hasVoted ? "↓" : "↑"}
+              </button>
+              <span className="text-xs" style={{ color: "var(--color-text)" }}>
+                {voteCount}
+              </span>
+            </div>
           </>
         )}
       </div>

@@ -125,7 +125,7 @@ export function CollectionsModal({
         >
           <div className="flex items-center justify-between">
             <h3
-              className="text-lg font-mono font-semibold"
+              className="text-sm font-mono font-semibold"
               style={{ color: "var(--color-text)" }}
             >
               {"> add_to_collection"}

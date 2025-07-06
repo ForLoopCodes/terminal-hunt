@@ -55,6 +55,8 @@ export const apps = pgTable(
     shortDescription: varchar("short_description", { length: 200 }),
     description: text("description").notNull(),
     website: varchar("website", { length: 255 }),
+    documentationUrl: varchar("documentation_url", { length: 255 }),
+    asciiArt: text("ascii_art"), // Custom ASCII art for the app
     installCommands: text("install_commands").notNull(),
     repoUrl: varchar("repo_url", { length: 255 }).notNull(),
     viewCount: bigint("view_count", { mode: "number" }).default(0),

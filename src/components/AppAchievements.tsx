@@ -57,7 +57,7 @@ export function AppAchievements({ appId }: AppAchievementsProps) {
   if (loading) {
     return (
       <div className="bg-black border border-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Achievements</h3>
+        <h3 className="text-sm font-semibold text-white mb-4">Achievements</h3>
         <div className="flex justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
         </div>
@@ -68,7 +68,7 @@ export function AppAchievements({ appId }: AppAchievementsProps) {
   if (achievements.length === 0) {
     return (
       <div className="bg-black border border-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Achievements</h3>
+        <h3 className="text-sm font-semibold text-white mb-4">Achievements</h3>
         <p className="text-gray-400 text-center py-4">
           No achievements yet. Keep growing your app's community!
         </p>
@@ -78,7 +78,7 @@ export function AppAchievements({ appId }: AppAchievementsProps) {
 
   return (
     <div className="bg-black border border-gray-800 rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-white mb-4">
+      <h3 className="text-sm font-semibold text-white mb-4">
         Achievements ({achievements.length})
       </h3>
 
@@ -90,7 +90,7 @@ export function AppAchievements({ appId }: AppAchievementsProps) {
           >
             <div className="flex items-start space-x-3">
               <div
-                className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg"
+                className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm"
                 style={{
                   backgroundColor: achievement.badgeColor + "20",
                   color: achievement.badgeColor,
