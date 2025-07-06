@@ -80,7 +80,7 @@ export function AppListItem({
           )}
 
           {/* ASCII Art Preview */}
-          <div className="w-16 h-12 flex-shrink-0 mt-1">
+          {/* <div className="w-16 h-12 flex-shrink-0 mt-1">
             <pre
               className="text-xs leading-none overflow-hidden"
               style={{
@@ -99,7 +99,7 @@ export function AppListItem({
                     .slice(0, 8)
                     .join("\n")}
             </pre>
-          </div>
+          </div> */}
 
           {/* App Details */}
           <div className="flex-1 min-w-0">

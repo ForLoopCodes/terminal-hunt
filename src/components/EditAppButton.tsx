@@ -55,7 +55,7 @@ export function EditAppButton({
         border: "1px solid var(--color-accent)",
       }}
     >
-      ✏ Edit App
+      Edit
     </button>
   );
 }

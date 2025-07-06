@@ -2,7 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { db } from "@/lib/db";
-import { apps, users, votes, comments, viewLogs } from "@/lib/db/schema";
+import {
+  apps,
+  users,
+  votes,
+  comments,
+  viewLogs,
+  collectionApps,
+} from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
 
 export async function GET(
@@ -185,6 +192,63 @@ export async function PUT(
     console.error("Error updating app:", error);
     return NextResponse.json(
       { error: "Failed to update app" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    // Get user from database
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, session.user.email))
+      .limit(1);
+
+    if (!user.length) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Check if user is the creator of the app
+    const app = await db.select().from(apps).where(eq(apps.id, id)).limit(1);
+
+    if (!app.length) {
+      return NextResponse.json({ error: "App not found" }, { status: 404 });
+    }
+
+    if (app[0].creatorId !== user[0].id) {
+      return NextResponse.json(
+        { error: "Unauthorized to delete this app" },
+        { status: 403 }
+      );
+    }
+
+    // Delete related data first (foreign key constraints)
+    await db.delete(collectionApps).where(eq(collectionApps.appId, id));
+    await db.delete(comments).where(eq(comments.appId, id));
+    await db.delete(votes).where(eq(votes.appId, id));
+    await db.delete(viewLogs).where(eq(viewLogs.appId, id));
+
+    // Delete the app
+    await db.delete(apps).where(eq(apps.id, id));
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting app:", error);
+    return NextResponse.json(
+      { error: "Failed to delete app" },
       { status: 500 }
     );
   }

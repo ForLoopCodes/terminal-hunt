@@ -253,8 +253,19 @@ export default function Home() {
                           : "2px solid transparent",
                     }}
                   >
-                    <span className="underline">{sort.shortcut}</span>
-                    {sort.label.slice(1).toLowerCase()}
+                    {sort.key === "newest" ? (
+                      <>
+                        <span className="underline">n</span>ewest
+                      </>
+                    ) : sort.key === "votes" ? (
+                      <>
+                        most <span className="underline">v</span>oted
+                      </>
+                    ) : (
+                      <>
+                        most v<span className="underline">i</span>ewed
+                      </>
+                    )}
                   </button>
                 </div>
               ))}
@@ -298,56 +309,31 @@ export default function Home() {
                           : "2px solid transparent",
                     }}
                   >
-                    <span className="underline">{view.shortcut}</span>
-                    {view.label.split(" ")[1].toLowerCase()}
+                    {view.key === "grid" ? (
+                      <>
+                        <span className="underline">g</span>rid view
+                      </>
+                    ) : (
+                      <>
+                        <span className="underline">l</span>ist view
+                      </>
+                    )}
                   </button>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div>
-            <h3
-              className="text-xs font-semibold mb-3 uppercase tracking-wider"
-              style={{ color: "var(--color-accent)" }}
-            >
-              Quick Actions
-            </h3>
-            <div className="space-y-2">
-              <Link
-                href="/submit"
-                className="block px-2 py-1 text-sm font-medium focus:outline-none font-mono"
-                style={{
-                  backgroundColor: "var(--color-primary)",
-                  color: "var(--color-text)",
-                }}
-              >
-                submit app
-              </Link>
-              <Link
-                href="/leaderboard"
-                className="block px-2 py-1 text-sm font-medium focus:outline-none font-mono"
-                style={{
-                  backgroundColor: "var(--color-primary)",
-                  color: "var(--color-text)",
-                }}
-              >
-                leaderboards
-              </Link>
-            </div>
-          </div>
-
           {/* Stats */}
           <div className="p-3">
             <h3
-              className="text-xs font-semibold mb-2 uppercase tracking-wider"
+              className="text-xs font-semibold mb-2 -mx-3 uppercase tracking-wider"
               style={{ color: "var(--color-accent)" }}
             >
               Stats
             </h3>
             <div
-              className="text-xs space-y-1"
+              className="text-xs space-y-1 mx-4"
               style={{ color: "var(--color-text)" }}
             >
               <div>Total apps: {apps.length}</div>

@@ -4,11 +4,14 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import ReactMarkdown from "react-markdown";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { CollectionsModal } from "@/components/CollectionsModal";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { formatAsciiArt } from "@/lib/ascii-utils";
 import { EditAppButton } from "@/components/EditAppButton";
+import { CommentActions } from "@/components/CommentActions";
+import { DeleteAppButton } from "@/components/DeleteAppButton";
+import { CopyButton } from "@/components/CopyButton";
 
 interface AppDetail {
   id: string;
@@ -41,6 +44,7 @@ interface Comment {
 
 export default function ViewAppPage() {
   const params = useParams();
+  const router = useRouter();
   const appId = params.id as string;
   const { data: session } = useSession();
 
@@ -163,6 +167,34 @@ export default function ViewAppPage() {
     }
   };
 
+  const handleCommentEdit = (commentId: string, newContent: string) => {
+    setApp((prev) =>
+      prev
+        ? {
+            ...prev,
+            comments: prev.comments.map((comment) =>
+              comment.id === commentId
+                ? { ...comment, content: newContent }
+                : comment
+            ),
+          }
+        : null
+    );
+  };
+
+  const handleCommentDelete = (commentId: string) => {
+    setApp((prev) =>
+      prev
+        ? {
+            ...prev,
+            comments: prev.comments.filter(
+              (comment) => comment.id !== commentId
+            ),
+          }
+        : null
+    );
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -231,12 +263,15 @@ export default function ViewAppPage() {
         <div className="p-4 space-y-6 overflow-y-auto h-full">
           {/* Installation */}
           <div>
-            <h3
-              className="text-xs font-semibold mb-3 uppercase tracking-wider"
-              style={{ color: "var(--color-accent)" }}
-            >
-              Installation
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3
+                className="text-xs font-semibold uppercase tracking-wider"
+                style={{ color: "var(--color-accent)" }}
+              >
+                Installation
+              </h3>
+              <CopyButton text={app.installCommands} />
+            </div>
             <div
               className="p-3 text-xs font-mono border"
               style={{
@@ -388,6 +423,16 @@ export default function ViewAppPage() {
                     userEmail={session.user.email}
                   />
                 )}
+
+                {/* Delete button for app creator */}
+                {session?.user?.email && app && (
+                  <DeleteAppButton
+                    appId={app.id}
+                    creatorId={app.creatorId}
+                    userEmail={session.user.email}
+                    onDelete={() => router.push("/")}
+                  />
+                )}
               </div>
             </div>
           )}
@@ -399,7 +444,6 @@ export default function ViewAppPage() {
         <div className="max-w-4xl mx-auto px-6 lg:px-8">
           {/* ASCII Art */}
           <div className="mb-16">
-           
             <div
               className="p-4 font-mono text-xs text-center overflow-x-auto"
               style={{
@@ -455,7 +499,6 @@ export default function ViewAppPage() {
             </div>
           </div>
 
-
           {/* README / Description */}
           <div className="mb-8">
             <div className="flex items-center mb-4">
@@ -478,13 +521,14 @@ export default function ViewAppPage() {
 
           {/* Installation */}
           <div className="mb-8">
-            <div className="flex items-center mb-4">
+            <div className="flex items-center justify-between mb-4">
               <h2
                 className="text-sm font-semibold"
                 style={{ color: "var(--color-text)" }}
               >
                 INSTALLATION
               </h2>
+              <CopyButton text={app.installCommands} />
             </div>
             <div
               className="p-4"
@@ -510,9 +554,7 @@ export default function ViewAppPage() {
             {/* Add Comment Form */}
             {session && (
               <form onSubmit={handleCommentSubmit} className="mb-6">
-                <div
-                  className="p-0"
-                >
+                <div className="p-0">
                   <textarea
                     value={commentContent}
                     onChange={(e) => setCommentContent(e.target.value)}
@@ -583,6 +625,11 @@ export default function ViewAppPage() {
                     >
                       {comment.content}
                     </p>
+                    <CommentActions
+                      comment={comment}
+                      onEdit={handleCommentEdit}
+                      onDelete={handleCommentDelete}
+                    />
                   </div>
                 ))
               )}

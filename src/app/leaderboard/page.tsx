@@ -547,13 +547,13 @@ export default function LeaderboardPage() {
           {data && (
             <div className="p-3">
               <h3
-                className="text-xs font-semibold mb-2 uppercase tracking-wider"
+                className="text-xs font-semibold mb-2 -mx-3 uppercase tracking-wider"
                 style={{ color: "var(--color-accent)" }}
               >
                 Stats
               </h3>
               <div
-                className="text-xs space-y-1"
+                className="text-xs space-y-1 mx-4"
                 style={{ color: "var(--color-text)" }}
               >
                 <div>Period: {formatDate(data.startDate)} - present</div>

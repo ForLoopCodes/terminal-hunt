@@ -82,7 +82,12 @@ export function CommentActions({
         <textarea
           value={editContent}
           onChange={(e) => setEditContent(e.target.value)}
-          className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded text-white placeholder-gray-400 focus:outline-none focus:border-blue-600 resize-none"
+          className="w-full px-3 py-2 text-sm focus:outline-none resize-none"
+          style={{
+            backgroundColor: "var(--color-primary)",
+            color: "var(--color-text)",
+            border: "1px solid var(--color-accent)",
+          }}
           rows={3}
           placeholder="Edit your comment..."
         />
@@ -90,7 +95,12 @@ export function CommentActions({
           <button
             onClick={handleEdit}
             disabled={!editContent.trim()}
-            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed"
+            className="px-3 py-1 text-sm font-medium focus:outline-none disabled:opacity-50"
+            style={{
+              backgroundColor: "var(--color-highlight)",
+              color: "var(--color-primary)",
+              border: "1px solid var(--color-highlight)",
+            }}
           >
             Save
           </button>
@@ -99,7 +109,12 @@ export function CommentActions({
               setIsEditing(false);
               setEditContent(comment.content);
             }}
-            className="px-3 py-1 text-sm border border-gray-600 text-gray-400 rounded hover:bg-gray-800"
+            className="px-3 py-1 text-sm font-medium focus:outline-none"
+            style={{
+              backgroundColor: "var(--color-primary)",
+              color: "var(--color-text)",
+              border: "1px solid var(--color-accent)",
+            }}
           >
             Cancel
           </button>
@@ -112,15 +127,17 @@ export function CommentActions({
     <div className="flex items-center space-x-2 mt-2">
       <button
         onClick={() => setIsEditing(true)}
-        className="text-xs text-gray-400 hover:text-blue-400 transition-colors"
+        className="text-sm focus:outline-none"
+        style={{ color: "var(--color-accent)" }}
       >
         Edit
       </button>
-      <span className="text-gray-600">•</span>
+      <span style={{ color: "var(--color-accent)" }}>•</span>
       <button
         onClick={handleDelete}
         disabled={isDeleting}
-        className="text-xs text-gray-400 hover:text-red-400 transition-colors disabled:cursor-not-allowed"
+        className="text-sm focus:outline-none disabled:opacity-50"
+        style={{ color: "var(--color-highlight)" }}
       >
         {isDeleting ? "Deleting..." : "Delete"}
       </button>

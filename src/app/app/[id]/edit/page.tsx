@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import { EditAppForm } from "@/components/EditAppForm";
@@ -27,6 +27,43 @@ export default function EditAppPage() {
   const [app, setApp] = useState<AppDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [focusedElement, setFocusedElement] = useState<string | null>(null);
+
+  // Ref for back button
+  const backRef = useRef<HTMLButtonElement>(null);
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ignore shortcuts when typing in inputs
+      const activeElement = document.activeElement;
+      if (
+        activeElement &&
+        (activeElement.tagName === "INPUT" ||
+          activeElement.tagName === "TEXTAREA" ||
+          activeElement.tagName === "SELECT")
+      ) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+
+      switch (key) {
+        case "b":
+          e.preventDefault();
+          router.push(`/app/${appId}`);
+          backRef.current?.focus();
+          break;
+        case "escape":
+          e.preventDefault();
+          setFocusedElement(null);
+          break;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [router, appId]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -72,13 +109,14 @@ export default function EditAppPage() {
   if (status === "loading" || loading) {
     return (
       <div
-        className="min-h-screen"
-        style={{ backgroundColor: "var(--color-bg)" }}
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: "var(--color-primary)" }}
       >
-        <div className="max-w-4xl mx-auto px-6 lg:px-8 py-8">
-          <div className="text-center" style={{ color: "var(--color-text)" }}>
-            Loading...
-          </div>
+        <div
+          className="font-mono text-sm"
+          style={{ color: "var(--color-text)" }}
+        >
+          loading_app...
         </div>
       </div>
     );
@@ -88,11 +126,16 @@ export default function EditAppPage() {
     return (
       <div
         className="min-h-screen"
-        style={{ backgroundColor: "var(--color-bg)" }}
+        style={{ backgroundColor: "var(--color-primary)" }}
       >
-        <div className="max-w-4xl mx-auto px-6 lg:px-8 py-8">
-          <div className="text-center" style={{ color: "var(--color-error)" }}>
-            {error}
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          <div className="text-center py-12">
+            <p
+              className="text-sm font-mono"
+              style={{ color: "var(--color-highlight)" }}
+            >
+              ! {error}
+            </p>
           </div>
         </div>
       </div>
@@ -103,11 +146,16 @@ export default function EditAppPage() {
     return (
       <div
         className="min-h-screen"
-        style={{ backgroundColor: "var(--color-bg)" }}
+        style={{ backgroundColor: "var(--color-primary)" }}
       >
-        <div className="max-w-4xl mx-auto px-6 lg:px-8 py-8">
-          <div className="text-center" style={{ color: "var(--color-text)" }}>
-            App not found
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          <div className="text-center py-12">
+            <p
+              className="text-sm font-mono"
+              style={{ color: "var(--color-text)" }}
+            >
+              App not found
+            </p>
           </div>
         </div>
       </div>
@@ -116,32 +164,88 @@ export default function EditAppPage() {
 
   return (
     <div
-      className="min-h-screen"
-      style={{ backgroundColor: "var(--color-bg)" }}
+      className="min-h-screen pt-20 pb-8"
+      style={{ backgroundColor: "var(--color-primary)" }}
     >
-      <div className="max-w-4xl mx-auto px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1
-            className="text-2xl font-bold mb-2"
-            style={{ color: "var(--color-text)" }}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <pre
+            className="text-xs md:text-sm whitespace-pre-wrap font-semibold mb-6"
+            style={{ color: "var(--color-accent)" }}
           >
-            Edit App
-          </h1>
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => router.push(`/app/${appId}`)}
-              className="text-sm px-3 py-1 border focus:outline-none hover:underline"
-              style={{
-                color: "var(--color-text)",
-                borderColor: "var(--color-accent)",
-              }}
-            >
-              ← Back to App
-            </button>
-          </div>
+            {` ___                                   ___                      ___      
+(   )                                 (   )                    (   )     
+ | |_     .--.  ___ .-.  ___ .-. .-.   | | .-. ___  ___ ___ .-. | |_     
+(   __)  /    \\(   )   \\(   )   '   \\  | |/   (   )(   |   )   (   __)   
+ | |    |  .-. ;| ' .-. ;|  .-.  .-. ; |  .-. .| |  | | |  .-. .| |      
+ | | ___|  | | ||  / (___) |  | |  | | | |  | || |  | | | |  | || | ___  
+ | |(   )  |/  || |      | |  | |  | | | |  | || |  | | | |  | || |(   ) 
+ | | | ||  ' _.'| |      | |  | |  | | | |  | || |  | | | |  | || | | |  
+ | ' | ||  .'.-.| |      | |  | |  | | | |  | || |  ; ' | |  | || ' | |  
+ ' \`-' ;'  \`-' /| |      | |  | |  | | | |  | |' \`-'  / | |  | |' \`-' ;  
+  \`.__.  \`.__.'(___)    (___)(___)(___|___)(___)'.__.' (___)(___)\`.__.   
+                  
+  E D I T   Y O U R   A P P`}
+          </pre>
         </div>
 
-        <EditAppForm app={app} onSuccess={handleAppUpdate} />
+        <div className="space-y-6 max-w-[650px] mx-auto">
+          {/* Back to App Button */}
+          <div className="flex items-center">
+            <span
+              className="mr-2 w-4 text-xs"
+              style={{ color: "var(--color-text)" }}
+            >
+              {focusedElement === "back" ? ">" : " "}
+            </span>
+            <button
+              ref={backRef}
+              onFocus={() => setFocusedElement("back")}
+              onBlur={() => setFocusedElement(null)}
+              onClick={() => router.push(`/app/${appId}`)}
+              className="px-0 py-0 text-sm font-medium focus:outline-none font-mono"
+              style={{
+                color: "var(--color-text)",
+                backgroundColor: "var(--color-primary)",
+                borderBottom:
+                  focusedElement === "back"
+                    ? "2px solid var(--color-highlight)"
+                    : "2px solid transparent",
+              }}
+            >
+              <span className="underline">b</span>ack to app
+            </button>
+          </div>
+
+          <EditAppForm app={app} onSuccess={handleAppUpdate} />
+
+          {/* Keyboard Shortcuts Help */}
+          <div
+            className="mt-8 ml-6 p-3 text-xs"
+            style={{
+              backgroundColor: "var(--color-primary)",
+              border: "1px solid var(--color-accent)",
+              color: "var(--color-accent)",
+            }}
+          >
+            <div className="font-mono mb-1">keyboard shortcuts:</div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono">
+              <span>[b] back to app</span>
+              <span>[n] name</span>
+              <span>[s] short desc</span>
+              <span>[w] website</span>
+              <span>[o] docs</span>
+              <span>[a] ascii art</span>
+              <span>[d] description</span>
+              <span>[i] install</span>
+              <span>[r] repo</span>
+              <span>[u] update</span>
+              <span>[p] preview ascii</span>
+              <span>[esc] clear focus</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
