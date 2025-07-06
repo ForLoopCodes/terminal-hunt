@@ -1,4 +1,4 @@
-# Terminal Hunt
+# Termhunt
 
 A Product Hunt-inspired platform for discovering and sharing terminal-based applications. Built with Next.js, TypeScript, PostgreSQL, and Tailwind CSS.
 

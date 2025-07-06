@@ -1,4 +1,4 @@
--- Terminal Hunt Database Schema
+-- Termhunt Database Schema
 -- PostgreSQL initialization script
 
 -- Enable UUID extension

@@ -43,6 +43,13 @@
       "when": 1751796670157,
       "tag": "0005_jazzy_tiger_shark",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1751803527140,
+      "tag": "0006_clammy_princess_powerful",
+      "breakpoints": true
     }
   ]
 }

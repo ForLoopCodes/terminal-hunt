@@ -12,6 +12,7 @@ import { EditAppButton } from "@/components/EditAppButton";
 import { CommentActions } from "@/components/CommentActions";
 import { DeleteAppButton } from "@/components/DeleteAppButton";
 import { CopyButton } from "@/components/CopyButton";
+import { ReportModal } from "@/components/ReportModal";
 
 interface AppDetail {
   id: string;
@@ -55,6 +56,12 @@ export default function ViewAppPage() {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [voting, setVoting] = useState(false);
   const [showCollectionsModal, setShowCollectionsModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showCommentReportModal, setShowCommentReportModal] = useState(false);
+  const [reportingComment, setReportingComment] = useState<{
+    id: string;
+    userTag: string;
+  } | null>(null);
   const [focusedElement, setFocusedElement] = useState<string | null>(null);
 
   // Refs for keyboard navigation
@@ -62,6 +69,7 @@ export default function ViewAppPage() {
   const collectionsRef = useRef<HTMLButtonElement>(null);
   const editRef = useRef<HTMLButtonElement>(null);
   const deleteRef = useRef<HTMLButtonElement>(null);
+  const reportRef = useRef<HTMLButtonElement>(null);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -101,6 +109,13 @@ export default function ViewAppPage() {
         case "d":
           e.preventDefault();
           deleteRef.current?.click();
+          break;
+        case "r":
+          e.preventDefault();
+          if (session) {
+            setShowReportModal(true);
+            reportRef.current?.focus();
+          }
           break;
         case "escape":
           e.preventDefault();
@@ -250,6 +265,11 @@ export default function ViewAppPage() {
           }
         : null
     );
+  };
+
+  const handleCommentReport = (commentId: string, commentUser: string) => {
+    setReportingComment({ id: commentId, userTag: commentUser });
+    setShowCommentReportModal(true);
   };
 
   const formatDate = (dateString: string) => {
@@ -533,6 +553,29 @@ export default function ViewAppPage() {
                     + Add to <span className="underline">C</span>ollection
                   </button>
 
+                  <button
+                    ref={reportRef}
+                    onClick={() => setShowReportModal(true)}
+                    className="w-full px-3 py-1 text-sm font-medium focus:outline-none transition-colors"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-text)",
+                      border: "1px solid var(--color-accent)",
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = "var(--color-highlight)";
+                      e.target.style.boxShadow =
+                        "0 0 0 1px var(--color-highlight)";
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = "var(--color-accent)";
+                      e.target.style.boxShadow = "none";
+                    }}
+                    title="Report App (R)"
+                  >
+                    <span className="underline">R</span>eport
+                  </button>
+
                   {/* Edit button for app creator */}
                   {session?.user?.email && app && (
                     <EditAppButton
@@ -764,6 +807,7 @@ export default function ViewAppPage() {
                       comment={comment}
                       onEdit={handleCommentEdit}
                       onDelete={handleCommentDelete}
+                      onReport={handleCommentReport}
                     />
                   </div>
                 ))
@@ -780,6 +824,29 @@ export default function ViewAppPage() {
         appId={app.id}
         appName={app.name}
       />
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        reportableType="app"
+        reportableId={app.id}
+        reportableName={app.name}
+      />
+
+      {/* Comment Report Modal */}
+      {reportingComment && (
+        <ReportModal
+          isOpen={showCommentReportModal}
+          onClose={() => {
+            setShowCommentReportModal(false);
+            setReportingComment(null);
+          }}
+          reportableType="comment"
+          reportableId={reportingComment.id}
+          reportableName={`Comment by @${reportingComment.userTag}`}
+        />
+      )}
     </div>
   );
 }

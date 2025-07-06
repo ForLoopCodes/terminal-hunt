@@ -1,6 +1,6 @@
-# Terminal Hunt - Complete Web Application
+# Termhunt - Complete Web Application
 
-I've successfully created a full-stack Terminal Hunt application based on your specifications! Here's what has been implemented:
+I've successfully created a full-stack Termhunt application based on your specifications! Here's what has been implemented:
 
 ## ✅ Completed Features
 

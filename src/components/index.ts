@@ -15,3 +15,4 @@ export { DragDropApps } from "./DragDropApps";
 export { MarkdownRenderer } from "./MarkdownRenderer";
 export { EditAppButton } from "./EditAppButton";
 export { AppListItem } from "./AppListItem";
+export { ReportModal } from "./ReportModal";

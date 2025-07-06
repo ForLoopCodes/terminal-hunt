@@ -1,4 +1,4 @@
-# Terminal Hunt Theme Update Summary
+# Termhunt Theme Update Summary
 
 ## Completed Changes
 

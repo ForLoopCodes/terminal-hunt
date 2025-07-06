@@ -190,7 +190,6 @@ export function EditAppForm({ app, onSuccess }: EditAppFormProps) {
             </div>
           )}
         </div>
-         
 
         {/* Short Description */}
         <div>
@@ -249,7 +248,7 @@ export function EditAppForm({ app, onSuccess }: EditAppFormProps) {
               borderColor: "var(--color-accent)",
               minHeight: "120px",
             }}
-            placeholder="Enter custom ASCII art for your app (leave empty for default Terminal Hunt art)"
+            placeholder="Enter custom ASCII art for your app (leave empty for default Termhunt art)"
           />
           {showAsciiPreview && (
             <div

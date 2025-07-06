@@ -33,6 +33,7 @@ export const users = pgTable(
     companyName: varchar("company_name", { length: 100 }),
     website: varchar("website", { length: 255 }),
     isVerified: boolean("is_verified").default(false), // For verified accounts
+    suspended: boolean("suspended").default(false), // For admin suspension
     githubUsername: varchar("github_username", { length: 100 }),
     twitterHandle: varchar("twitter_handle", { length: 100 }),
     createdAt: timestamp("created_at").defaultNow(),
@@ -247,3 +248,61 @@ export const collectionApps = pgTable(
     appIdIdx: index("idx_collection_apps_app_id").on(table.appId),
   })
 );
+
+// Reports table
+export const reports = pgTable(
+  "reports",
+  {
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`uuid_generate_v4()`),
+    reporterId: uuid("reporter_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    reason: text("reason").notNull(),
+
+    // What is being reported (one of these will be set)
+    appId: uuid("app_id").references(() => apps.id, { onDelete: "cascade" }),
+    commentId: uuid("comment_id").references(() => comments.id, {
+      onDelete: "cascade",
+    }),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+
+    status: varchar("status", { length: 20 }).default("pending"), // pending, reviewed, resolved, dismissed
+    adminNotes: text("admin_notes"),
+    reviewedBy: uuid("reviewed_by").references(() => users.id),
+    reviewedAt: timestamp("reviewed_at"),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => ({
+    reporterIdIdx: index("idx_reports_reporter_id").on(table.reporterId),
+    appIdIdx: index("idx_reports_app_id").on(table.appId),
+    commentIdIdx: index("idx_reports_comment_id").on(table.commentId),
+    userIdIdx: index("idx_reports_user_id").on(table.userId),
+    statusIdx: index("idx_reports_status").on(table.status),
+  })
+);
+
+// Admins table
+export const admins = pgTable(
+  "admins",
+  {
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`uuid_generate_v4()`),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" })
+      .unique(),
+    role: varchar("role", { length: 20 }).default("admin"), // admin, super_admin
+    permissions: jsonb("permissions"), // Array of permissions
+    createdBy: uuid("created_by").references(() => users.id),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index("idx_admins_user_id").on(table.userId),
+  })
+);
+
+// Add suspended column to existing tables (will need migration)
+// This will be added via migration, not here since we can't modify existing tables

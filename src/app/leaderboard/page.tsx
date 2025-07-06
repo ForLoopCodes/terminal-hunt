@@ -422,7 +422,6 @@ export default function LeaderboardPage() {
                           activePeriod === period.key
                             ? "2px solid var(--color-highlight)"
                             : "2px solid transparent",
-                        border: "1px solid var(--color-accent)",
                       }}
                     >
                       <span className="underline">{period.shortcut}</span>
@@ -471,7 +470,6 @@ export default function LeaderboardPage() {
                           activeTab === sort.key
                             ? "2px solid var(--color-highlight)"
                             : "2px solid transparent",
-                        border: "1px solid var(--color-accent)",
                       }}
                     >
                       most {sort.key === "votes" ? "" : "v"}
@@ -522,7 +520,6 @@ export default function LeaderboardPage() {
                           viewMode === display.key
                             ? "2px solid var(--color-highlight)"
                             : "2px solid transparent",
-                        border: "1px solid var(--color-accent)",
                       }}
                     >
                       <span className="underline">{display.shortcut}</span>
@@ -568,7 +565,6 @@ export default function LeaderboardPage() {
                           displayLimit === limit.key
                             ? "2px solid var(--color-highlight)"
                             : "2px solid transparent",
-                        border: "1px solid var(--color-accent)",
                       }}
                     >
                       {limit.label}
@@ -656,7 +652,9 @@ export default function LeaderboardPage() {
                 className="flex items-center space-x-2 text-xs"
                 style={{ color: "var(--color-accent)" }}
               >
-                <span className="hidden sm:inline">Use keyboard shortcuts: D/W/M/Y, V/I, G/L</span>
+                <span className="hidden sm:inline">
+                  Use keyboard shortcuts: D/W/M/Y, V/I, G/L
+                </span>
                 <span className="sm:hidden">Shortcuts: D/W/M/Y, V/I, G/L</span>
               </div>
             </div>
@@ -740,7 +738,6 @@ export default function LeaderboardPage() {
                       style={{
                         backgroundColor: "var(--color-primary)",
                         color: "var(--color-primary)",
-                        border: "1px solid var(--color-accent)",
                       }}
                     >
                       load more
@@ -771,7 +768,6 @@ export default function LeaderboardPage() {
                       style={{
                         backgroundColor: "var(--color-primary)",
                         color: "var(--color-text)",
-                        border: "1px solid var(--color-accent)",
                       }}
                     >
                       reset

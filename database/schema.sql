@@ -1,4 +1,4 @@
--- Terminal Hunt Database Schema
+-- Termhunt Database Schema
 
 -- Create extension for UUID generation
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

@@ -1,6 +1,6 @@
 // Utility function to format ASCII art with capitals below
 export function formatAsciiArt(text: string, title: string): string {
-  // Use Terminal Hunt ASCII art if no custom art is provided
+  // Use Termhunt ASCII art if no custom art is provided
   const asciiToUse = text.trim() || TERMHUNT_ASCII;
 
   // Add the ASCII art
@@ -13,7 +13,7 @@ export function formatAsciiArt(text: string, title: string): string {
   return asciiLines.join("\n") + "\n\n" + capitalTitle;
 }
 
-// Terminal Hunt ASCII art
+// Termhunt ASCII art
 export const TERMHUNT_ASCII = `
  ___                                   ___                      ___      
 (   )                                 (   )                    (   )     

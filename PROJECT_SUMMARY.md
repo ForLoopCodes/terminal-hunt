@@ -1,8 +1,8 @@
-# Terminal Hunt - Project Summary
+# Termhunt - Project Summary
 
 ## 🎯 Project Overview
 
-I've successfully created **Terminal Hunt**, a complete Product Hunt-inspired platform for discovering and sharing terminal-based applications. The project is built with modern web technologies and follows your detailed specifications.
+I've successfully created **Termhunt**, a complete Product Hunt-inspired platform for discovering and sharing terminal-based applications. The project is built with modern web technologies and follows your detailed specifications.
 
 ## ✨ What's Been Delivered
 
@@ -172,4 +172,4 @@ The application includes:
 4. **Add Monitoring** - Set up error tracking and analytics
 5. **Content Moderation** - Add admin panel for content management
 
-**Your Terminal Hunt platform is ready to launch! 🚀**
+**Your Termhunt platform is ready to launch! 🚀**

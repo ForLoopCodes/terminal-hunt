@@ -12,12 +12,14 @@ interface CommentActionsProps {
   };
   onEdit: (commentId: string, newContent: string) => void;
   onDelete: (commentId: string) => void;
+  onReport?: (commentId: string, commentUser: string) => void;
 }
 
 export function CommentActions({
   comment,
   onEdit,
   onDelete,
+  onReport,
 }: CommentActionsProps) {
   const { data: session } = useSession();
   const [isEditing, setIsEditing] = useState(false);
@@ -27,7 +29,11 @@ export function CommentActions({
   // Check if current user owns this comment
   const isOwner = session?.user?.userTag === comment.userTag;
 
-  if (!isOwner) return null;
+  const handleReportClick = () => {
+    if (onReport) {
+      onReport(comment.id, comment.userTag);
+    }
+  };
 
   const handleEdit = async () => {
     if (!editContent.trim()) return;
@@ -125,22 +131,38 @@ export function CommentActions({
 
   return (
     <div className="flex items-center space-x-2 mt-2">
-      <button
-        onClick={() => setIsEditing(true)}
-        className="text-sm focus:outline-none"
-        style={{ color: "var(--color-accent)" }}
-      >
-        Edit
-      </button>
-      <span style={{ color: "var(--color-accent)" }}>•</span>
-      <button
-        onClick={handleDelete}
-        disabled={isDeleting}
-        className="text-sm focus:outline-none disabled:opacity-50"
-        style={{ color: "var(--color-highlight)" }}
-      >
-        {isDeleting ? "Deleting..." : "Delete"}
-      </button>
+      {isOwner && (
+        <>
+          <button
+            onClick={() => setIsEditing(true)}
+            className="text-sm focus:outline-none"
+            style={{ color: "var(--color-accent)" }}
+          >
+            Edit
+          </button>
+          <span style={{ color: "var(--color-accent)" }}>•</span>
+          <button
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="text-sm focus:outline-none disabled:opacity-50"
+            style={{ color: "var(--color-highlight)" }}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </button>
+        </>
+      )}
+      {session && onReport && (
+        <>
+          {isOwner && <span style={{ color: "var(--color-accent)" }}>•</span>}
+          <button
+            onClick={handleReportClick}
+            className="text-sm focus:outline-none"
+            style={{ color: "var(--color-accent)" }}
+          >
+            Report
+          </button>
+        </>
+      )}
     </div>
   );
 }

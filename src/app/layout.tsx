@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Terminal Hunt - Discover Amazing Terminal Apps",
+  title: "Termhunt - Discover Amazing Terminal Apps",
   description:
     "A Product Hunt-inspired platform for discovering and sharing terminal-based applications.",
 };

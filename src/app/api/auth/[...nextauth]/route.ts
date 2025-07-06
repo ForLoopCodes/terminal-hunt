@@ -3,7 +3,7 @@ import GoogleProvider from "next-auth/providers/google";
 import TwitterProvider from "next-auth/providers/twitter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { users, admins } from "@/lib/db/schema";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { checkRateLimit, clearRateLimit } from "@/lib/rateLimit";
@@ -102,6 +102,33 @@ export const authOptions: NextAuthOptions = {
             }
           } catch (error) {
             console.error("Error fetching user data:", error);
+          }
+        }
+
+        // Always check admin status to ensure it's current
+        if (session.user.id) {
+          try {
+            const adminRecord = await db.query.admins.findFirst({
+              where: eq(admins.userId, session.user.id),
+            });
+
+            if (adminRecord) {
+              session.user.isAdmin = true;
+              session.user.adminRole = adminRecord.role || "admin";
+              // Update token for consistency
+              token.isAdmin = true;
+              token.adminRole = adminRecord.role || "admin";
+            } else {
+              session.user.isAdmin = false;
+              session.user.adminRole = undefined;
+              // Update token for consistency
+              token.isAdmin = false;
+              token.adminRole = undefined;
+            }
+          } catch (error) {
+            console.error("Error checking admin status in session:", error);
+            session.user.isAdmin = false;
+            session.user.adminRole = undefined;
           }
         }
       }

@@ -67,9 +67,9 @@ export default function FAQPage() {
 
   const faqData = [
     {
-      question: "What is Terminal Hunt?",
+      question: "What is Termhunt?",
       answer:
-        "Terminal Hunt is a community-driven platform for discovering, sharing, and showcasing amazing terminal-based applications. Think of it as Product Hunt specifically for command-line tools and terminal applications.",
+        "Termhunt is a community-driven platform for discovering, sharing, and showcasing amazing terminal-based applications. Think of it as Product Hunt specifically for command-line tools and terminal applications.",
     },
     {
       question: "How do I submit an app?",
@@ -102,9 +102,9 @@ export default function FAQPage() {
         "Tags help categorize apps by type, language, or use case. You can filter the main page by tags and select multiple tags when submitting an app. Popular tags include CLI, DevTools, Productivity, etc.",
     },
     {
-      question: "Is Terminal Hunt open source?",
+      question: "Is Termhunt open source?",
       answer:
-        "Yes! Terminal Hunt is built with transparency in mind. The platform itself demonstrates the kind of tools we celebrate - built for developers, by developers.",
+        "Yes! Termhunt is built with transparency in mind. The platform itself demonstrates the kind of tools we celebrate - built for developers, by developers.",
     },
     {
       question: "How do I report issues or suggest features?",

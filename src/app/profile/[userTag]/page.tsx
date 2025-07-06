@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { AppListItem } from "@/components/AppListItem";
+import { ReportModal } from "@/components/ReportModal";
 
 interface UserProfile {
   id: string;
@@ -61,6 +62,7 @@ export default function ProfilePage() {
   >("apps");
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState({ name: "", bio: "" });
+  const [showReportModal, setShowReportModal] = useState(false);
   const [focusedElement, setFocusedElement] = useState<string | null>(null);
 
   // Refs for programmatic focus
@@ -72,6 +74,8 @@ export default function ProfilePage() {
   const bioInputRef = useRef<HTMLTextAreaElement>(null);
   const saveButtonRef = useRef<HTMLButtonElement>(null);
   const collectionsRef = useRef<HTMLAnchorElement>(null);
+  const reportRef = useRef<HTMLButtonElement>(null);
+  const signOutRef = useRef<HTMLButtonElement>(null);
 
   const isOwnProfile = (session as any)?.user?.userTag === userTag;
 
@@ -135,6 +139,19 @@ export default function ProfilePage() {
           e.preventDefault();
           if (editing) {
             saveButtonRef.current?.click();
+          }
+          break;
+        case "r":
+          e.preventDefault();
+          if (!isOwnProfile && session) {
+            setShowReportModal(true);
+            reportRef.current?.focus();
+          }
+          break;
+        case "o":
+          e.preventDefault();
+          if (isOwnProfile && session) {
+            signOutRef.current?.click();
           }
           break;
       }
@@ -304,285 +321,326 @@ P R O F I L E   @ ${profile.userTag
             </h2>
           </div>
 
-        <div className="p-4 space-y-6 overflow-y-auto lg:h-full max-h-96 lg:max-h-none">
-          {/* Profile Info */}
-          <div>
-            <h3
-              className="text-xs font-semibold mb-3 uppercase tracking-wider"
-              style={{ color: "var(--color-accent)" }}
-            >
-              User Info
-            </h3>
+          <div className="p-4 space-y-6 overflow-y-auto lg:h-full max-h-96 lg:max-h-none">
+            {/* Profile Info */}
+            <div>
+              <h3
+                className="text-xs font-semibold mb-3 uppercase tracking-wider"
+                style={{ color: "var(--color-accent)" }}
+              >
+                User Info
+              </h3>
 
-            {editing ? (
-              <div className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="text-xs font-mono block mb-2"
+              {editing ? (
+                <div className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="text-xs font-mono block mb-2"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      <span className="underline">n</span>ame
+                    </label>
+                    <input
+                      ref={nameInputRef}
+                      type="text"
+                      id="name"
+                      value={editData.name}
+                      onFocus={() => setFocusedElement("name")}
+                      onBlur={() => setFocusedElement(null)}
+                      onChange={(e) =>
+                        setEditData((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
+                      className="w-full px-3 py-1 text-sm focus:outline-none"
+                      style={{
+                        backgroundColor: "var(--color-primary)",
+                        color: "var(--color-text)",
+                        border: "1px solid var(--color-accent)",
+                      }}
+                      placeholder="Enter name"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="bio"
+                      className="text-xs font-mono block mb-2"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      <span className="underline">b</span>io
+                    </label>
+                    <textarea
+                      ref={bioInputRef}
+                      id="bio"
+                      value={editData.bio}
+                      onFocus={() => setFocusedElement("bio")}
+                      onBlur={() => setFocusedElement(null)}
+                      onChange={(e) =>
+                        setEditData((prev) => ({
+                          ...prev,
+                          bio: e.target.value,
+                        }))
+                      }
+                      rows={4}
+                      className="w-full px-3 py-1 text-sm focus:outline-none resize-vertical"
+                      style={{
+                        backgroundColor: "var(--color-primary)",
+                        color: "var(--color-text)",
+                        border: "1px solid var(--color-accent)",
+                      }}
+                      placeholder="Tell us about yourself"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <button
+                      ref={saveButtonRef}
+                      type="button"
+                      onClick={handleSaveProfile}
+                      onFocus={() => setFocusedElement("save")}
+                      onBlur={() => setFocusedElement(null)}
+                      className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
+                      style={{
+                        backgroundColor: "var(--color-highlight)",
+                        color: "var(--color-primary)",
+                        border: "1px solid var(--color-highlight)",
+                      }}
+                    >
+                      <span className="underline">S</span>ave Changes
+                    </button>
+                    <button
+                      onFocus={() => setFocusedElement("cancel")}
+                      onBlur={() => setFocusedElement(null)}
+                      onClick={() => setEditing(false)}
+                      className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
+                      style={{
+                        backgroundColor: "var(--color-primary)",
+                        color: "var(--color-text)",
+                        border: "1px solid var(--color-accent)",
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div
+                    className="text-sm font-medium"
                     style={{ color: "var(--color-text)" }}
                   >
-                    <span className="underline">n</span>ame
-                  </label>
-                  <input
-                    ref={nameInputRef}
-                    type="text"
-                    id="name"
-                    value={editData.name}
-                    onFocus={() => setFocusedElement("name")}
-                    onBlur={() => setFocusedElement(null)}
-                    onChange={(e) =>
-                      setEditData((prev) => ({ ...prev, name: e.target.value }))
-                    }
-                    className="w-full px-3 py-1 text-sm focus:outline-none"
-                    style={{
-                      backgroundColor: "var(--color-primary)",
-                      color: "var(--color-text)",
-                      border: "1px solid var(--color-accent)",
-                    }}
-                    placeholder="Enter name"
-                  />
-                </div>
+                    @{profile.userTag}
+                  </div>
 
-                <div>
-                  <label
-                    htmlFor="bio"
-                    className="text-xs font-mono block mb-2"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    <span className="underline">b</span>io
-                  </label>
-                  <textarea
-                    ref={bioInputRef}
-                    id="bio"
-                    value={editData.bio}
-                    onFocus={() => setFocusedElement("bio")}
-                    onBlur={() => setFocusedElement(null)}
-                    onChange={(e) =>
-                      setEditData((prev) => ({ ...prev, bio: e.target.value }))
-                    }
-                    rows={4}
-                    className="w-full px-3 py-1 text-sm focus:outline-none resize-vertical"
-                    style={{
-                      backgroundColor: "var(--color-primary)",
-                      color: "var(--color-text)",
-                      border: "1px solid var(--color-accent)",
-                    }}
-                    placeholder="Tell us about yourself"
-                  />
-                </div>
+                  {profile.name && (
+                    <div>
+                      <div
+                        className="text-xs mb-1"
+                        style={{ color: "var(--color-accent)" }}
+                      >
+                        Name:
+                      </div>
+                      <div
+                        className="text-sm"
+                        style={{ color: "var(--color-text)" }}
+                      >
+                        {profile.name}
+                      </div>
+                    </div>
+                  )}
 
-                <div className="flex flex-col gap-2">
-                  <button
-                    ref={saveButtonRef}
-                    type="button"
-                    onClick={handleSaveProfile}
-                    onFocus={() => setFocusedElement("save")}
-                    onBlur={() => setFocusedElement(null)}
-                    className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
-                    style={{
-                      backgroundColor: "var(--color-highlight)",
-                      color: "var(--color-primary)",
-                      border: "1px solid var(--color-highlight)",
-                    }}
-                  >
-                    <span className="underline">S</span>ave Changes
-                  </button>
-                  <button
-                    onFocus={() => setFocusedElement("cancel")}
-                    onBlur={() => setFocusedElement(null)}
-                    onClick={() => setEditing(false)}
-                    className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
-                    style={{
-                      backgroundColor: "var(--color-primary)",
-                      color: "var(--color-text)",
-                      border: "1px solid var(--color-accent)",
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div
-                  className="text-sm font-medium"
-                  style={{ color: "var(--color-text)" }}
-                >
-                  @{profile.userTag}
-                </div>
+                  {profile.bio && (
+                    <div>
+                      <div
+                        className="text-xs mb-1"
+                        style={{ color: "var(--color-accent)" }}
+                      >
+                        Bio:
+                      </div>
+                      <div
+                        className="text-sm"
+                        style={{ color: "var(--color-text)" }}
+                      >
+                        {profile.bio}
+                      </div>
+                    </div>
+                  )}
 
-                {profile.name && (
                   <div>
                     <div
                       className="text-xs mb-1"
                       style={{ color: "var(--color-accent)" }}
                     >
-                      Name:
+                      Joined:
                     </div>
                     <div
                       className="text-sm"
                       style={{ color: "var(--color-text)" }}
                     >
-                      {profile.name}
+                      {formatDate(profile.createdAt)}
                     </div>
-                  </div>
-                )}
-
-                {profile.bio && (
-                  <div>
-                    <div
-                      className="text-xs mb-1"
-                      style={{ color: "var(--color-accent)" }}
-                    >
-                      Bio:
-                    </div>
-                    <div
-                      className="text-sm"
-                      style={{ color: "var(--color-text)" }}
-                    >
-                      {profile.bio}
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <div
-                    className="text-xs mb-1"
-                    style={{ color: "var(--color-accent)" }}
-                  >
-                    Joined:
-                  </div>
-                  <div
-                    className="text-sm"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    {formatDate(profile.createdAt)}
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
-          {/* Actions */}
-          <div>
-            <h3
-              className="text-xs font-semibold mb-3 uppercase tracking-wider"
-              style={{ color: "var(--color-accent)" }}
-            >
-              Actions
-            </h3>
-            <div className="space-y-2">
-              {isOwnProfile && !editing && (
+            {/* Actions */}
+            <div>
+              <h3
+                className="text-xs font-semibold mb-3 uppercase tracking-wider"
+                style={{ color: "var(--color-accent)" }}
+              >
+                Actions
+              </h3>
+              <div className="space-y-2">
+                {isOwnProfile && !editing && (
+                  <button
+                    ref={editButtonRef}
+                    onFocus={() => setFocusedElement("edit")}
+                    onBlur={() => setFocusedElement(null)}
+                    onClick={() => setEditing(true)}
+                    className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-text)",
+                      border: "1px solid var(--color-accent)",
+                    }}
+                  >
+                    <span className="underline">E</span>dit Profile
+                  </button>
+                )}
+
+                {isOwnProfile && (
+                  <Link
+                    ref={collectionsRef}
+                    href="/collections"
+                    className="block w-full px-3 py-1 text-sm font-medium text-center focus:outline-none"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-text)",
+                      border: "1px solid var(--color-accent)",
+                    }}
+                  >
+                    <span className="underline">M</span>y Collections
+                  </Link>
+                )}
+
+                {isOwnProfile && (
+                  <button
+                    ref={signOutRef}
+                    onFocus={() => setFocusedElement("signout")}
+                    onBlur={() => setFocusedElement(null)}
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-text)",
+                      border: "1px solid var(--color-accent)",
+                    }}
+                  >
+                    Sign <span className="underline">O</span>ut
+                  </button>
+                )}
+
+                {!isOwnProfile && session && (
+                  <button
+                    ref={reportRef}
+                    onFocus={() => setFocusedElement("report")}
+                    onBlur={() => setFocusedElement(null)}
+                    onClick={() => setShowReportModal(true)}
+                    className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-text)",
+                      border: "1px solid var(--color-accent)",
+                    }}
+                  >
+                    <span className="underline">R</span>eport User
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Navigation */}
+            <div>
+              <h3
+                className="text-xs font-semibold mb-3 uppercase tracking-wider"
+                style={{ color: "var(--color-accent)" }}
+              >
+                Navigation
+              </h3>
+              <div className="space-y-2">
                 <button
-                  ref={editButtonRef}
-                  onFocus={() => setFocusedElement("edit")}
+                  ref={appsTabRef}
+                  onFocus={() => setFocusedElement("apps")}
                   onBlur={() => setFocusedElement(null)}
-                  onClick={() => setEditing(true)}
+                  onClick={() => setActiveTab("apps")}
                   className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
                   style={{
-                    backgroundColor: "var(--color-primary)",
-                    color: "var(--color-text)",
+                    backgroundColor:
+                      activeTab === "apps"
+                        ? "var(--color-highlight)"
+                        : "var(--color-primary)",
+                    color:
+                      activeTab === "apps"
+                        ? "var(--color-primary)"
+                        : "var(--color-text)",
                     border: "1px solid var(--color-accent)",
                   }}
                 >
-                  <span className="underline">E</span>dit Profile
+                  <span className="underline">A</span>pps ({profile.apps.length}
+                  )
                 </button>
-              )}
 
-              {isOwnProfile && (
-                <Link
-                  ref={collectionsRef}
-                  href="/collections"
-                  className="block w-full px-3 py-1 text-sm font-medium text-center focus:outline-none"
+                <button
+                  ref={activityTabRef}
+                  onFocus={() => setFocusedElement("activity")}
+                  onBlur={() => setFocusedElement(null)}
+                  onClick={() => setActiveTab("activity")}
+                  className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
                   style={{
-                    backgroundColor: "var(--color-primary)",
-                    color: "var(--color-text)",
+                    backgroundColor:
+                      activeTab === "activity"
+                        ? "var(--color-highlight)"
+                        : "var(--color-primary)",
+                    color:
+                      activeTab === "activity"
+                        ? "var(--color-primary)"
+                        : "var(--color-text)",
                     border: "1px solid var(--color-accent)",
                   }}
                 >
-                  <span className="underline">M</span>y Collections
-                </Link>
-              )}
+                  <span className="underline">C</span>omments (
+                  {profile.comments.length})
+                </button>
+
+                <button
+                  ref={achievementsTabRef}
+                  onFocus={() => setFocusedElement("achievements")}
+                  onBlur={() => setFocusedElement(null)}
+                  onClick={() => setActiveTab("achievements")}
+                  className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
+                  style={{
+                    backgroundColor:
+                      activeTab === "achievements"
+                        ? "var(--color-highlight)"
+                        : "var(--color-primary)",
+                    color:
+                      activeTab === "achievements"
+                        ? "var(--color-primary)"
+                        : "var(--color-text)",
+                    border: "1px solid var(--color-accent)",
+                  }}
+                >
+                  Ac<span className="underline">h</span>ievements (
+                  {profile.achievements.length})
+                </button>
+              </div>
             </div>
           </div>
-
-          {/* Navigation */}
-          <div>
-            <h3
-              className="text-xs font-semibold mb-3 uppercase tracking-wider"
-              style={{ color: "var(--color-accent)" }}
-            >
-              Navigation
-            </h3>
-            <div className="space-y-2">
-              <button
-                ref={appsTabRef}
-                onFocus={() => setFocusedElement("apps")}
-                onBlur={() => setFocusedElement(null)}
-                onClick={() => setActiveTab("apps")}
-                className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
-                style={{
-                  backgroundColor:
-                    activeTab === "apps"
-                      ? "var(--color-highlight)"
-                      : "var(--color-primary)",
-                  color:
-                    activeTab === "apps"
-                      ? "var(--color-primary)"
-                      : "var(--color-text)",
-                  border: "1px solid var(--color-accent)",
-                }}
-              >
-                <span className="underline">A</span>pps ({profile.apps.length})
-              </button>
-
-              <button
-                ref={activityTabRef}
-                onFocus={() => setFocusedElement("activity")}
-                onBlur={() => setFocusedElement(null)}
-                onClick={() => setActiveTab("activity")}
-                className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
-                style={{
-                  backgroundColor:
-                    activeTab === "activity"
-                      ? "var(--color-highlight)"
-                      : "var(--color-primary)",
-                  color:
-                    activeTab === "activity"
-                      ? "var(--color-primary)"
-                      : "var(--color-text)",
-                  border: "1px solid var(--color-accent)",
-                }}
-              >
-                <span className="underline">C</span>omments (
-                {profile.comments.length})
-              </button>
-
-              <button
-                ref={achievementsTabRef}
-                onFocus={() => setFocusedElement("achievements")}
-                onBlur={() => setFocusedElement(null)}
-                onClick={() => setActiveTab("achievements")}
-                className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
-                style={{
-                  backgroundColor:
-                    activeTab === "achievements"
-                      ? "var(--color-highlight)"
-                      : "var(--color-primary)",
-                  color:
-                    activeTab === "achievements"
-                      ? "var(--color-primary)"
-                      : "var(--color-text)",
-                  border: "1px solid var(--color-accent)",
-                }}
-              >
-                Ac<span className="underline">h</span>ievements (
-                {profile.achievements.length})
-              </button>
-            </div>
-          </div>
-        </div>
         </div>
       </div>
 
@@ -770,6 +828,15 @@ P R O F I L E   @ ${profile.userTag
           </div>
         </div>
       </div>
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        reportableType="user"
+        reportableId={profile.id}
+        reportableName={`@${profile.userTag}`}
+      />
     </div>
   );
 }

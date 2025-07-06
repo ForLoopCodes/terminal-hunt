@@ -9,13 +9,13 @@ export function Navigation() {
   const [focusedElement, setFocusedElement] = useState<string | null>(null);
 
   // Refs for programmatic focus
-  const homeRef = useRef<HTMLAnchorElement>(null);
   const leaderboardRef = useRef<HTMLAnchorElement>(null);
   const aboutRef = useRef<HTMLAnchorElement>(null);
   const submitRef = useRef<HTMLAnchorElement>(null);
   const profileRef = useRef<HTMLAnchorElement>(null);
   const signInRef = useRef<HTMLAnchorElement>(null);
   const signUpRef = useRef<HTMLAnchorElement>(null);
+  const adminRef = useRef<HTMLAnchorElement>(null);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -33,10 +33,6 @@ export function Navigation() {
       const key = e.key.toLowerCase();
 
       switch (key) {
-        case "h":
-          e.preventDefault();
-          homeRef.current?.click();
-          break;
         case "l":
           e.preventDefault();
           leaderboardRef.current?.click();
@@ -56,6 +52,12 @@ export function Navigation() {
         case "p":
           e.preventDefault();
           profileRef.current?.click();
+          break;
+        case "a":
+          e.preventDefault();
+          if (session?.user?.isAdmin) {
+            adminRef.current?.click();
+          }
           break;
         case "i":
           e.preventDefault();
@@ -89,26 +91,6 @@ export function Navigation() {
           </div>
 
           <div className="flex items-center space-x-1 overflow-x-auto">
-            <div className="flex items-center">
-              <span
-                className="w-1 text-xs"
-                style={{ color: "var(--color-text)" }}
-              >
-                {focusedElement === "home" ? ">" : " "}
-              </span>
-              <Link
-                ref={homeRef}
-                href="/"
-                onFocus={() => setFocusedElement("home")}
-                onBlur={() => setFocusedElement(null)}
-                className="px-2 py-1 text-sm font-medium transition-colors focus:outline-none"
-                style={{ color: "var(--color-text)" }}
-              >
-                <span className="underline">H</span>
-                <span className="hidden sm:inline">ome</span>
-              </Link>
-            </div>
-
             <div className="flex items-center">
               <span
                 className="w-1 text-xs"
@@ -203,6 +185,30 @@ export function Navigation() {
                     [<span className="underline">p</span>]
                   </Link>
                 </div>
+
+                {session.user.isAdmin && (
+                  <div className="flex items-center">
+                    <span
+                      className="w-1 text-xs"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      {focusedElement === "admin" ? ">" : " "}
+                    </span>
+                    <Link
+                      ref={adminRef}
+                      href="/admin/dashboard"
+                      onFocus={() => setFocusedElement("admin")}
+                      onBlur={() => setFocusedElement(null)}
+                      className="px-2 py-1 text-sm font-medium transition-colors focus:outline-none"
+                      style={{
+                        color: "var(--color-highlight)",
+                      }}
+                    >
+                      <span className="underline">A</span>
+                      <span className="hidden sm:inline">dmin</span>
+                    </Link>
+                  </div>
+                )}
               </>
             ) : (
               <>
