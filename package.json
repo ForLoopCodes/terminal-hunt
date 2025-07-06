@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "bun i lightningcss.linux-x64-gnu.node && next dev --turbopack",
     "dev-https": "next dev --turbopack --experimental-https",
-    "build": "bun i lightningcss.linux-x64-gnu.node && next build",
+    "build": "bun i lightningcss-linux-x64-gnu @tailwindcss/postcss && next build",
     "start": "next start",
     "lint": "next lint",
     "db:push": "drizzle-kit push",
