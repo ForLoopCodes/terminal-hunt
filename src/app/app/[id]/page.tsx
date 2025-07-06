@@ -300,262 +300,302 @@ export default function ViewAppPage() {
 
   return (
     <div
-      className="min-h-screen pt-20 pb-8 flex"
+      className="min-h-screen pt-20 pb-8 flex flex-col lg:flex-row"
       style={{ backgroundColor: "var(--color-primary)" }}
     >
       {/* Sidebar */}
-      <div className="fixed left-0 top-20 h-[calc(100vh-5rem)] z-40 w-80">
+      <div className="lg:fixed lg:left-0 lg:top-20 lg:h-[calc(100vh-5rem)] lg:z-40 lg:w-80 w-full lg:block">
+        {/* Mobile toggle button */}
         <div
-          className="p-4 border-b"
+          className="lg:hidden border-b p-4"
           style={{ borderColor: "var(--color-accent)" }}
         >
-          <h2
-            className="font-bold text-sm"
+          <button
+            onClick={() => {
+              const sidebar = document.getElementById("sidebar-content");
+              if (sidebar) {
+                sidebar.style.display =
+                  sidebar.style.display === "none" ? "block" : "none";
+              }
+            }}
+            className="w-full text-left font-mono text-sm focus:outline-none focus:underline"
             style={{ color: "var(--color-highlight)" }}
           >
-            PACKAGE INFO
-          </h2>
+            [±] PACKAGE INFO
+          </button>
         </div>
 
-        <div className="p-4 space-y-6 overflow-y-auto h-full">
-          {/* Installation */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3
-                className="text-xs font-semibold uppercase tracking-wider"
-                style={{ color: "var(--color-accent)" }}
-              >
-                Installation
-              </h3>
-              <CopyButton text={app.installCommands} />
-            </div>
-            <div
-              className="p-3 text-xs font-mono border"
-              style={{
-                backgroundColor: "var(--color-primary)",
-                borderColor: "var(--color-accent)",
-                color: "var(--color-text)",
-              }}
+        <div
+          id="sidebar-content"
+          className="lg:block hidden lg:border-none border-b"
+          style={{ borderColor: "var(--color-accent)" }}
+        >
+          <div
+            className="p-4 border-b hidden lg:block"
+            style={{ borderColor: "var(--color-accent)" }}
+          >
+            <h2
+              className="font-bold text-sm"
+              style={{ color: "var(--color-highlight)" }}
             >
-              {app.installCommands}
-            </div>
+              PACKAGE INFO
+            </h2>
           </div>
 
-          {/* Stats */}
-          <div>
-            <h3
-              className="text-xs font-semibold mb-3 uppercase tracking-wider"
-              style={{ color: "var(--color-accent)" }}
-            >
-              Stats
-            </h3>
-            <div
-              className="space-y-2 text-sm"
-              style={{ color: "var(--color-text)" }}
-            >
-              <div className="flex justify-between">
-                <span>Votes:</span>
-                <span style={{ color: "var(--color-highlight)" }}>
-                  {app.voteCount}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Views:</span>
-                <span style={{ color: "var(--color-accent)" }}>
-                  {app.viewCount}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Published:</span>
-                <span>{formatDate(app.createdAt)}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Author */}
-          <div>
-            <h3
-              className="text-xs font-semibold mb-3 uppercase tracking-wider"
-              style={{ color: "var(--color-accent)" }}
-            >
-              Author
-            </h3>
-            <Link
-              href={`/profile/${app.creatorUserTag}`}
-              className="text-sm font-medium focus:outline-none focus:underline"
-              style={{ color: "var(--color-text)" }}
-              title={`View profile of @${app.creatorUserTag}`}
-            >
-              @{app.creatorUserTag}
-            </Link>
-          </div>
-
-          {/* Links */}
-          <div>
-            <h3
-              className="text-xs font-semibold mb-3 uppercase tracking-wider"
-              style={{ color: "var(--color-accent)" }}
-            >
-              Links
-            </h3>
-            <div className="space-y-2">
-              <a
-                href={app.repoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block text-sm font-medium focus:outline-none focus:underline"
-                style={{ color: "var(--color-text)" }}
-                title="View repository"
-              >
-                Repository
-              </a>
-              {app.website && (
-                <a
-                  href={app.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block text-sm font-medium focus:outline-none focus:underline"
-                  style={{ color: "var(--color-text)" }}
-                  title="Visit website"
+          <div className="p-4 space-y-6 overflow-y-auto lg:h-full max-h-96 lg:max-h-none">
+            {/* Installation */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3
+                  className="text-xs font-semibold uppercase tracking-wider"
+                  style={{ color: "var(--color-accent)" }}
                 >
-                  Website
-                </a>
-              )}
-              {app.documentationUrl && (
-                <a
-                  href={app.documentationUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block text-sm font-medium focus:outline-none focus:underline"
-                  style={{ color: "var(--color-text)" }}
-                  title="View documentation"
-                >
-                  Documentation
-                </a>
-              )}
+                  Installation
+                </h3>
+                <CopyButton text={app.installCommands} />
+              </div>
+              <div
+                className="p-3 text-xs font-mono border overflow-x-auto"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  borderColor: "var(--color-accent)",
+                  color: "var(--color-text)",
+                }}
+              >
+                {app.installCommands}
+              </div>
             </div>
-          </div>
 
-          {/* Actions */}
-          {session && (
+            {/* Stats */}
             <div>
               <h3
                 className="text-xs font-semibold mb-3 uppercase tracking-wider"
                 style={{ color: "var(--color-accent)" }}
               >
-                Actions
+                Stats
+              </h3>
+              <div
+                className="space-y-2 text-sm"
+                style={{ color: "var(--color-text)" }}
+              >
+                <div className="flex justify-between">
+                  <span>Votes:</span>
+                  <span style={{ color: "var(--color-highlight)" }}>
+                    {app.voteCount}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Views:</span>
+                  <span style={{ color: "var(--color-accent)" }}>
+                    {app.viewCount}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Published:</span>
+                  <span>{formatDate(app.createdAt)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Author */}
+            <div>
+              <h3
+                className="text-xs font-semibold mb-3 uppercase tracking-wider"
+                style={{ color: "var(--color-accent)" }}
+              >
+                Author
+              </h3>
+              <Link
+                href={`/profile/${app.creatorUserTag}`}
+                className="text-sm font-medium focus:outline-none focus:underline"
+                style={{ color: "var(--color-text)" }}
+                title={`View profile of @${app.creatorUserTag}`}
+              >
+                @{app.creatorUserTag}
+              </Link>
+            </div>
+
+            {/* Links */}
+            <div>
+              <h3
+                className="text-xs font-semibold mb-3 uppercase tracking-wider"
+                style={{ color: "var(--color-accent)" }}
+              >
+                Links
               </h3>
               <div className="space-y-2">
-                <button
-                  ref={voteRef}
-                  onClick={handleVote}
-                  disabled={voting}
-                  className="w-full px-3 py-1 text-sm font-medium focus:outline-none disabled:opacity-50 transition-colors"
-                  style={{
-                    backgroundColor: app.userHasVoted
-                      ? "var(--color-highlight)"
-                      : "var(--color-primary)",
-                    color: app.userHasVoted
-                      ? "var(--color-primary)"
-                      : "var(--color-text)",
-                    border: "1px solid var(--color-accent)",
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = "var(--color-highlight)";
-                    e.target.style.boxShadow =
-                      "0 0 0 1px var(--color-highlight)";
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = "var(--color-accent)";
-                    e.target.style.boxShadow = "none";
-                  }}
-                  title={
-                    app.userHasVoted
-                      ? "Remove vote (V)"
-                      : "Vote for this app (V)"
-                  }
+                <a
+                  href={app.repoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-sm font-medium focus:outline-none focus:underline"
+                  style={{ color: "var(--color-text)" }}
+                  title="View repository"
                 >
-                  {app.userHasVoted ? (
-                    <>
-                      ↓ Remove <span className="underline">V</span>ote
-                    </>
-                  ) : (
-                    <>
-                      ↑ <span className="underline">V</span>ote
-                    </>
-                  )}
-                </button>
-                <button
-                  ref={collectionsRef}
-                  onClick={() => setShowCollectionsModal(true)}
-                  className="w-full px-3 py-1 text-sm font-medium focus:outline-none transition-colors"
-                  style={{
-                    backgroundColor: "var(--color-primary)",
-                    color: "var(--color-text)",
-                    border: "1px solid var(--color-accent)",
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = "var(--color-highlight)";
-                    e.target.style.boxShadow =
-                      "0 0 0 1px var(--color-highlight)";
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = "var(--color-accent)";
-                    e.target.style.boxShadow = "none";
-                  }}
-                  title="Add to Collection (C)"
-                >
-                  + Add to <span className="underline">C</span>ollection
-                </button>
-
-                {/* Edit button for app creator */}
-                {session?.user?.email && app && (
-                  <EditAppButton
-                    ref={editRef}
-                    appId={app.id}
-                    creatorId={app.creatorId}
-                    userEmail={session.user.email}
-                  />
+                  Repository
+                </a>
+                {app.website && (
+                  <a
+                    href={app.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-sm font-medium focus:outline-none focus:underline"
+                    style={{ color: "var(--color-text)" }}
+                    title="Visit website"
+                  >
+                    Website
+                  </a>
                 )}
-
-                {/* Delete button for app creator */}
-                {session?.user?.email && app && (
-                  <DeleteAppButton
-                    ref={deleteRef}
-                    appId={app.id}
-                    creatorId={app.creatorId}
-                    userEmail={session.user.email}
-                    onDelete={() => router.push("/")}
-                  />
+                {app.documentationUrl && (
+                  <a
+                    href={app.documentationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-sm font-medium focus:outline-none focus:underline"
+                    style={{ color: "var(--color-text)" }}
+                    title="View documentation"
+                  >
+                    Documentation
+                  </a>
                 )}
               </div>
             </div>
-          )}
+
+            {/* Actions */}
+            {session && (
+              <div>
+                <h3
+                  className="text-xs font-semibold mb-3 uppercase tracking-wider"
+                  style={{ color: "var(--color-accent)" }}
+                >
+                  Actions
+                </h3>
+                <div className="space-y-2">
+                  <button
+                    ref={voteRef}
+                    onClick={handleVote}
+                    disabled={voting}
+                    className="w-full px-3 py-1 text-sm font-medium focus:outline-none disabled:opacity-50 transition-colors"
+                    style={{
+                      backgroundColor: app.userHasVoted
+                        ? "var(--color-highlight)"
+                        : "var(--color-primary)",
+                      color: app.userHasVoted
+                        ? "var(--color-primary)"
+                        : "var(--color-text)",
+                      border: "1px solid var(--color-accent)",
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = "var(--color-highlight)";
+                      e.target.style.boxShadow =
+                        "0 0 0 1px var(--color-highlight)";
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = "var(--color-accent)";
+                      e.target.style.boxShadow = "none";
+                    }}
+                    title={
+                      app.userHasVoted
+                        ? "Remove vote (V)"
+                        : "Vote for this app (V)"
+                    }
+                  >
+                    {app.userHasVoted ? (
+                      <>
+                        ↓ Remove <span className="underline">V</span>ote
+                      </>
+                    ) : (
+                      <>
+                        ↑ <span className="underline">V</span>ote
+                      </>
+                    )}
+                  </button>
+                  <button
+                    ref={collectionsRef}
+                    onClick={() => setShowCollectionsModal(true)}
+                    className="w-full px-3 py-1 text-sm font-medium focus:outline-none transition-colors"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      color: "var(--color-text)",
+                      border: "1px solid var(--color-accent)",
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = "var(--color-highlight)";
+                      e.target.style.boxShadow =
+                        "0 0 0 1px var(--color-highlight)";
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = "var(--color-accent)";
+                      e.target.style.boxShadow = "none";
+                    }}
+                    title="Add to Collection (C)"
+                  >
+                    + Add to <span className="underline">C</span>ollection
+                  </button>
+
+                  {/* Edit button for app creator */}
+                  {session?.user?.email && app && (
+                    <EditAppButton
+                      ref={editRef}
+                      appId={app.id}
+                      creatorId={app.creatorId}
+                      userEmail={session.user.email}
+                    />
+                  )}
+
+                  {/* Delete button for app creator */}
+                  {session?.user?.email && app && (
+                    <DeleteAppButton
+                      ref={deleteRef}
+                      appId={app.id}
+                      creatorId={app.creatorId}
+                      userEmail={session.user.email}
+                      onDelete={() => router.push("/")}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 ml-80">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8">
+      <div className="flex-1 lg:ml-80 w-full">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* ASCII Art */}
-          <div className="mb-16">
+          <div className="mb-8 lg:mb-16">
+            {/* Desktop ASCII Art */}
             <div
-              className="p-4 font-mono text-xs text-center overflow-x-auto"
+              className="hidden sm:block p-2 sm:p-4 font-mono text-xs text-center overflow-x-auto"
               style={{
                 backgroundColor: "var(--color-primary)",
                 color: "var(--color-accent)",
               }}
             >
-              <pre className="whitespace-pre">
+              <pre className="whitespace-pre text-xs sm:text-sm">
                 {formatAsciiArt(app.asciiArt || "", app.name)}
+              </pre>
+            </div>
+
+            {/* Mobile ASCII Art - Smaller and simplified */}
+            <div
+              className="block sm:hidden p-2 font-mono text-xs text-center overflow-x-auto"
+              style={{
+                backgroundColor: "var(--color-primary)",
+                color: "var(--color-accent)",
+              }}
+            >
+              <pre className="whitespace-pre text-xs">
+                {app.name.toUpperCase()}
               </pre>
             </div>
           </div>
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center space-x-4 mb-4">
+          <div className="mb-6 lg:mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-4">
               <h1
-                className="text-2xl font-bold"
+                className="text-xl sm:text-2xl font-bold"
                 style={{ color: "var(--color-text)" }}
               >
                 {app.name}
@@ -583,13 +623,13 @@ export default function ViewAppPage() {
             )}
 
             <div
-              className="flex items-center space-x-4 text-sm"
+              className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm"
               style={{ color: "var(--color-text)" }}
             >
               <span>Published {formatDate(app.createdAt)}</span>
-              <span>•</span>
+              <span className="hidden sm:inline">•</span>
               <span>{app.viewCount} views</span>
-              <span>•</span>
+              <span className="hidden sm:inline">•</span>
               <span>{app.voteCount} votes</span>
             </div>
           </div>

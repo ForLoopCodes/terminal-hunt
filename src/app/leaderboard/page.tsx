@@ -178,11 +178,11 @@ export default function LeaderboardPage() {
 
     if (viewMode === "grid") {
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {limitedEntries.map((entry, index) => (
             <div
               key={entry.appId}
-              className="p-2 border"
+              className="p-3 border"
               style={{
                 borderColor: "var(--color-accent)",
                 borderWidth: "1px",
@@ -217,17 +217,17 @@ export default function LeaderboardPage() {
 
               <Link
                 href={`/app/${entry.appId}`}
-                className="block text-sm font-medium mb-2 focus:outline-none"
+                className="block text-sm font-medium mb-2 focus:outline-none hover:underline"
                 style={{ color: "var(--color-text)" }}
               >
                 {entry.appName}
               </Link>
 
-              <div className="flex items-center text-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center text-xs space-y-1 sm:space-y-0">
                 <span style={{ color: "var(--color-accent)" }}>by </span>
                 <Link
                   href={`/profile/${entry.creatorUserTag}`}
-                  className="ml-1 focus:outline-none"
+                  className="ml-0 sm:ml-1 focus:outline-none hover:underline"
                   style={{ color: "var(--color-text)" }}
                 >
                   @{entry.creatorUserTag}
@@ -252,9 +252,9 @@ export default function LeaderboardPage() {
             }}
           >
             <div className="flex items-start justify-between">
-              <div className="flex items-start space-x-4 flex-1 min-w-0">
+              <div className="flex items-start space-x-2 sm:space-x-4 flex-1 min-w-0">
                 <span
-                  className="text-sm font-bold w-8 flex-shrink-0 mt-1"
+                  className="text-sm font-bold w-6 sm:w-8 flex-shrink-0 mt-1"
                   style={{
                     color:
                       index === 0
@@ -270,7 +270,7 @@ export default function LeaderboardPage() {
                 </span>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-2 mb-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2 mb-2">
                     <Link
                       href={`/app/${entry.appId}`}
                       className="text-sm font-medium focus:outline-none hover:underline"
@@ -283,7 +283,7 @@ export default function LeaderboardPage() {
                         href={entry.appWebsite}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs focus:outline-none hover:underline truncate max-w-20"
+                        className="text-xs focus:outline-none hover:underline truncate max-w-20 sm:max-w-32"
                         style={{ color: "var(--color-accent)" }}
                         title={entry.appWebsite}
                       >
@@ -316,7 +316,7 @@ export default function LeaderboardPage() {
               </div>
 
               <span
-                className="text-sm px-3 py-1 ml-4 flex-shrink-0"
+                className="text-xs sm:text-sm px-2 sm:px-3 py-1 ml-2 sm:ml-4 flex-shrink-0"
                 style={{
                   backgroundColor: "var(--color-primary)",
                   color: "var(--color-highlight)",
@@ -333,258 +333,295 @@ export default function LeaderboardPage() {
 
   return (
     <div
-      className="min-h-screen pt-20 pb-8 flex"
+      className="min-h-screen pt-20 pb-8 flex flex-col lg:flex-row"
       style={{ backgroundColor: "var(--color-primary)" }}
     >
       {/* Sidebar */}
-      <div className="fixed left-0 top-20 h-[calc(100vh-5rem)] z-40 w-80">
+      <div className="lg:fixed lg:left-0 lg:top-20 lg:h-[calc(100vh-5rem)] lg:z-40 lg:w-80 w-full lg:block">
+        {/* Mobile toggle button */}
         <div
-          className="p-4 border-b"
+          className="lg:hidden border-b p-4"
           style={{ borderColor: "var(--color-accent)" }}
         >
-          <h2
-            className="font-bold text-sm"
+          <button
+            onClick={() => {
+              const sidebar = document.getElementById(
+                "leaderboard-sidebar-content"
+              );
+              if (sidebar) {
+                sidebar.style.display =
+                  sidebar.style.display === "none" ? "block" : "none";
+              }
+            }}
+            className="w-full text-left font-mono text-sm focus:outline-none focus:underline px-2 py-1"
             style={{ color: "var(--color-highlight)" }}
           >
-            FILTERS
-          </h2>
+            [±] FILTERS
+          </button>
         </div>
 
-        <div className="p-4 space-y-6 overflow-y-auto h-full">
-          {/* Time Period Section */}
-          <div>
-            <h3
-              className="text-xs font-semibold mb-3 uppercase tracking-wider"
-              style={{ color: "var(--color-accent)" }}
+        <div
+          id="leaderboard-sidebar-content"
+          className="lg:block hidden lg:border-none border-b"
+          style={{ borderColor: "var(--color-accent)" }}
+        >
+          <div
+            className="p-4 border-b hidden lg:block"
+            style={{ borderColor: "var(--color-accent)" }}
+          >
+            <h2
+              className="font-bold text-sm"
+              style={{ color: "var(--color-highlight)" }}
             >
-              Period
-            </h3>
-            <div className="space-y-2">
-              {periods.map((period) => (
-                <div key={period.key} className="flex items-center">
-                  <span
-                    className="mr-2 w-4 text-xs"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    {focusedElement === period.key ? ">" : " "}
-                  </span>
-                  <button
-                    ref={
-                      period.key === "daily"
-                        ? dailyRef
-                        : period.key === "weekly"
-                        ? weeklyRef
-                        : period.key === "monthly"
-                        ? monthlyRef
-                        : yearlyRef
-                    }
-                    onFocus={() => setFocusedElement(period.key)}
-                    onBlur={() => setFocusedElement(null)}
-                    onClick={() => setActivePeriod(period.key)}
-                    className="px-2 py-1 text-sm font-medium focus:outline-none font-mono"
-                    style={{
-                      backgroundColor:
-                        activePeriod === period.key
-                          ? "var(--color-highlight)"
-                          : "var(--color-primary)",
-                      color:
-                        activePeriod === period.key
-                          ? "var(--color-primary)"
-                          : "var(--color-text)",
-                      borderBottom:
-                        activePeriod === period.key
-                          ? "2px solid var(--color-highlight)"
-                          : "2px solid transparent",
-                    }}
-                  >
-                    <span className="underline">{period.shortcut}</span>
-                    {period.label.slice(1)}
-                  </button>
-                </div>
-              ))}
-            </div>
+              FILTERS
+            </h2>
           </div>
 
-          {/* Sort By Section */}
-          <div>
-            <h3
-              className="text-xs font-semibold mb-3 uppercase tracking-wider"
-              style={{ color: "var(--color-accent)" }}
-            >
-              Sort By
-            </h3>
-            <div className="space-y-2">
-              {sortOptions.map((sort) => (
-                <div key={sort.key} className="flex items-center">
-                  <span
-                    className="mr-2 w-4 text-xs"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    {focusedElement === sort.key ? ">" : " "}
-                  </span>
-                  <button
-                    ref={sort.key === "votes" ? votesTabRef : viewsTabRef}
-                    onFocus={() => setFocusedElement(sort.key)}
-                    onBlur={() => setFocusedElement(null)}
-                    onClick={() => setActiveTab(sort.key as "votes" | "views")}
-                    className="px-2 py-1 text-sm font-medium focus:outline-none font-mono"
-                    style={{
-                      backgroundColor:
-                        activeTab === sort.key
-                          ? "var(--color-highlight)"
-                          : "var(--color-primary)",
-                      color:
-                        activeTab === sort.key
-                          ? "var(--color-primary)"
-                          : "var(--color-text)",
-                      borderBottom:
-                        activeTab === sort.key
-                          ? "2px solid var(--color-highlight)"
-                          : "2px solid transparent",
-                    }}
-                  >
-                    most {sort.key === "votes" ? "" : "v"}
-                    <span className="underline">
-                      {sort.key === "votes" ? "v" : "i"}
-                    </span>
-                    {sort.key === "votes" ? "oted" : "ewed"}
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Display Options */}
-          <div>
-            <h3
-              className="text-xs font-semibold mb-3 uppercase tracking-wider"
-              style={{ color: "var(--color-accent)" }}
-            >
-              View Mode
-            </h3>
-            <div className="space-y-2">
-              {displayOptions.map((display) => (
-                <div key={display.key} className="flex items-center">
-                  <span
-                    className="mr-2 w-4 text-xs"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    {focusedElement === display.key ? ">" : " "}
-                  </span>
-                  <button
-                    onFocus={() => setFocusedElement(display.key)}
-                    onBlur={() => setFocusedElement(null)}
-                    onClick={() => setViewMode(display.key as "grid" | "list")}
-                    className="px-2 py-1 text-sm font-medium focus:outline-none font-mono"
-                    style={{
-                      backgroundColor:
-                        viewMode === display.key
-                          ? "var(--color-highlight)"
-                          : "var(--color-primary)",
-                      color:
-                        viewMode === display.key
-                          ? "var(--color-primary)"
-                          : "var(--color-text)",
-                      borderBottom:
-                        viewMode === display.key
-                          ? "2px solid var(--color-highlight)"
-                          : "2px solid transparent",
-                    }}
-                  >
-                    <span className="underline">{display.shortcut}</span>
-                    {display.label.split(" ")[1]}
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Results Limit */}
-          <div>
-            <h3
-              className="text-xs font-semibold mb-3 uppercase tracking-wider"
-              style={{ color: "var(--color-accent)" }}
-            >
-              Results
-            </h3>
-            <div className="space-y-2">
-              {limitOptions.map((limit) => (
-                <div key={limit.key} className="flex items-center">
-                  <span
-                    className="mr-2 w-4 text-xs"
-                    style={{ color: "var(--color-text)" }}
-                  >
-                    {focusedElement === `limit-${limit.key}` ? ">" : " "}
-                  </span>
-                  <button
-                    onFocus={() => setFocusedElement(`limit-${limit.key}`)}
-                    onBlur={() => setFocusedElement(null)}
-                    onClick={() => setDisplayLimit(limit.key)}
-                    className="px-2 py-1 text-sm font-medium focus:outline-none font-mono"
-                    style={{
-                      backgroundColor:
-                        displayLimit === limit.key
-                          ? "var(--color-highlight)"
-                          : "var(--color-primary)",
-                      color:
-                        displayLimit === limit.key
-                          ? "var(--color-primary)"
-                          : "var(--color-text)",
-                      borderBottom:
-                        displayLimit === limit.key
-                          ? "2px solid var(--color-highlight)"
-                          : "2px solid transparent",
-                    }}
-                  >
-                    {limit.label}
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Quick Stats */}
-          {data && (
-            <div className="p-3">
+          <div className="p-4 space-y-6 overflow-y-auto lg:h-full max-h-96 lg:max-h-none">
+            {/* Time Period Section */}
+            <div>
               <h3
-                className="text-xs font-semibold mb-2 -mx-3 uppercase tracking-wider"
+                className="text-xs font-semibold mb-3 uppercase tracking-wider"
                 style={{ color: "var(--color-accent)" }}
               >
-                Stats
+                Period
               </h3>
-              <div
-                className="text-xs space-y-1 mx-4"
-                style={{ color: "var(--color-text)" }}
-              >
-                <div>Period: {formatDate(data.startDate)} - present</div>
-                <div>
-                  Total entries:{" "}
-                  {activeTab === "votes"
-                    ? data.voteLeaderboard.length
-                    : data.viewLeaderboard.length}
-                </div>
-                <div>
-                  Showing:{" "}
-                  {Math.min(
-                    parseInt(displayLimit),
-                    activeTab === "votes"
-                      ? data.voteLeaderboard.length
-                      : data.viewLeaderboard.length
-                  )}
-                </div>
+              <div className="grid grid-cols-2 lg:block lg:space-y-2 gap-2">
+                {periods.map((period) => (
+                  <div key={period.key} className="flex items-center">
+                    <span
+                      className="mr-2 w-4 text-xs hidden lg:inline"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      {focusedElement === period.key ? ">" : " "}
+                    </span>
+                    <button
+                      ref={
+                        period.key === "daily"
+                          ? dailyRef
+                          : period.key === "weekly"
+                          ? weeklyRef
+                          : period.key === "monthly"
+                          ? monthlyRef
+                          : yearlyRef
+                      }
+                      onFocus={() => setFocusedElement(period.key)}
+                      onBlur={() => setFocusedElement(null)}
+                      onClick={() => setActivePeriod(period.key)}
+                      className="w-full lg:w-auto px-2 py-1 text-sm font-medium focus:outline-none font-mono"
+                      style={{
+                        backgroundColor:
+                          activePeriod === period.key
+                            ? "var(--color-highlight)"
+                            : "var(--color-primary)",
+                        color:
+                          activePeriod === period.key
+                            ? "var(--color-primary)"
+                            : "var(--color-text)",
+                        borderBottom:
+                          activePeriod === period.key
+                            ? "2px solid var(--color-highlight)"
+                            : "2px solid transparent",
+                        border: "1px solid var(--color-accent)",
+                      }}
+                    >
+                      <span className="underline">{period.shortcut}</span>
+                      {period.label.slice(1)}
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
-          )}
+
+            {/* Sort By Section */}
+            <div>
+              <h3
+                className="text-xs font-semibold mb-3 uppercase tracking-wider"
+                style={{ color: "var(--color-accent)" }}
+              >
+                Sort By
+              </h3>
+              <div className="grid grid-cols-2 lg:block lg:space-y-2 gap-2">
+                {sortOptions.map((sort) => (
+                  <div key={sort.key} className="flex items-center">
+                    <span
+                      className="mr-2 w-4 text-xs hidden lg:inline"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      {focusedElement === sort.key ? ">" : " "}
+                    </span>
+                    <button
+                      ref={sort.key === "votes" ? votesTabRef : viewsTabRef}
+                      onFocus={() => setFocusedElement(sort.key)}
+                      onBlur={() => setFocusedElement(null)}
+                      onClick={() =>
+                        setActiveTab(sort.key as "votes" | "views")
+                      }
+                      className="w-full lg:w-auto px-2 py-1 text-sm font-medium focus:outline-none font-mono"
+                      style={{
+                        backgroundColor:
+                          activeTab === sort.key
+                            ? "var(--color-highlight)"
+                            : "var(--color-primary)",
+                        color:
+                          activeTab === sort.key
+                            ? "var(--color-primary)"
+                            : "var(--color-text)",
+                        borderBottom:
+                          activeTab === sort.key
+                            ? "2px solid var(--color-highlight)"
+                            : "2px solid transparent",
+                        border: "1px solid var(--color-accent)",
+                      }}
+                    >
+                      most {sort.key === "votes" ? "" : "v"}
+                      <span className="underline">
+                        {sort.key === "votes" ? "v" : "i"}
+                      </span>
+                      {sort.key === "votes" ? "oted" : "ewed"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Display Options */}
+            <div>
+              <h3
+                className="text-xs font-semibold mb-3 uppercase tracking-wider"
+                style={{ color: "var(--color-accent)" }}
+              >
+                View Mode
+              </h3>
+              <div className="grid grid-cols-2 lg:block lg:space-y-2 gap-2">
+                {displayOptions.map((display) => (
+                  <div key={display.key} className="flex items-center">
+                    <span
+                      className="mr-2 w-4 text-xs hidden lg:inline"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      {focusedElement === display.key ? ">" : " "}
+                    </span>
+                    <button
+                      onFocus={() => setFocusedElement(display.key)}
+                      onBlur={() => setFocusedElement(null)}
+                      onClick={() =>
+                        setViewMode(display.key as "grid" | "list")
+                      }
+                      className="w-full lg:w-auto px-2 py-1 text-sm font-medium focus:outline-none font-mono"
+                      style={{
+                        backgroundColor:
+                          viewMode === display.key
+                            ? "var(--color-highlight)"
+                            : "var(--color-primary)",
+                        color:
+                          viewMode === display.key
+                            ? "var(--color-primary)"
+                            : "var(--color-text)",
+                        borderBottom:
+                          viewMode === display.key
+                            ? "2px solid var(--color-highlight)"
+                            : "2px solid transparent",
+                        border: "1px solid var(--color-accent)",
+                      }}
+                    >
+                      <span className="underline">{display.shortcut}</span>
+                      {display.label.split(" ")[1]}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Results Limit */}
+            <div>
+              <h3
+                className="text-xs font-semibold mb-3 uppercase tracking-wider"
+                style={{ color: "var(--color-accent)" }}
+              >
+                Results
+              </h3>
+              <div className="grid grid-cols-2 lg:block lg:space-y-2 gap-2">
+                {limitOptions.map((limit) => (
+                  <div key={limit.key} className="flex items-center">
+                    <span
+                      className="mr-2 w-4 text-xs hidden lg:inline"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      {focusedElement === `limit-${limit.key}` ? ">" : " "}
+                    </span>
+                    <button
+                      onFocus={() => setFocusedElement(`limit-${limit.key}`)}
+                      onBlur={() => setFocusedElement(null)}
+                      onClick={() => setDisplayLimit(limit.key)}
+                      className="w-full lg:w-auto px-2 py-1 text-sm font-medium focus:outline-none font-mono"
+                      style={{
+                        backgroundColor:
+                          displayLimit === limit.key
+                            ? "var(--color-highlight)"
+                            : "var(--color-primary)",
+                        color:
+                          displayLimit === limit.key
+                            ? "var(--color-primary)"
+                            : "var(--color-text)",
+                        borderBottom:
+                          displayLimit === limit.key
+                            ? "2px solid var(--color-highlight)"
+                            : "2px solid transparent",
+                        border: "1px solid var(--color-accent)",
+                      }}
+                    >
+                      {limit.label}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Stats */}
+            {data && (
+              <div className="p-3">
+                <h3
+                  className="text-xs font-semibold mb-2 -mx-3 uppercase tracking-wider"
+                  style={{ color: "var(--color-accent)" }}
+                >
+                  Stats
+                </h3>
+                <div
+                  className="text-xs space-y-1 mx-4"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  <div>Period: {formatDate(data.startDate)} - present</div>
+                  <div>
+                    Total entries:{" "}
+                    {activeTab === "votes"
+                      ? data.voteLeaderboard.length
+                      : data.viewLeaderboard.length}
+                  </div>
+                  <div>
+                    Showing:{" "}
+                    {Math.min(
+                      parseInt(displayLimit),
+                      activeTab === "votes"
+                        ? data.voteLeaderboard.length
+                        : data.viewLeaderboard.length
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 ml-80">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+      <div className="flex-1 lg:ml-80 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-6 lg:mb-8">
+            {/* Desktop ASCII Art */}
             <pre
-              className="text-xs md:text-sm whitespace-pre-wrap font-semibold mb-6"
+              className="text-[8px] md:text-sm whitespace-pre-wrap font-semibold mb-4 lg:mb-6 overflow-x-auto"
               style={{ color: "var(--color-accent)" }}
             >
               {`
@@ -605,7 +642,7 @@ export default function LeaderboardPage() {
             </pre>
 
             {/* Top Action Bar */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between mb-6 space-y-4 sm:space-y-0">
               <div className="flex items-center space-x-4">
                 <span
                   className="text-sm font-medium"
@@ -619,7 +656,8 @@ export default function LeaderboardPage() {
                 className="flex items-center space-x-2 text-xs"
                 style={{ color: "var(--color-accent)" }}
               >
-                <span>Use keyboard shortcuts: D/W/M/Y, V/I, G/L</span>
+                <span className="hidden sm:inline">Use keyboard shortcuts: D/W/M/Y, V/I, G/L</span>
+                <span className="sm:hidden">Shortcuts: D/W/M/Y, V/I, G/L</span>
               </div>
             </div>
           </div>

@@ -88,7 +88,7 @@ export function Navigation() {
             </Link>
           </div>
 
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-1 overflow-x-auto">
             <div className="flex items-center">
               <span
                 className="w-1 text-xs"
@@ -104,7 +104,8 @@ export function Navigation() {
                 className="px-2 py-1 text-sm font-medium transition-colors focus:outline-none"
                 style={{ color: "var(--color-text)" }}
               >
-                <span className="underline">H</span>ome
+                <span className="underline">H</span>
+                <span className="hidden sm:inline">ome</span>
               </Link>
             </div>
 
@@ -123,7 +124,8 @@ export function Navigation() {
                 className="px-2 py-1 text-sm font-medium transition-colors focus:outline-none"
                 style={{ color: "var(--color-text)" }}
               >
-                <span className="underline">L</span>eaderboard
+                <span className="underline">L</span>
+                <span className="hidden sm:inline">eaderboard</span>
               </Link>
             </div>
 
@@ -142,7 +144,8 @@ export function Navigation() {
                 className="px-2 py-1 text-sm font-medium transition-colors focus:outline-none"
                 style={{ color: "var(--color-text)" }}
               >
-                <span className="underline">F</span>AQ
+                <span className="underline">F</span>
+                <span className="hidden sm:inline">AQ</span>
               </Link>
             </div>
 
@@ -170,7 +173,9 @@ export function Navigation() {
                       color: "var(--color-text)",
                     }}
                   >
-                    <span className="underline">S</span>ubmit App
+                    <span className="underline">S</span>
+                    <span className="hidden sm:inline">ubmit</span>
+                    <span className="hidden md:inline"> App</span>
                   </Link>
                 </div>
 
@@ -189,7 +194,13 @@ export function Navigation() {
                     className="px-2 py-1 text-sm font-medium transition-colors focus:outline-none"
                     style={{ color: "var(--color-text)" }}
                   >
-                    @{session.user.userTag} [<span className="underline">p</span>]
+                    <span className="sm:hidden">
+                      @{session.user.userTag.slice(0, 4)}...
+                    </span>
+                    <span className="hidden sm:inline">
+                      @{session.user.userTag}
+                    </span>{" "}
+                    [<span className="underline">p</span>]
                   </Link>
                 </div>
               </>
@@ -210,7 +221,9 @@ export function Navigation() {
                     className="px-2 py-1 text-sm font-medium transition-colors focus:outline-none"
                     style={{ color: "var(--color-text)" }}
                   >
-                    Sign <span className="underline">I</span>n
+                    <span className="hidden sm:inline">Sign </span>
+                    <span className="underline">I</span>
+                    <span className="hidden sm:inline">n</span>
                   </Link>
                 </div>
 
@@ -232,7 +245,8 @@ export function Navigation() {
                       color: "var(--color-background)",
                     }}
                   >
-                    <span className="underline">S</span>ign Up
+                    <span className="underline">S</span>
+                    <span className="hidden sm:inline">ign Up</span>
                   </Link>
                 </div>
               </>

@@ -191,7 +191,7 @@ export default function SignInPage() {
       <SecurityWarning />
       <div className="text-center">
         <pre
-          className="text-sm whitespace-pre-wrap font-semibold"
+          className="text-[8px] md:text-sm whitespace-pre-wrap font-semibold"
           style={{ color: "var(--color-accent)" }}
         >
           {termhuntText}

@@ -243,24 +243,51 @@ export default function MyCollectionsPage() {
 
   return (
     <div
-      className="min-h-screen pt-20 pb-8 flex font-mono"
+      className="min-h-screen pt-20 pb-8 flex flex-col lg:flex-row font-mono"
       style={{ backgroundColor: "var(--color-primary)" }}
     >
-      {/* Fixed Sidebar */}
-      <div className="fixed left-0 top-20 h-[calc(100vh-5rem)] z-40 w-80">
+      {/* Sidebar */}
+      <div className="lg:fixed lg:left-0 lg:top-20 lg:h-[calc(100vh-5rem)] lg:z-40 lg:w-80 w-full lg:block">
+        {/* Mobile toggle button */}
         <div
-          className="p-4 border-b"
+          className="lg:hidden border-b p-4"
           style={{ borderColor: "var(--color-accent)" }}
         >
-          <h2
-            className="font-bold text-sm"
+          <button
+            onClick={() => {
+              const sidebar = document.getElementById(
+                "collections-sidebar-content"
+              );
+              if (sidebar) {
+                sidebar.style.display =
+                  sidebar.style.display === "none" ? "block" : "none";
+              }
+            }}
+            className="w-full text-left font-mono text-sm focus:outline-none focus:underline px-2 py-1"
             style={{ color: "var(--color-highlight)" }}
           >
-            COLLECTIONS
-          </h2>
+            [±] COLLECTIONS
+          </button>
         </div>
 
-        <div className="p-4 space-y-6 overflow-y-auto h-full">
+        <div
+          id="collections-sidebar-content"
+          className="lg:block hidden lg:border-none border-b"
+          style={{ borderColor: "var(--color-accent)" }}
+        >
+          <div
+            className="p-4 border-b hidden lg:block"
+            style={{ borderColor: "var(--color-accent)" }}
+          >
+            <h2
+              className="font-bold text-sm"
+              style={{ color: "var(--color-highlight)" }}
+            >
+              COLLECTIONS
+            </h2>
+          </div>
+
+        <div className="p-4 space-y-6 overflow-y-auto lg:h-full max-h-96 lg:max-h-none">
           {/* Create New Collection */}
           <div>
             <h3
@@ -430,15 +457,16 @@ export default function MyCollectionsPage() {
             )}
           </div>
         </div>
+        </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 ml-80">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+      <div className="flex-1 lg:ml-80 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-6 lg:mb-8">
             <pre
-              className="text-xs md:text-sm whitespace-pre-wrap font-semibold mb-6"
+              className="text-[8px] md:text-sm whitespace-pre-wrap font-semibold mb-4 lg:mb-6 overflow-x-auto"
               style={{ color: "var(--color-accent)" }}
             >
               {`
@@ -466,7 +494,7 @@ C O L L E C T I O N S
                 {/* Collection Header */}
                 <div className="mb-6">
                   <h1
-                    className="text-xl font-medium mb-2"
+                    className="text-lg sm:text-xl font-medium mb-2"
                     style={{ color: "var(--color-text)" }}
                   >
                     {selectedCollection.name}

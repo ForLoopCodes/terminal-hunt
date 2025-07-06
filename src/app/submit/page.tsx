@@ -346,7 +346,7 @@ export default function SubmitAppPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <pre
-            className="text-xs md:text-sm whitespace-pre-wrap font-semibold mb-6"
+            className="text-[8px] md:text-sm whitespace-pre-wrap font-semibold mb-6"
             style={{ color: "var(--color-accent)" }}
           >
             {termhuntText}

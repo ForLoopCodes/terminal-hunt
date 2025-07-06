@@ -147,7 +147,7 @@ export function CollectionsModal({
 
   return (
     <div
-      className="fixed inset-0 text-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 text-sm flex items-center justify-center z-50 p-2 sm:p-4"
       style={{ backgroundColor: "rgba(0, 0, 0, 0.8)" }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -155,7 +155,7 @@ export function CollectionsModal({
     >
       <div
         ref={modalRef}
-        className="border max-w-md w-full max-h-[80vh] overflow-hidden"
+        className="border max-w-md w-full max-h-[90vh] sm:max-h-[80vh] overflow-hidden"
         style={{
           backgroundColor: "var(--color-primary)",
           borderColor: "var(--color-accent)",
@@ -164,7 +164,7 @@ export function CollectionsModal({
       >
         {/* Header */}
         <div
-          className="px-6 py-4 border-b"
+          className="px-4 sm:px-6 py-4 border-b"
           style={{ borderColor: "var(--color-accent)" }}
         >
           <div className="flex items-center justify-between">
@@ -185,7 +185,7 @@ export function CollectionsModal({
             </button>
           </div>
           <p
-            className="text-sm mt-1 font-mono"
+            className="text-xs sm:text-sm mt-1 font-mono break-words"
             style={{ color: "var(--color-text)" }}
           >
             add "{appName}" to collection
@@ -193,7 +193,7 @@ export function CollectionsModal({
         </div>
 
         {/* Content */}
-        <div className="p-2 max-h-96 overflow-y-auto">
+        <div className="p-2 max-h-72 sm:max-h-96 overflow-y-auto">
           {loading ? (
             <div className="flex justify-center py-8">
               <div
@@ -226,7 +226,6 @@ export function CollectionsModal({
                       }}
                     >
                       <div className="flex items-center">
-                       
                         <div>
                           <div
                             className="font-medium text-sm"

@@ -138,7 +138,7 @@ export default function FAQPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <pre
-            className="text-xs md:text-sm whitespace-pre-wrap font-semibold mb-8"
+            className="text-[8px] md:text-sm whitespace-pre-wrap font-semibold mb-8"
             style={{ color: "var(--color-accent)" }}
           >
             {termhuntText}
