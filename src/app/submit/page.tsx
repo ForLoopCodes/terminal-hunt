@@ -339,6 +339,7 @@ export default function SubmitAppPage() {
           >
             {"S U B M I T   Y O U R   A P P".toUpperCase().split("").join(" ")}
           </h1>
+        </div>
 
         {errors.submit && (
           <div
