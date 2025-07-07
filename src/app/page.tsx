@@ -31,7 +31,7 @@ interface Tag {
 const sortOptions = [
   { key: "newest", label: "Newest", shortcut: "N" },
   { key: "votes", label: "Most Voted", shortcut: "V" },
-  { key: "views", label: "Most Viewed", shortcut: "I" },
+  { key: "views", label: "Most Viewed", shortcut: "M" },
 ];
 
 const viewModes = [
@@ -593,7 +593,7 @@ function HomePage() {
                 className="flex items-center space-x-2 text-xs"
                 style={{ color: "var(--color-accent)" }}
               >
-                <span>Shortcuts: N/V/I, G/L, S/T</span>
+                <span>Shortcuts: N/V/M, G/L, S/T</span>
               </div>
             </div>
           </div>
