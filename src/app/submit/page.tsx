@@ -321,21 +321,6 @@ export default function SubmitAppPage() {
     return null; // Will redirect to signin
   }
 
-  const termhuntText = `
- ___                                   ___                      ___      
-(   )                                 (   )                    (   )     
- | |_     .--.  ___ .-.  ___ .-. .-.   | | .-. ___  ___ ___ .-. | |_     
-(   __)  /    \\(   )   \\(   )   '   \\  | |/   (   )(   |   )   (   __)   
- | |    |  .-. ;| ' .-. ;|  .-.  .-. ; |  .-. .| |  | | |  .-. .| |      
- | | ___|  | | ||  / (___) |  | |  | | | |  | || |  | | | |  | || | ___  
- | |(   )  |/  || |      | |  | |  | | | |  | || |  | | | |  | || |(   ) 
- | | | ||  ' _.'| |      | |  | |  | | | |  | || |  | | | |  | || | | |  
- | ' | ||  .'.-.| |      | |  | |  | | | |  | || |  ; ' | |  | || ' | |  
- ' \`-' ;'  \`-' /| |      | |  | |  | | | |  | |' \`-'  / | |  | |' \`-' ;  
-  \`.__.  \`.__.'(___)    (___)(___)(___|___)(___)'.__.' (___)(___)\`.__.   
-                  
-  S U B M I T   Y O U R   A P P
-  `;
 
   return (
     <div
@@ -347,6 +332,13 @@ export default function SubmitAppPage() {
         <div className="text-center mb-8">
           <TermHuntLogo size="md" />
         </div>
+        <div className="text-center mb-6">
+          <h1
+            className="text-sm font-bold tracking-wide"
+            style={{ color: "var(--color-highlight)" }}
+          >
+            {"S U B M I T   Y O U R   A P P".toUpperCase().split("").join(" ")}
+          </h1>
 
         {errors.submit && (
           <div

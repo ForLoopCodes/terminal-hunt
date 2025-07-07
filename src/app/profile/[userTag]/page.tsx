@@ -651,7 +651,7 @@ P R O F I L E   @ ${profile.userTag
           <div className="text-center mb-6 lg:mb-8">
             <pre
               className="text-[8px] md:text-sm whitespace-pre-wrap font-semibold mb-4 lg:mb-6 overflow-x-auto"
-              style={{ color: "var(--color-accent)" }}
+              style={{ color: "var(--color-highlight)" }}
             >
               {termhuntText}
             </pre>
