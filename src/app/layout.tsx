@@ -18,6 +18,80 @@ export const metadata: Metadata = {
   title: "Termhunt - Discover Amazing Terminal Apps",
   description:
     "A Product Hunt-inspired platform for discovering and sharing terminal-based applications.",
+  keywords: [
+    "terminal",
+    "cli",
+    "command line",
+    "apps",
+    "tools",
+    "developer",
+    "programming",
+    "unix",
+    "linux",
+    "bash",
+    "shell",
+    "productivity",
+  ],
+  authors: [{ name: "Termhunt Team" }],
+  creator: "Termhunt",
+  publisher: "Termhunt",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL(process.env.NEXTAUTH_URL || "http://localhost:3000"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Termhunt - Discover Amazing Terminal Apps",
+    description:
+      "A Product Hunt-inspired platform for discovering and sharing terminal-based applications.",
+    url: "/",
+    siteName: "Termhunt",
+    locale: "en_US",
+    type: "website",
+    images: [
+      {
+        url: "/termhunt-ascii-banner.png", // The ASCII art image you provided
+        width: 1200,
+        height: 630,
+        alt: "Termhunt - Discover Amazing Terminal Apps",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Termhunt - Discover Amazing Terminal Apps",
+    description:
+      "A Product Hunt-inspired platform for discovering and sharing terminal-based applications.",
+    site: "@termhunt", // Replace with your actual Twitter handle
+    creator: "@termhunt", // Replace with your actual Twitter handle
+    images: [
+      {
+        url: "/termhunt-ascii-banner.png", // The ASCII art image you provided
+        width: 1200,
+        height: 630,
+        alt: "Termhunt - Discover Amazing Terminal Apps",
+      },
+    ],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    // google: "your-google-verification-code", // Add when you set up Google Search Console
+    // yandex: "your-yandex-verification-code", // Add if needed
+  },
 };
 
 export default function RootLayout({
