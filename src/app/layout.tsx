@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/termhunt-ascii-banner.png", // The ASCII art image you provided
+        url: "https://imageupload.app/i/9a3fa3be78bcfe585ea5", // The ASCII art image you provided
         width: 1200,
         height: 630,
         alt: "Termhunt - Discover Amazing Terminal Apps",
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     creator: "@termhunt", // Replace with your actual Twitter handle
     images: [
       {
-        url: "/termhunt-ascii-banner.png", // The ASCII art image you provided
+        url: "https://imageupload.app/i/9a3fa3be78bcfe585ea5", // The ASCII art image you provided
         width: 1200,
         height: 630,
         alt: "Termhunt - Discover Amazing Terminal Apps",

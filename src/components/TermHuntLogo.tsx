@@ -22,7 +22,7 @@ export function TermHuntLogo({
   return (
     <div className="font-mono">
       <pre
-        className={`${sizeClasses[size]} leading-tight ${
+        className={`text-[6px] md:text-xs lg:text-sm leading-tight ${
           animated ? "animate-pulse" : ""
         }`}
         style={{ color: "var(--color-highlight)" }}
