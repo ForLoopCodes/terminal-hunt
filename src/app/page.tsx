@@ -30,7 +30,7 @@ interface Tag {
 
 const sortOptions = [
   { key: "newest", label: "Newest", shortcut: "N" },
-  { key: "votes", label: "Most Voted", shortcut: "V" },
+  { key: "votes", label: "Votes", shortcut: "V" },
   { key: "views", label: "Most Viewed", shortcut: "M" },
 ];
 
