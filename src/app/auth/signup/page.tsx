@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { SecurityWarning } from "@/components/SecurityWarning";
+import { TermHuntLogo } from "@/components/TermHuntLogo";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -206,22 +207,6 @@ export default function SignUpPage() {
     }
   };
 
-  const termhuntText = `
- ___                                   ___                      ___      
-(   )                                 (   )                    (   )     
- | |_     .--.  ___ .-.  ___ .-. .-.   | | .-. ___  ___ ___ .-. | |_     
-(   __)  /    \\(   )   \\(   )   '   \\  | |/   (   )(   |   )   (   __)   
- | |    |  .-. ;| ' .-. ;|  .-.  .-. ; |  .-. .| |  | | |  .-. .| |      
- | | ___|  | | ||  / (___) |  | |  | | | |  | || |  | | | |  | || | ___  
- | |(   )  |/  || |      | |  | |  | | | |  | || |  | | | |  | || |(   ) 
- | | | ||  ' _.'| |      | |  | |  | | | |  | || |  | | | |  | || | | |  
- | ' | ||  .'.-.| |      | |  | |  | | | |  | || |  ; ' | |  | || ' | |  
- ' \`-' ;'  \`-' /| |      | |  | |  | | | |  | |' \`-'  / | |  | |' \`-' ;  
-  \`.__.  \`.__.'(___)    (___)(___)(___|___)(___)'.__.' (___)(___)\`.__.   
-                  
-  J O I N   T H E   H U N T
-  `;
-
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center py-12 px-4 gap-10 sm:px-6 lg:px-8"
@@ -234,7 +219,15 @@ export default function SignUpPage() {
           className="text-[8px] md:text-sm whitespace-pre-wrap font-semibold"
           style={{ color: "var(--color-accent)" }}
         >
-          {termhuntText}
+          <TermHuntLogo size="md" />
+          <div className="mt-4 mb-6">
+            <h1
+              className="text-sm font-bold tracking-wide"
+              style={{ color: "var(--color-highlight)" }}
+            >
+              {"JOIN THE HUNT".toUpperCase().split("").join(" ")}
+            </h1>
+          </div>
         </pre>
       </div>
 

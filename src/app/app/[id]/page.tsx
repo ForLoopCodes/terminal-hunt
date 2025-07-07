@@ -608,8 +608,7 @@ export default function ViewAppPage() {
             <div
               className="hidden sm:block p-2 sm:p-4 font-mono text-xs text-center overflow-x-auto"
               style={{
-                backgroundColor: "var(--color-primary)",
-                color: "var(--color-accent)",
+                color: "var(--color-highlight)",
               }}
             >
               <pre className="whitespace-pre text-xs sm:text-sm">

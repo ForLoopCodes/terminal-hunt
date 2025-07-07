@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { DragDropCollections } from "@/components/DragDropCollections";
 import { DragDropApps } from "@/components/DragDropApps";
+import { TermHuntLogo } from "@/components/TermHuntLogo";
 
 interface Collection {
   id: string;
@@ -468,21 +469,15 @@ export default function MyCollectionsPage() {
               className="text-[8px] md:text-sm whitespace-pre-wrap font-semibold mb-4 lg:mb-6 overflow-x-auto"
               style={{ color: "var(--color-accent)" }}
             >
-              {`
- ___                                   ___                      ___      
-(   )                                 (   )                    (   )     
- | |_     .--.  ___ .-.  ___ .-. .-.   | | .-. ___  ___ ___ .-. | |_     
-(   __)  /    \\(   )   \\(   )   '   \\  | |/   (   )(   |   )   (   __)   
- | |    |  .-. ;| ' .-. ;|  .-.  .-. ; |  .-. .| |  | | |  .-. .| |      
- | | ___|  | | ||  / (___) |  | |  | | | |  | || |  | | | |  | || | ___  
- | |(   )  |/  || |      | |  | |  | | | |  | || |  | | | |  | || |(   ) 
- | | | ||  ' _.'| |      | |  | |  | | | |  | || |  | | | |  | || | | |  
- | ' | ||  .'.-.| |      | |  | |  | | | |  | || |  ; ' | |  | || ' | |  
- ' \`-' ;'  \`-' /| |      | |  | |  | | | |  | |' \`-'  / | |  | |' \`-' ;  
-  \`.__.  \`.__.'(___)    (___)(___)(___|___)(___)'.__.' (___)(___)\`.__.   
-
-C O L L E C T I O N S
-  `}
+              <TermHuntLogo size="md" />
+            <div className="mt-4 mb-6">
+              <h1
+                className="text-sm font-bold tracking-wide"
+                style={{ color: "var(--color-highlight)" }}
+              >
+                C O L L E C T I O N S
+              </h1>
+            </div>
             </pre>
           </div>
 

@@ -144,7 +144,7 @@ export default function FAQPage() {
               className="text-sm font-bold tracking-wide"
               style={{ color: "var(--color-highlight)" }}
             >
-              F R E Q U E N T L Y A S K E D Q U E S T I O N S
+              {"FREQUENTLY ASKED QUESTIONS".toUpperCase().split("").join(" ")}
             </h1>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import { EditAppForm } from "@/components/EditAppForm";
+import { TermHuntLogo } from "@/components/TermHuntLogo";
 
 interface AppDetail {
   id: string;
@@ -174,19 +175,15 @@ export default function EditAppPage() {
             className="text-[8px] md:text-sm whitespace-pre-wrap font-semibold mb-6"
             style={{ color: "var(--color-accent)" }}
           >
-            {` ___                                   ___                      ___      
-(   )                                 (   )                    (   )     
- | |_     .--.  ___ .-.  ___ .-. .-.   | | .-. ___  ___ ___ .-. | |_     
-(   __)  /    \\(   )   \\(   )   '   \\  | |/   (   )(   |   )   (   __)   
- | |    |  .-. ;| ' .-. ;|  .-.  .-. ; |  .-. .| |  | | |  .-. .| |      
- | | ___|  | | ||  / (___) |  | |  | | | |  | || |  | | | |  | || | ___  
- | |(   )  |/  || |      | |  | |  | | | |  | || |  | | | |  | || |(   ) 
- | | | ||  ' _.'| |      | |  | |  | | | |  | || |  | | | |  | || | | |  
- | ' | ||  .'.-.| |      | |  | |  | | | |  | || |  ; ' | |  | || ' | |  
- ' \`-' ;'  \`-' /| |      | |  | |  | | | |  | |' \`-'  / | |  | |' \`-' ;  
-  \`.__.  \`.__.'(___)    (___)(___)(___|___)(___)'.__.' (___)(___)\`.__.   
-                  
-  E D I T   Y O U R   A P P`}
+            <TermHuntLogo size="md" />
+            <div className="mt-4 mb-6">
+              <h1
+                className="text-sm font-bold tracking-wide"
+                style={{ color: "var(--color-highlight)" }}
+              >
+                {"E D I T   Y O U R   A P P".toUpperCase().split("").join(" ")}
+              </h1>
+            </div>
           </pre>
         </div>
 
