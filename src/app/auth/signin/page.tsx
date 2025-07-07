@@ -22,6 +22,7 @@ export default function SignInPage() {
   const submitRef = useRef<HTMLButtonElement>(null);
   const signupRef = useRef<HTMLAnchorElement>(null);
   const googleRef = useRef<HTMLButtonElement>(null);
+  const githubRef = useRef<HTMLButtonElement>(null);
   const twitterRef = useRef<HTMLButtonElement>(null);
 
   // Handle keyboard shortcuts
@@ -43,6 +44,10 @@ export default function SignInPage() {
         case "g":
           e.preventDefault();
           googleRef.current?.click();
+          break;
+        case "h":
+          e.preventDefault();
+          githubRef.current?.click();
           break;
         case "t":
           e.preventDefault();
@@ -99,7 +104,9 @@ export default function SignInPage() {
     }
   };
 
-  const handleOAuthSignIn = async (provider: "google" | "twitter") => {
+  const handleOAuthSignIn = async (
+    provider: "google" | "github" | "twitter"
+  ) => {
     setLoading(true);
     setError("");
     try {
@@ -221,6 +228,28 @@ export default function SignInPage() {
                 }}
               >
                 <span className="underline">G</span>oogle
+              </button>
+            </div>
+            <div className="flex items-center">
+              <span
+                className="mr-2 w-4 text-xs"
+                style={{ color: "var(--color-text)" }}
+              >
+                {focusedElement === "github" ? ">" : " "}
+              </span>
+              <button
+                ref={githubRef}
+                onFocus={() => setFocusedElement("github")}
+                onBlur={() => setFocusedElement(null)}
+                onClick={() => handleOAuthSignIn("github")}
+                disabled={loading}
+                className="justify-center py-2 text-sm font-medium focus:outline-none focus:ring-none disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-text)",
+                }}
+              >
+                Git<span className="underline">H</span>ub
               </button>
             </div>
             <div className="flex items-center">

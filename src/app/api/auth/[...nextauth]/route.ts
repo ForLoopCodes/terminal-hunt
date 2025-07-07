@@ -1,6 +1,7 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import TwitterProvider from "next-auth/providers/twitter";
+import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "@/lib/db";
 import { users, admins } from "@/lib/db/schema";
@@ -8,12 +9,16 @@ import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { checkRateLimit, clearRateLimit } from "@/lib/rateLimit";
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: any = {
   // Remove adapter to handle OAuth manually
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    GitHubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
     }),
     TwitterProvider({
       clientId: process.env.TWITTER_CLIENT_ID!,
@@ -138,26 +143,48 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account, profile }) {
       console.log("SignIn callback:", { user, account, profile });
 
-      if (account?.provider === "google" || account?.provider === "twitter") {
+      if (
+        account?.provider === "google" ||
+        account?.provider === "twitter" ||
+        account?.provider === "github"
+      ) {
         // For OAuth providers, ensure user exists in our database
         try {
+          // Handle Twitter's lack of email by creating a fallback
+          let userEmail = user.email;
+          if (!userEmail && account?.provider === "twitter") {
+            // Use Twitter username if available, otherwise use the Twitter ID
+            const twitterProfile = profile as any;
+            const username =
+              twitterProfile?.data?.username ||
+              twitterProfile?.username ||
+              user.id;
+            userEmail = `${username}@x.com`;
+            user.email = userEmail; // Update the user object
+          }
+
+          if (!userEmail) {
+            console.error("No email available for OAuth user");
+            return false;
+          }
+
           const existingUser = await db.query.users.findFirst({
-            where: eq(users.email, user.email!),
+            where: eq(users.email, userEmail),
           });
 
           if (!existingUser) {
             // Create user if they don't exist
-            console.log("Creating new OAuth user:", user.email);
-            const userTag = user
-              .email!.split("@")[0]
+            console.log("Creating new OAuth user:", userEmail);
+            const userTag = userEmail
+              .split("@")[0]
               .toLowerCase()
               .replace(/[^a-z0-9]/g, "");
 
             const newUser = await db
               .insert(users)
               .values({
-                email: user.email!,
-                name: user.name || user.email!,
+                email: userEmail,
+                name: user.name || userEmail,
                 userTag: userTag,
                 userType: "individual", // Set default user type
               })

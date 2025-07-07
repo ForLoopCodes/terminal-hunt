@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { TermHuntLogo } from "@/components/TermHuntLogo";
 import Link from "next/link";
 
 interface LeaderboardEntry {
@@ -614,27 +615,15 @@ export default function LeaderboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-6 lg:mb-8">
-            {/* Desktop ASCII Art */}
-            <pre
-              className="text-[8px] md:text-sm whitespace-pre-wrap font-semibold mb-4 lg:mb-6 overflow-x-auto"
-              style={{ color: "var(--color-accent)" }}
-            >
-              {`
- ___                                   ___                      ___      
-(   )                                 (   )                    (   )     
- | |_     .--.  ___ .-.  ___ .-. .-.   | | .-. ___  ___ ___ .-. | |_     
-(   __)  /    \\(   )   \\(   )   '   \\  | |/   (   )(   |   )   (   __)   
- | |    |  .-. ;| ' .-. ;|  .-.  .-. ; |  .-. .| |  | | |  .-. .| |      
- | | ___|  | | ||  / (___) |  | |  | | | |  | || |  | | | |  | || | ___  
- | |(   )  |/  || |      | |  | |  | | | |  | || |  | | | |  | || |(   ) 
- | | | ||  ' _.'| |      | |  | |  | | | |  | || |  | | | |  | || | | |  
- | ' | ||  .'.-.| |      | |  | |  | | | |  | || |  ; ' | |  | || ' | |  
- ' \`-' ;'  \`-' /| |      | |  | |  | | | |  | |' \`-'  / | |  | |' \`-' ;  
-  \`.__.  \`.__.'(___)    (___)(___)(___|___)(___)'.__.' (___)(___)\`.__.   
-                  
-  L E A D E R B O A R D S
-  `}
-            </pre>
+            <TermHuntLogo size="md" />
+            <div className="mt-4 mb-6">
+              <h1
+                className="text-sm font-bold tracking-wide"
+                style={{ color: "var(--color-highlight)" }}
+              >
+                L E A D E R B O A R D S
+              </h1>
+            </div>
 
             {/* Top Action Bar */}
             <div className="flex flex-col sm:flex-row items-center justify-between mb-6 space-y-4 sm:space-y-0">

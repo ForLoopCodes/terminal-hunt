@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
+import { TermHuntLogo } from "@/components/TermHuntLogo";
 
 interface Tag {
   id: string;
@@ -344,12 +345,7 @@ export default function SubmitAppPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <pre
-            className="text-[8px] md:text-sm whitespace-pre-wrap font-semibold mb-6"
-            style={{ color: "var(--color-accent)" }}
-          >
-            {termhuntText}
-          </pre>
+          <TermHuntLogo size="md" />
         </div>
 
         {errors.submit && (

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
+import { ThemeSwitcher } from "./ThemeSwitcher";
 
 export function Navigation() {
   const { data: session, status } = useSession();
@@ -78,19 +79,19 @@ export function Navigation() {
       }}
     >
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
               <span
                 className="px-2 py-1 text-sm font-medium"
-                style={{ color: "var(--color-text)" }}
+                style={{ color: "var(--color-highlight)" }}
               >
                 &gt;.&lt;
               </span>
             </Link>
           </div>
 
-          <div className="flex items-center space-x-1 overflow-x-auto">
+          <div className="flex items-center space-x-1">
             <div className="flex items-center">
               <span
                 className="w-1 text-xs"
@@ -129,6 +130,16 @@ export function Navigation() {
                 <span className="underline">F</span>
                 <span className="hidden sm:inline">AQ</span>
               </Link>
+            </div>
+
+            <div className="flex items-center">
+              <span
+                className="w-1 text-xs"
+                style={{ color: "var(--color-text)" }}
+              >
+                {focusedElement === "theme" ? ">" : " "}
+              </span>
+              <ThemeSwitcher />
             </div>
 
             {status === "loading" ? (

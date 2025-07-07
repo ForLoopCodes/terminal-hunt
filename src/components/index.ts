@@ -16,3 +16,5 @@ export { MarkdownRenderer } from "./MarkdownRenderer";
 export { EditAppButton } from "./EditAppButton";
 export { AppListItem } from "./AppListItem";
 export { ReportModal } from "./ReportModal";
+export { ThemeSwitcher } from "./ThemeSwitcher";
+export { TermHuntLogo } from "./TermHuntLogo";

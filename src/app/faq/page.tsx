@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { TermHuntLogo } from "@/components/TermHuntLogo";
 
 export default function FAQPage() {
   const [focusedElement, setFocusedElement] = useState<string | null>(null);
@@ -137,12 +138,15 @@ export default function FAQPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <pre
-            className="text-[8px] md:text-sm whitespace-pre-wrap font-semibold mb-8"
-            style={{ color: "var(--color-accent)" }}
-          >
-            {termhuntText}
-          </pre>
+          <TermHuntLogo size="md" />
+          <div className="mt-4">
+            <h1
+              className="text-sm font-bold tracking-wide"
+              style={{ color: "var(--color-highlight)" }}
+            >
+              F R E Q U E N T L Y A S K E D Q U E S T I O N S
+            </h1>
+          </div>
         </div>
 
         {/* Navigation Help */}
