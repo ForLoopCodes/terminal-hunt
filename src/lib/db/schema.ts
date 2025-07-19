@@ -58,7 +58,11 @@ export const apps = pgTable(
     website: varchar("website", { length: 255 }),
     documentationUrl: varchar("documentation_url", { length: 255 }),
     asciiArt: text("ascii_art"), // Custom ASCII art for the app
+    asciiArtAlignment: varchar("ascii_art_alignment", { length: 10 }), // left, right, center
     installCommands: text("install_commands").notNull(),
+    primaryInstallCommand: varchar("primary_install_command", { length: 255 }), // Not markdown
+    makefile: text("makefile"), // Optional Makefile content
+    identifier: varchar("identifier", { length: 64 }).unique().notNull(), // Unique identifier for CLI
     repoUrl: varchar("repo_url", { length: 255 }).notNull(),
     viewCount: bigint("view_count", { mode: "number" }).default(0),
     isPublic: boolean("is_public").default(true), // Allow private apps

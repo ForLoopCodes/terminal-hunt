@@ -106,9 +106,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    console.log("Session in POST /api/apps:", session);
-
-    if (!session?.user?.email) {
+    if (!session || !session.user || !session.user.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -120,15 +118,32 @@ export async function POST(request: NextRequest) {
       website,
       documentationUrl,
       asciiArt,
+      asciiArtAlignment,
       installCommands,
+      primaryInstallCommand,
+      makefile,
+      identifier,
       repoUrl,
       tagIds,
     } = body;
 
     // Validate required fields
-    if (!name || !description || !installCommands || !repoUrl) {
+    if (!name || !description || !installCommands || !repoUrl || !identifier) {
       return NextResponse.json(
         { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // Check identifier uniqueness
+    const existingIdentifier = await db
+      .select()
+      .from(apps)
+      .where(eq(apps.identifier, identifier))
+      .limit(1);
+    if (existingIdentifier.length > 0) {
+      return NextResponse.json(
+        { error: "Identifier already exists" },
         { status: 400 }
       );
     }
@@ -139,8 +154,6 @@ export async function POST(request: NextRequest) {
       .from(users)
       .where(eq(users.email, session.user.email))
       .limit(1);
-
-    console.log("User found:", user);
 
     if (!user.length) {
       // Try to create user if they don't exist (for OAuth users)
@@ -156,12 +169,12 @@ export async function POST(request: NextRequest) {
           userTag: userTag,
         })
         .returning();
-
-      console.log("Created new user:", newUser);
-
-      // Use the newly created user
       user.push(newUser);
     }
+
+    // Default values
+    const asciiAlignment = asciiArtAlignment || "center";
+    const primaryCmd = primaryInstallCommand || `hunt ${identifier}`;
 
     // Create the app
     const [newApp] = await db
@@ -173,7 +186,11 @@ export async function POST(request: NextRequest) {
         website,
         documentationUrl,
         asciiArt,
+        asciiArtAlignment: asciiAlignment,
         installCommands,
+        primaryInstallCommand: primaryCmd,
+        makefile,
+        identifier,
         repoUrl,
         creatorId: user[0].id,
       })
@@ -185,7 +202,6 @@ export async function POST(request: NextRequest) {
         appId: newApp.id,
         tagId,
       }));
-
       await db.insert(appTags).values(tagRelations);
     }
 

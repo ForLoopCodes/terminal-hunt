@@ -23,7 +23,11 @@ export default function SubmitAppPage() {
     website: "",
     documentationUrl: "",
     asciiArt: "",
+    asciiArtAlignment: "center",
     installCommands: "",
+    primaryInstallCommand: "",
+    makefile: "",
+    identifier: "",
     repoUrl: "",
     tagIds: [] as string[],
   });
@@ -246,6 +250,10 @@ export default function SubmitAppPage() {
 
     if (!formData.installCommands.trim()) {
       newErrors.installCommands = "Installation instructions are required";
+    }
+
+    if (!formData.identifier.trim()) {
+      newErrors.identifier = "Identifier is required";
     }
 
     if (!formData.repoUrl.trim()) {
@@ -1037,6 +1045,103 @@ export default function SubmitAppPage() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Identifier */}
+          <div className="flex items-center">
+            <span className="mr-2 w-4 text-xs" style={{ color: "var(--color-text)" }}>
+              {focusedElement === "identifier" ? ">" : " "}
+            </span>
+            <label htmlFor="identifier" className="text-sm pr-2" style={{ color: "var(--color-text)", backgroundColor: "var(--color-primary)" }}>
+              <span className="underline">I</span>D (unique)
+            </label>
+            <input
+              type="text"
+              id="identifier"
+              value={formData.identifier}
+              onFocus={() => setFocusedElement("identifier")}
+              onBlur={() => setFocusedElement(null)}
+              onChange={(e) => setFormData((prev) => ({ ...prev, identifier: e.target.value }))}
+              className="flex-1 px-2 py-1 focus:outline-none text-sm"
+              style={{ backgroundColor: "var(--color-primary)", color: "var(--color-text)" }}
+              placeholder="e.g. my-app"
+              required
+            />
+          </div>
+          {errors.identifier && (
+            <div className="ml-6 text-sm" style={{ color: "var(--color-highlight)" }}>
+              ! {errors.identifier}
+            </div>
+          )}
+
+          {/* Primary Install Command */}
+          <div className="flex items-center">
+            <span className="mr-2 w-4 text-xs" style={{ color: "var(--color-text)" }}>
+              {focusedElement === "primaryInstallCommand" ? ">" : " "}
+            </span>
+            <label htmlFor="primaryInstallCommand" className="text-sm pr-2" style={{ color: "var(--color-text)", backgroundColor: "var(--color-primary)" }}>
+              <span className="underline">P</span>rimary Install Command
+            </label>
+            <input
+              type="text"
+              id="primaryInstallCommand"
+              value={formData.primaryInstallCommand}
+              onFocus={() => setFocusedElement("primaryInstallCommand")}
+              onBlur={() => setFocusedElement(null)}
+              onChange={(e) => setFormData((prev) => ({ ...prev, primaryInstallCommand: e.target.value }))}
+              className="flex-1 px-2 py-1 focus:outline-none text-sm"
+              style={{ backgroundColor: "var(--color-primary)", color: "var(--color-text)" }}
+              placeholder={`hunt ${formData.identifier}`}
+            />
+          </div>
+
+          {/* ASCII Art Alignment */}
+          <div className="flex items-center mb-2">
+            <span className="mr-2 w-4 text-xs" style={{ color: "var(--color-text)" }}>
+              {focusedElement === "asciiArtAlignment" ? ">" : " "}
+            </span>
+            <label className="text-sm pr-2" style={{ color: "var(--color-text)", backgroundColor: "var(--color-primary)" }}>
+              ASCII Art Alignment
+            </label>
+            <div className="flex gap-2">
+              {['left', 'center', 'right'].map((align) => (
+                <button
+                  key={align}
+                  type="button"
+                  className={`px-2 py-1 text-xs border rounded ${formData.asciiArtAlignment === align ? 'bg-[var(--color-highlight)] text-[var(--color-primary)]' : 'bg-[var(--color-primary)] text-[var(--color-text)]'}`}
+                  style={{ borderColor: 'var(--color-accent)' }}
+                  onClick={() => setFormData((prev) => ({ ...prev, asciiArtAlignment: align }))}
+                  onFocus={() => setFocusedElement("asciiArtAlignment")}
+                  onBlur={() => setFocusedElement(null)}
+                >
+                  {align.charAt(0).toUpperCase() + align.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Makefile */}
+          <div>
+            <div className="flex items-center mb-1">
+              <span className="mr-2 w-4 text-xs" style={{ color: "var(--color-text)" }}>
+                {focusedElement === "makefile" ? ">" : " "}
+              </span>
+              <label htmlFor="makefile" className="text-sm pr-2" style={{ color: "var(--color-text)", backgroundColor: "var(--color-primary)" }}>
+                Makefile (optional)
+              </label>
+            </div>
+            <div className="p-3 min-h-[80px] ml-6 mt-3" style={{ backgroundColor: "var(--color-primary)", border: "1px solid var(--color-accent)" }}>
+              <textarea
+                id="makefile"
+                value={formData.makefile}
+                onFocus={() => setFocusedElement("makefile")}
+                onBlur={() => setFocusedElement(null)}
+                onChange={(e) => setFormData((prev) => ({ ...prev, makefile: e.target.value }))}
+                className="w-full bg-transparent font-mono text-xs focus:outline-none resize-none"
+                style={{ color: "var(--color-text)", minHeight: "60px" }}
+                placeholder="Paste your Makefile content here (optional)"
+              />
+            </div>
           </div>
 
           {/* Submit Button */}

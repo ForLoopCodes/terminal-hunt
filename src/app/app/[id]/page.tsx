@@ -14,6 +14,7 @@ import { CopyButton } from "@/components/CopyButton";
 import { ReportModal } from "@/components/ReportModal";
 
 interface AppDetail {
+  asciiArtAlignment: any;
   id: string;
   name: string;
   shortDescription?: string;
@@ -31,6 +32,9 @@ interface AppDetail {
   voteCount: number;
   comments: Comment[];
   userHasVoted?: boolean;
+  primaryInstallCommand?: string;
+  identifier?: string;
+  makefile?: string;
 }
 
 interface Comment {
@@ -358,30 +362,36 @@ export default function ViewAppPage() {
             </h2>
           </div>
 
-          <div className="p-4 space-y-6 overflow-y-auto lg:h-full max-h-96 lg:max-h-none">
-            {/* Installation */}
+          <div className="p-4 space-y-6 overflow-y-auto lg:h-full max-h-96 lg:max-h-[calc(100vh-5rem)]">
+         
+
+            {/* Primary Installation Command */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3
-                  className="text-xs font-semibold uppercase tracking-wider"
-                  style={{ color: "var(--color-accent)" }}
-                >
-                  Installation
+                <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-accent)' }}>
+                  Primary Install Command
                 </h3>
-                <CopyButton text={app.installCommands} />
+                <CopyButton text={app.primaryInstallCommand || `hunt ${app.identifier}`} />
               </div>
-              <div
-                className="p-3 text-xs font-mono border overflow-x-auto"
-                style={{
-                  backgroundColor: "var(--color-primary)",
-                  borderColor: "var(--color-accent)",
-                  color: "var(--color-text)",
-                }}
-              >
-                {app.installCommands}
+              <div className="p-3 text-xs font-mono border overflow-x-auto" style={{ backgroundColor: 'var(--color-primary)', borderColor: 'var(--color-accent)', color: 'var(--color-text)' }}>
+                {app.primaryInstallCommand || `hunt ${app.identifier}`}
               </div>
             </div>
 
+            {/* Identifier */}
+            <div>
+              <div className="flex items-center justify-between mb-3 mt-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-accent)' }}>
+                  Identifier
+                </h3>
+                <CopyButton text={app.identifier} />
+              </div>
+              <div className="p-3 text-xs font-mono border overflow-x-auto" style={{ backgroundColor: 'var(--color-primary)', borderColor: 'var(--color-accent)', color: 'var(--color-text)' }}>
+                {app.identifier}
+              </div>
+            </div>
+
+      
             {/* Stats */}
             <div>
               <h3
@@ -603,25 +613,27 @@ export default function ViewAppPage() {
       <div className="flex-1 lg:ml-80 w-full">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* ASCII Art */}
-          <div className="mb-8 lg:mb-16">
+          <div className={`mb-8 lg:mb-16 items-${app.asciiArtAlignment}`}>
             {/* Desktop ASCII Art */}
             <div
-              className="hidden sm:block p-2 sm:p-4 font-mono text-xs text-center overflow-x-auto"
+              className={`hidden sm:block p-2 sm:p-4 font-mono text-xs text-${app.asciiArtAlignment} items-${app.asciiArtAlignment} overflow-x-auto`}
               style={{
                 color: "var(--color-highlight)",
+                textAlign: app.asciiArtAlignment, 
               }}
             >
               <pre className="whitespace-pre text-xs sm:text-sm">
                 {formatAsciiArt(app.asciiArt || "", app.name)}
-              </pre>
-            </div>
+                </pre>
+              </div>
 
-            {/* Mobile ASCII Art - Smaller and simplified */}
-            <div
-              className="block sm:hidden p-2 font-mono text-xs text-center overflow-x-auto"
-              style={{
-                backgroundColor: "var(--color-primary)",
+              {/* Mobile ASCII Art - Smaller and simplified */}
+              <div
+                className={`block sm:hidden p-2 font-mono text-xs text-${app.asciiArtAlignment} items-${app.asciiArtAlignment} overflow-x-auto`}
+                style={{
+                  backgroundColor: "var(--color-primary)",
                 color: "var(--color-accent)",
+                textAlign: app.asciiArtAlignment, 
               }}
             >
               <pre className="whitespace-pre text-xs">
@@ -712,6 +724,21 @@ export default function ViewAppPage() {
               <MarkdownRenderer content={app.installCommands} />
             </div>
           </div>
+      {/* Makefile Copy Button */}
+      {app.makefile && (
+              <div className="mt-4 mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold uppercase" style={{ color: 'var(--color-text)' }}>
+                    MAKEFILE
+                  </h3>
+                  <CopyButton text={app.makefile} />
+                </div>
+                <div className="p-3 text-xs font-mono border overflow-x-auto" style={{ backgroundColor: 'var(--color-primary)', borderColor: 'var(--color-accent)', color: 'var(--color-text)' }}>
+                  <span>{app.makefile}</span>
+                </div>
+             
+              </div>
+            )}
 
           {/* Comments Section */}
           <div>

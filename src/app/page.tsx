@@ -159,8 +159,6 @@ function LandingPage() {
             </Link>
           </div>
         </div>
-
-       
       </section>
 
       {/* Top Apps Section - Full Screen */}
@@ -185,13 +183,12 @@ function LandingPage() {
           </div>
 
           {topApps.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {topApps.map((app, index) => (
+            <div className="space-y-4">
+              {topApps.slice(0, 10).map((app, index) => (
                 <div
                   key={app.id}
                   className="border border-solid p-6 hover:border-opacity-80 transition-all group"
                   style={{
-                    backgroundColor: "var(--color-secondary)",
                     borderColor: "var(--color-accent)",
                   }}
                 >

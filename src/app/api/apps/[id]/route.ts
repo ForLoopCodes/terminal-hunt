@@ -29,7 +29,11 @@ export async function GET(
         website: apps.website,
         documentationUrl: apps.documentationUrl,
         asciiArt: apps.asciiArt,
+        asciiArtAlignment: apps.asciiArtAlignment,
         installCommands: apps.installCommands,
+        primaryInstallCommand: apps.primaryInstallCommand,
+        makefile: apps.makefile,
+        identifier: apps.identifier,
         repoUrl: apps.repoUrl,
         viewCount: apps.viewCount,
         createdAt: apps.createdAt,
@@ -39,7 +43,7 @@ export async function GET(
       })
       .from(apps)
       .leftJoin(users, eq(apps.creatorId, users.id))
-      .where(eq(apps.id, id))
+      .where(or(eq(apps.id, id), eq(apps.identifier, id)))
       .limit(1);
 
     if (!app.length) {
@@ -121,7 +125,11 @@ export async function PUT(
       website,
       documentationUrl,
       asciiArt,
+      asciiArtAlignment,
       installCommands,
+      primaryInstallCommand,
+      makefile,
+      identifier,
       repoUrl,
     } = body;
 
@@ -155,14 +163,31 @@ export async function PUT(
       !name?.trim() ||
       !description?.trim() ||
       !installCommands?.trim() ||
-      !repoUrl?.trim()
+      !repoUrl?.trim() ||
+      !identifier?.trim()
     ) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
-
+    // Check identifier uniqueness (if changed)
+    if (identifier !== app[0].identifier) {
+      const existingIdentifier = await db
+        .select()
+        .from(apps)
+        .where(eq(apps.identifier, identifier))
+        .limit(1);
+      if (existingIdentifier.length > 0) {
+        return NextResponse.json(
+          { error: "Identifier already exists" },
+          { status: 400 }
+        );
+      }
+    }
+    // Default values
+    const asciiAlignment = asciiArtAlignment || "center";
+    const primaryCmd = primaryInstallCommand || `hunt ${identifier}`;
     // Update the app
     const updatedApp = await db
       .update(apps)
@@ -173,7 +198,11 @@ export async function PUT(
         website: website?.trim() || null,
         documentationUrl: documentationUrl?.trim() || null,
         asciiArt: asciiArt?.trim() || null,
+        asciiArtAlignment: asciiAlignment,
         installCommands: installCommands.trim(),
+        primaryInstallCommand: primaryCmd,
+        makefile,
+        identifier,
         repoUrl: repoUrl.trim(),
         updatedAt: new Date(),
       })
