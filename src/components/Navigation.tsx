@@ -17,6 +17,7 @@ export function Navigation() {
   const signInRef = useRef<HTMLAnchorElement>(null);
   const signUpRef = useRef<HTMLAnchorElement>(null);
   const adminRef = useRef<HTMLAnchorElement>(null);
+  const cliRef = useRef<HTMLAnchorElement>(null);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -64,6 +65,10 @@ export function Navigation() {
           e.preventDefault();
           signInRef.current?.click();
           break;
+        case "c":
+          e.preventDefault();
+          cliRef.current?.click();
+          break;
       }
     };
 
@@ -92,6 +97,28 @@ export function Navigation() {
           </div>
 
           <div className="flex items-center space-x-1">
+            {/* CLI Link */}
+            <div className="flex items-center">
+              <span
+                className="w-1 text-xs"
+                style={{ color: "var(--color-text)" }}
+              >
+                {focusedElement === "cli" ? ">" : " "}
+              </span>
+              <a
+                ref={cliRef}
+                href="https://www.npmjs.com/package/termhunt-cli"
+                target="_blank"
+                rel="noopener noreferrer"
+                onFocus={() => setFocusedElement("cli")}
+                onBlur={() => setFocusedElement(null)}
+                className="px-2 py-1 text-sm font-medium transition-colors focus:outline-none"
+                style={{ color: "var(--color-highlight)" }}
+              >
+                <span className="underline">C</span>LI
+              </a>
+            </div>
+
             <div className="flex items-center">
               <span
                 className="w-1 text-xs"
