@@ -18,8 +18,12 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-
-    // Get app with creator info
+    // Check if id is UUID
+    const isUUID =
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+        id
+      );
+    // Find app by id or identifier
     const app = await db
       .select({
         id: apps.id,
@@ -43,16 +47,19 @@ export async function GET(
       })
       .from(apps)
       .leftJoin(users, eq(apps.creatorId, users.id))
-      .where(or(eq(apps.id, id), eq(apps.identifier, id)))
+      .where(isUUID ? eq(apps.id, id) : eq(apps.identifier, id))
       .limit(1);
 
     if (!app.length) {
       return NextResponse.json({ error: "App not found" }, { status: 404 });
     }
-
+    // Use app[0].id for votes/comments
+    const appId = app[0].id;
     // Get vote count
-    const voteCount = await db.select().from(votes).where(eq(votes.appId, id));
-
+    const voteCount = await db
+      .select()
+      .from(votes)
+      .where(eq(votes.appId, appId));
     // Get comments with user info
     const appComments = await db
       .select({
@@ -65,7 +72,7 @@ export async function GET(
       })
       .from(comments)
       .leftJoin(users, eq(comments.userId, users.id))
-      .where(eq(comments.appId, id));
+      .where(eq(comments.appId, appId));
 
     return NextResponse.json({
       ...app[0],
@@ -84,20 +91,31 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-
+    const isUUID =
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+        id
+      );
+    // Find app by id or identifier
+    const app = await db
+      .select()
+      .from(apps)
+      .where(isUUID ? eq(apps.id, id) : eq(apps.identifier, id))
+      .limit(1);
+    if (!app.length) {
+      return NextResponse.json({ error: "App not found" }, { status: 404 });
+    }
+    const appId = app[0].id;
     // Increment view count
     await db
       .update(apps)
       .set({
         viewCount: sql`${apps.viewCount} + 1`,
       })
-      .where(eq(apps.id, id));
-
+      .where(eq(apps.id, appId));
     // Log the view
     await db.insert(viewLogs).values({
-      appId: id,
+      appId: appId,
     });
-
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error logging view:", error);
@@ -111,12 +129,23 @@ export async function PUT(
 ) {
   try {
     const session = await getServerSession(authOptions);
-
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     const { id } = await params;
+    const isUUID =
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+        id
+      );
+    const app = await db
+      .select()
+      .from(apps)
+      .where(isUUID ? eq(apps.id, id) : eq(apps.identifier, id))
+      .limit(1);
+    if (!app.length) {
+      return NextResponse.json({ error: "App not found" }, { status: 404 });
+    }
+    const appId = app[0].id;
     const body = await request.json();
     const {
       name,
@@ -132,32 +161,22 @@ export async function PUT(
       identifier,
       repoUrl,
     } = body;
-
     // Get user from database
     const user = await db
       .select()
       .from(users)
       .where(eq(users.email, session.user.email))
       .limit(1);
-
     if (!user.length) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-
     // Check if user is the creator of the app
-    const app = await db.select().from(apps).where(eq(apps.id, id)).limit(1);
-
-    if (!app.length) {
-      return NextResponse.json({ error: "App not found" }, { status: 404 });
-    }
-
     if (app[0].creatorId !== user[0].id) {
       return NextResponse.json(
         { error: "Unauthorized to edit this app" },
         { status: 403 }
       );
     }
-
     // Validate required fields
     if (
       !name?.trim() ||
@@ -206,16 +225,14 @@ export async function PUT(
         repoUrl: repoUrl.trim(),
         updatedAt: new Date(),
       })
-      .where(eq(apps.id, id))
+      .where(eq(apps.id, appId))
       .returning();
-
     if (!updatedApp.length) {
       return NextResponse.json(
         { error: "Failed to update app" },
         { status: 500 }
       );
     }
-
     return NextResponse.json(updatedApp[0]);
   } catch (error) {
     console.error("Error updating app:", error);
@@ -232,47 +249,46 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions);
-
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     const { id } = await params;
-
+    const isUUID =
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+        id
+      );
+    const app = await db
+      .select()
+      .from(apps)
+      .where(isUUID ? eq(apps.id, id) : eq(apps.identifier, id))
+      .limit(1);
+    if (!app.length) {
+      return NextResponse.json({ error: "App not found" }, { status: 404 });
+    }
+    const appId = app[0].id;
     // Get user from database
     const user = await db
       .select()
       .from(users)
       .where(eq(users.email, session.user.email))
       .limit(1);
-
     if (!user.length) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-
     // Check if user is the creator of the app
-    const app = await db.select().from(apps).where(eq(apps.id, id)).limit(1);
-
-    if (!app.length) {
-      return NextResponse.json({ error: "App not found" }, { status: 404 });
-    }
-
     if (app[0].creatorId !== user[0].id) {
       return NextResponse.json(
         { error: "Unauthorized to delete this app" },
         { status: 403 }
       );
     }
-
     // Delete related data first (foreign key constraints)
-    await db.delete(collectionApps).where(eq(collectionApps.appId, id));
-    await db.delete(comments).where(eq(comments.appId, id));
-    await db.delete(votes).where(eq(votes.appId, id));
-    await db.delete(viewLogs).where(eq(viewLogs.appId, id));
-
+    await db.delete(collectionApps).where(eq(collectionApps.appId, appId));
+    await db.delete(comments).where(eq(comments.appId, appId));
+    await db.delete(votes).where(eq(votes.appId, appId));
+    await db.delete(viewLogs).where(eq(viewLogs.appId, appId));
     // Delete the app
-    await db.delete(apps).where(eq(apps.id, id));
-
+    await db.delete(apps).where(eq(apps.id, appId));
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting app:", error);
