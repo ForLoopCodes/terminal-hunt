@@ -62,7 +62,7 @@ export const apps = pgTable(
     installCommands: text("install_commands").notNull(),
     primaryInstallCommand: varchar("primary_install_command", { length: 255 }), // Not markdown
     makefile: text("makefile"), // Optional Makefile content
-    identifier: varchar("identifier", { length: 64 }).unique().notNull(), // Unique identifier for CLI
+    identifier: varchar("identifier", { length: 64 }).notNull(), // Unique identifier for CLI
     repoUrl: varchar("repo_url", { length: 255 }).notNull(),
     viewCount: bigint("view_count", { mode: "number" }).default(0),
     isPublic: boolean("is_public").default(true), // Allow private apps
@@ -305,6 +305,25 @@ export const admins = pgTable(
   },
   (table) => ({
     userIdIdx: index("idx_admins_user_id").on(table.userId),
+  })
+);
+
+// Followers table
+export const followers = pgTable(
+  "followers",
+  {
+    followerId: uuid("follower_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    followingId: uuid("following_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.followerId, table.followingId] }),
+    followerIdIdx: index("idx_followers_follower_id").on(table.followerId),
+    followingIdIdx: index("idx_followers_following_id").on(table.followingId),
   })
 );
 

@@ -17,6 +17,9 @@ interface UserProfile {
   apps: App[];
   comments: Comment[];
   achievements: Achievement[];
+  followersCount: number;
+  followingCount: number;
+  isFollowing: boolean;
 }
 
 interface App {
@@ -206,6 +209,60 @@ export default function ProfilePage() {
     } catch (error) {
       console.error("Error updating profile:", error);
       setError("Failed to update profile");
+    }
+  };
+
+  const handleFollow = async () => {
+    if (!session) return;
+
+    try {
+      const response = await fetch(`/api/users/${userTag}/follow`, {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        setProfile((prev) =>
+          prev
+            ? {
+                ...prev,
+                isFollowing: true,
+                followersCount: prev.followersCount + 1,
+              }
+            : null
+        );
+      } else {
+        throw new Error("Failed to follow user");
+      }
+    } catch (error) {
+      console.error("Error following user:", error);
+      setError("Failed to follow user");
+    }
+  };
+
+  const handleUnfollow = async () => {
+    if (!session) return;
+
+    try {
+      const response = await fetch(`/api/users/${userTag}/follow`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setProfile((prev) =>
+          prev
+            ? {
+                ...prev,
+                isFollowing: false,
+                followersCount: prev.followersCount - 1,
+              }
+            : null
+        );
+      } else {
+        throw new Error("Failed to unfollow user");
+      }
+    } catch (error) {
+      console.error("Error unfollowing user:", error);
+      setError("Failed to unfollow user");
     }
   };
 
@@ -469,6 +526,37 @@ P R O F I L E   @ ${profile.userTag
                     </div>
                   )}
 
+                  <div className="flex space-x-4">
+                    <div>
+                      <div
+                        className="text-xs mb-1"
+                        style={{ color: "var(--color-accent)" }}
+                      >
+                        Followers:
+                      </div>
+                      <div
+                        className="text-sm"
+                        style={{ color: "var(--color-text)" }}
+                      >
+                        {profile.followersCount}
+                      </div>
+                    </div>
+                    <div>
+                      <div
+                        className="text-xs mb-1"
+                        style={{ color: "var(--color-accent)" }}
+                      >
+                        Following:
+                      </div>
+                      <div
+                        className="text-sm"
+                        style={{ color: "var(--color-text)" }}
+                      >
+                        {profile.followingCount}
+                      </div>
+                    </div>
+                  </div>
+
                   <div>
                     <div
                       className="text-xs mb-1"
@@ -546,20 +634,47 @@ P R O F I L E   @ ${profile.userTag
                 )}
 
                 {!isOwnProfile && session && (
-                  <button
-                    ref={reportRef}
-                    onFocus={() => setFocusedElement("report")}
-                    onBlur={() => setFocusedElement(null)}
-                    onClick={() => setShowReportModal(true)}
-                    className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
-                    style={{
-                      backgroundColor: "var(--color-primary)",
-                      color: "var(--color-text)",
-                      border: "1px solid var(--color-accent)",
-                    }}
-                  >
-                    <span className="underline">R</span>eport User
-                  </button>
+                  <>
+                    {profile.isFollowing ? (
+                      <button
+                        onClick={handleUnfollow}
+                        className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
+                        style={{
+                          backgroundColor: "var(--color-primary)",
+                          color: "var(--color-text)",
+                          border: "1px solid var(--color-accent)",
+                        }}
+                      >
+                        Unfollow
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleFollow}
+                        className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
+                        style={{
+                          backgroundColor: "var(--color-highlight)",
+                          color: "var(--color-primary)",
+                          border: "1px solid var(--color-highlight)",
+                        }}
+                      >
+                        Follow
+                      </button>
+                    )}
+                    <button
+                      ref={reportRef}
+                      onFocus={() => setFocusedElement("report")}
+                      onBlur={() => setFocusedElement(null)}
+                      onClick={() => setShowReportModal(true)}
+                      className="w-full px-3 py-1 text-sm font-medium focus:outline-none"
+                      style={{
+                        backgroundColor: "var(--color-primary)",
+                        color: "var(--color-text)",
+                        border: "1px solid var(--color-accent)",
+                      }}
+                    >
+                      <span className="underline">R</span>eport User
+                    </button>
+                  </>
                 )}
               </div>
             </div>

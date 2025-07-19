@@ -64,6 +64,13 @@
       "when": 1752949203051,
       "tag": "0008_legal_photon",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1752967794874,
+      "tag": "0009_soft_blue_blade",
+      "breakpoints": true
     }
   ]
 }

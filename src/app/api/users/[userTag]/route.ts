@@ -2,13 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { db } from "@/lib/db";
-import { users, apps, comments, achievements, votes } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { users, apps, comments, achievements, votes, followers } from "@/lib/db/schema";
+import { and, count, eq } from "drizzle-orm";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ userTag: string }> }
 ) {
+  const session = await getServerSession(authOptions);
+  const currentUserId = session?.user?.id;
+
   try {
     const { userTag } = await params;
 
@@ -31,6 +34,33 @@ export async function GET(
     }
 
     const userProfile = user[0];
+
+    // Get follower and following counts
+    const followersCount = await db
+      .select({ count: count() })
+      .from(followers)
+      .where(eq(followers.followingId, userProfile.id));
+
+    const followingCount = await db
+      .select({ count: count() })
+      .from(followers)
+      .where(eq(followers.followerId, userProfile.id));
+
+    // Check if the current user is following this user
+    let isFollowing = false;
+    if (currentUserId) {
+      const result = await db
+        .select()
+        .from(followers)
+        .where(
+          and(
+            eq(followers.followerId, currentUserId),
+            eq(followers.followingId, userProfile.id)
+          )
+        )
+        .limit(1);
+      isFollowing = result.length > 0;
+    }
 
     // Get user's submitted apps
     const userApps = await db
@@ -95,6 +125,9 @@ export async function GET(
       apps: appsWithVotes,
       comments: userComments,
       achievements: userAchievements,
+      followersCount: followersCount[0].count,
+      followingCount: followingCount[0].count,
+      isFollowing,
     });
   } catch (error) {
     console.error("Error fetching user profile:", error);
@@ -157,3 +190,4 @@ export async function PUT(
     );
   }
 }
+
