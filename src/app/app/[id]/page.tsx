@@ -729,7 +729,7 @@ export default function ViewAppPage() {
               <div className="mt-4 mb-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-semibold uppercase" style={{ color: 'var(--color-text)' }}>
-                    MAKEFILE
+                    EXEC COMMANDS
                   </h3>
                   <CopyButton text={app.makefile} />
                 </div>

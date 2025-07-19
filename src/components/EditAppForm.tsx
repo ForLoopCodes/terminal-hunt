@@ -762,7 +762,7 @@ export function EditAppForm({ app, onSuccess }: EditAppFormProps) {
               {focusedElement === "makefile" ? ">" : " "}
             </span>
             <label htmlFor="makefile" className="text-sm pr-2" style={{ color: "var(--color-text)", backgroundColor: "var(--color-primary)" }}>
-              Makefile (optional)
+              Exec commands (optional)
             </label>
           </div>
           <div className="p-3 min-h-[80px] ml-6 mt-3" style={{ backgroundColor: "var(--color-primary)", border: "1px solid var(--color-accent)" }}>
@@ -774,7 +774,7 @@ export function EditAppForm({ app, onSuccess }: EditAppFormProps) {
               onChange={(e) => handleInputChange("makefile", e.target.value)}
               className="w-full bg-transparent font-mono text-xs focus:outline-none resize-none"
               style={{ color: "var(--color-text)", minHeight: "60px" }}
-              placeholder="Paste your Makefile content here (optional)"
+              placeholder="Paste your exec commands here (optional)"
             />
           </div>
         </div>
