@@ -113,7 +113,7 @@ export function Navigation() {
                 onFocus={() => setFocusedElement("cli")}
                 onBlur={() => setFocusedElement(null)}
                 className="px-2 py-1 text-sm font-medium transition-colors focus:outline-none"
-                style={{ color: "var(--color-highlight)" }}
+                style={{ color: "var(--color-text)" }}
               >
                 <span className="underline">C</span>LI
               </a>
