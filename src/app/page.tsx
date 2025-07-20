@@ -243,7 +243,7 @@ function LandingPage() {
 
           <div className="mt-12">
             <Link
-              href="/apps"
+              href="/leaderboard"
               className="px-6 py-3 text-sm border border-solid transition-all hover:border-opacity-80"
               style={{
                 backgroundColor: "transparent",
@@ -251,7 +251,7 @@ function LandingPage() {
                 borderColor: "var(--color-accent)",
               }}
             >
-              explore all apps →
+              go to the leaderboard →
             </Link>
           </div>
         </div>
