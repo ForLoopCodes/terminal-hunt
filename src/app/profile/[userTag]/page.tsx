@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { AppListItem } from "@/components/AppListItem";
 import { ReportModal } from "@/components/ReportModal";
+import { useKeyboardShortcuts } from "@/lib/keyboardShortcuts";
 
 interface UserProfile {
   id: string;
@@ -64,7 +65,7 @@ export default function ProfilePage() {
     "apps" | "activity" | "achievements"
   >("apps");
   const [editing, setEditing] = useState(false);
-  const [editData, setEditData] = useState({ name: "", bio: "" });
+  const [editData, setEditData] = useState({ name: "", bio: "", userTag: "" });
   const [showReportModal, setShowReportModal] = useState(false);
   const [focusedElement, setFocusedElement] = useState<string | null>(null);
 
@@ -73,6 +74,7 @@ export default function ProfilePage() {
   const activityTabRef = useRef<HTMLButtonElement>(null);
   const achievementsTabRef = useRef<HTMLButtonElement>(null);
   const editButtonRef = useRef<HTMLButtonElement>(null);
+  const userTagInputRef = useRef<HTMLInputElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const bioInputRef = useRef<HTMLTextAreaElement>(null);
   const saveButtonRef = useRef<HTMLButtonElement>(null);
@@ -82,87 +84,129 @@ export default function ProfilePage() {
 
   const isOwnProfile = (session as any)?.user?.userTag === userTag;
 
-  // Handle keyboard shortcuts
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      // Ignore shortcuts when typing in inputs
-      const activeElement = document.activeElement;
-      if (
-        activeElement &&
-        (activeElement.tagName === "INPUT" ||
-          activeElement.tagName === "TEXTAREA")
-      ) {
-        return;
-      }
-
-      const key = e.key.toLowerCase();
-
-      switch (key) {
-        case "a":
-          e.preventDefault();
+  // Handle keyboard shortcuts using centralized system
+  useKeyboardShortcuts(
+    "profile-page",
+    [
+      {
+        key: "a",
+        action: () => {
           setActiveTab("apps");
           appsTabRef.current?.focus();
-          break;
-        case "c":
-          e.preventDefault();
+        },
+        description: "Switch to Apps tab",
+        requiresShift: true,
+      },
+      {
+        key: "c",
+        action: () => {
           setActiveTab("activity");
           activityTabRef.current?.focus();
-          break;
-        case "h":
-          e.preventDefault();
+        },
+        description: "Switch to Activity tab",
+        requiresShift: true,
+      },
+      {
+        key: "h",
+        action: () => {
           setActiveTab("achievements");
           achievementsTabRef.current?.focus();
-          break;
-        case "m":
-          e.preventDefault();
+        },
+        description: "Switch to Achievements tab",
+        requiresShift: true,
+      },
+      {
+        key: "m",
+        action: () => {
           if (isOwnProfile) {
             collectionsRef.current?.click();
           }
-          break;
-        case "e":
-          e.preventDefault();
+        },
+        description: "My Collections",
+        requiresShift: true,
+      },
+      {
+        key: "e",
+        action: () => {
           if (isOwnProfile && !editing) {
             setEditing(true);
-            setTimeout(() => nameInputRef.current?.focus(), 100);
+            setTimeout(() => userTagInputRef.current?.focus(), 100);
           }
-          break;
-        case "n":
-          e.preventDefault();
+        },
+        description: "Edit profile",
+        requiresShift: true,
+      },
+      {
+        key: "u",
+        action: () => {
+          if (editing) {
+            userTagInputRef.current?.focus();
+          }
+        },
+        description: "Focus User Tag input",
+        requiresShift: true,
+        disabled: !editing,
+      },
+      {
+        key: "n",
+        action: () => {
           if (editing) {
             nameInputRef.current?.focus();
           }
-          break;
-        case "b":
-          e.preventDefault();
+        },
+        description: "Focus Name input",
+        requiresShift: true,
+        disabled: !editing,
+      },
+      {
+        key: "b",
+        action: () => {
           if (editing) {
             bioInputRef.current?.focus();
           }
-          break;
-        case "s":
-          e.preventDefault();
+        },
+        description: "Focus Bio input",
+        requiresShift: true,
+        disabled: !editing,
+      },
+      {
+        key: "s",
+        action: () => {
           if (editing) {
             saveButtonRef.current?.click();
           }
-          break;
-        case "r":
-          e.preventDefault();
+        },
+        description: "Save changes",
+        requiresShift: true,
+        disabled: !editing,
+      },
+      {
+        key: "r",
+        action: () => {
           if (!isOwnProfile && session) {
             setShowReportModal(true);
             reportRef.current?.focus();
           }
-          break;
-        case "o":
-          e.preventDefault();
+        },
+        description: "Report user",
+        requiresShift: true,
+        disabled: isOwnProfile || !session,
+      },
+      {
+        key: "o",
+        action: () => {
           if (isOwnProfile && session) {
             signOutRef.current?.click();
           }
-          break;
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyPress);
-    return () => document.removeEventListener("keydown", handleKeyPress);
-  }, [isOwnProfile, editing]);
+        },
+        description: "Sign out",
+        requiresShift: true,
+        disabled: !isOwnProfile || !session,
+      },
+    ],
+    10, // High priority for page-specific shortcuts
+    [isOwnProfile, editing, session]
+  );
 
   useEffect(() => {
     fetchProfile();
@@ -175,7 +219,11 @@ export default function ProfilePage() {
 
       if (response.ok) {
         setProfile(data);
-        setEditData({ name: data.name || "", bio: data.bio || "" });
+        setEditData({
+          name: data.name || "",
+          bio: data.bio || "",
+          userTag: data.userTag || "",
+        });
       } else {
         setError(data.error || "User not found");
       }
@@ -191,24 +239,40 @@ export default function ProfilePage() {
     if (!isOwnProfile) return;
 
     try {
+      const requestBody: any = {
+        name: editData.name,
+        bio: editData.bio,
+      };
+
+      // Add newUserTag if it's different from current
+      if (editData.userTag && editData.userTag !== userTag) {
+        requestBody.newUserTag = editData.userTag;
+      }
+
       const response = await fetch(`/api/users/${userTag}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(editData),
+        body: JSON.stringify(requestBody),
       });
 
       if (response.ok) {
         const updatedProfile = await response.json();
         setProfile((prev) => (prev ? { ...prev, ...updatedProfile } : null));
         setEditing(false);
+
+        // If userTag changed, redirect to new profile URL
+        if (updatedProfile.userTag !== userTag) {
+          window.location.href = `/profile/${updatedProfile.userTag}`;
+        }
       } else {
-        throw new Error("Failed to update profile");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update profile");
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      setError("Failed to update profile");
+      setError("Failed to update profile: " + (error as any).message);
     }
   };
 
@@ -390,6 +454,39 @@ P R O F I L E   @ ${profile.userTag
 
               {editing ? (
                 <div className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="userTag"
+                      className="text-xs font-mono block mb-2"
+                      style={{ color: "var(--color-text)" }}
+                    >
+                      <span className="underline">u</span>ser tag
+                    </label>
+                    <input
+                      ref={userTagInputRef}
+                      type="text"
+                      id="userTag"
+                      value={editData.userTag}
+                      onFocus={() => setFocusedElement("userTag")}
+                      onBlur={() => setFocusedElement(null)}
+                      onChange={(e) =>
+                        setEditData((prev) => ({
+                          ...prev,
+                          userTag: e.target.value,
+                        }))
+                      }
+                      className="w-full px-3 py-1 text-sm focus:outline-none"
+                      style={{
+                        backgroundColor: "var(--color-primary)",
+                        color: "var(--color-text)",
+                        border: "1px solid var(--color-accent)",
+                      }}
+                      placeholder="Enter user tag"
+                      pattern="[a-zA-Z0-9_]{3,30}"
+                      title="3-30 characters, letters, numbers, and underscores only"
+                    />
+                  </div>
+
                   <div>
                     <label
                       htmlFor="name"
@@ -755,6 +852,36 @@ P R O F I L E   @ ${profile.userTag
                 </button>
               </div>
             </div>
+
+            {/* Keyboard Shortcuts Help */}
+            <div>
+              <h3
+                className="text-xs font-semibold mb-3 uppercase tracking-wider"
+                style={{ color: "var(--color-accent)" }}
+              >
+                Keyboard Shortcuts
+              </h3>
+              <div
+                className="text-xs space-y-1"
+                style={{ color: "var(--color-text)" }}
+              >
+                {isOwnProfile && !editing && <div>[e] edit profile</div>}
+                {editing && (
+                  <>
+                    <div>[u] user tag</div>
+                    <div>[n] name</div>
+                    <div>[b] bio</div>
+                    <div>[s] save</div>
+                  </>
+                )}
+                <div>[a] apps tab</div>
+                <div>[c] comments tab</div>
+                <div>[h] achievements tab</div>
+                {isOwnProfile && <div>[m] my collections</div>}
+                {isOwnProfile && <div>[o] sign out</div>}
+                {!isOwnProfile && session && <div>[r] report user</div>}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -940,6 +1067,49 @@ P R O F I L E   @ ${profile.userTag
                 )}
               </div>
             )}
+          </div>
+
+          {/* Keyboard Shortcuts Help */}
+          <div
+            className="mt-8 p-4 border-t"
+            style={{ borderColor: "var(--color-accent)" }}
+          >
+            <h3
+              className="text-sm font-semibold mb-3"
+              style={{ color: "var(--color-text)" }}
+            >
+              Keyboard Shortcuts
+            </h3>
+            <div
+              className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs"
+              style={{ color: "var(--color-accent)" }}
+            >
+              <div>Shift+A - Apps tab</div>
+              <div>Shift+C - Activity tab</div>
+              <div>Shift+H - Achievements tab</div>
+              {isOwnProfile && (
+                <>
+                  <div>Shift+M - My Collections</div>
+                  <div>Shift+E - Edit profile</div>
+                  <div>Shift+O - Sign out</div>
+                </>
+              )}
+              {editing && (
+                <>
+                  <div>Shift+U - Focus User Tag</div>
+                  <div>Shift+N - Focus Name</div>
+                  <div>Shift+B - Focus Bio</div>
+                  <div>Shift+S - Save changes</div>
+                </>
+              )}
+              {!isOwnProfile && session && <div>Shift+R - Report user</div>}
+            </div>
+            <div
+              className="mt-2 text-xs"
+              style={{ color: "var(--color-accent)" }}
+            >
+              * Browser shortcuts (Ctrl/Cmd+R, Ctrl/Cmd+C, etc.) work normally
+            </div>
           </div>
         </div>
       </div>

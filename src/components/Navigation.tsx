@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import { ThemeSwitcher } from "./ThemeSwitcher";
+import { useKeyboardShortcuts } from "@/lib/keyboardShortcuts";
 
 export function Navigation() {
   const { data: session, status } = useSession();
@@ -19,62 +20,66 @@ export function Navigation() {
   const adminRef = useRef<HTMLAnchorElement>(null);
   const cliRef = useRef<HTMLAnchorElement>(null);
 
-  // Handle keyboard shortcuts
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      // Ignore shortcuts when typing in inputs
-      const activeElement = document.activeElement;
-      if (
-        activeElement &&
-        (activeElement.tagName === "INPUT" ||
-          activeElement.tagName === "TEXTAREA")
-      ) {
-        return;
-      }
-
-      const key = e.key.toLowerCase();
-
-      switch (key) {
-        case "l":
-          e.preventDefault();
-          leaderboardRef.current?.click();
-          break;
-        case "f":
-          e.preventDefault();
-          aboutRef.current?.click();
-          break;
-        case "s":
-          e.preventDefault();
+  // Handle keyboard shortcuts using centralized system
+  useKeyboardShortcuts(
+    "navigation",
+    [
+      {
+        key: "L",
+        action: () => leaderboardRef.current?.click(),
+        description: "Go to leaderboard (Shift+L)",
+        requiresShift: true,
+      },
+      {
+        key: "F",
+        action: () => aboutRef.current?.click(),
+        description: "Go to FAQ (Shift+F)",
+        requiresShift: true,
+      },
+      {
+        key: "S",
+        action: () => {
           if (session) {
             submitRef.current?.click();
           } else {
             signUpRef.current?.click();
           }
-          break;
-        case "p":
-          e.preventDefault();
-          profileRef.current?.click();
-          break;
-        case "a":
-          e.preventDefault();
-          if (session?.user?.isAdmin) {
+        },
+        description: "Submit app / Sign up (Shift+S)",
+        requiresShift: true,
+      },
+      {
+        key: "P",
+        action: () => profileRef.current?.click(),
+        description: "Go to profile (Shift+P)",
+        requiresShift: true,
+      },
+      {
+        key: "A",
+        action: () => {
+          if ((session?.user as any)?.isAdmin) {
             adminRef.current?.click();
           }
-          break;
-        case "i":
-          e.preventDefault();
-          signInRef.current?.click();
-          break;
-        case "c":
-          e.preventDefault();
-          cliRef.current?.click();
-          break;
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyPress);
-    return () => document.removeEventListener("keydown", handleKeyPress);
-  }, [session]);
+        },
+        description: "Go to admin (Shift+A)",
+        requiresShift: true,
+      },
+      {
+        key: "I",
+        action: () => signInRef.current?.click(),
+        description: "Sign in (Shift+I)",
+        requiresShift: true,
+      },
+      {
+        key: "C",
+        action: () => cliRef.current?.click(),
+        description: "Go to CLI info (Shift+C)",
+        requiresShift: true,
+      },
+    ],
+    5, // Lower priority than page-specific shortcuts
+    [session]
+  );
 
   return (
     <nav
@@ -98,6 +103,21 @@ export function Navigation() {
 
           <div className="flex items-center space-x-1">
             {/* CLI Link */}
+
+            <div className="flex items-center">
+              <span
+                className="w-1 text-xs"
+                style={{ color: "var(--color-text)" }}
+              >
+                {focusedElement === "shift" ? ">" : " "}
+              </span>
+              <span
+                className="px-2 py-1 text-sm font-medium transition-colors focus:outline-none"
+                style={{ color: "var(--color-text)" }}
+              >
+                use ⇧
+              </span>
+            </div>
             <div className="flex items-center">
               <span
                 className="w-1 text-xs"
@@ -218,9 +238,9 @@ export function Navigation() {
                       @{session.user.userTag.slice(0, 4)}...
                     </span>
                     <span className="hidden sm:inline">
-                      @{session.user.userTag}
+                      @{(session.user as any)?.userTag}
                     </span>{" "}
-                    [<span className="underline">p</span>]
+                    [p]
                   </Link>
                 </div>
 
@@ -242,8 +262,7 @@ export function Navigation() {
                         color: "var(--color-highlight)",
                       }}
                     >
-                      <span className="underline">A</span>
-                      <span className="hidden sm:inline">dmin</span>
+                      A<span className="hidden sm:inline">dmin</span>
                     </Link>
                   </div>
                 )}

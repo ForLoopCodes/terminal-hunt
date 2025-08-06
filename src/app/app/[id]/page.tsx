@@ -12,6 +12,7 @@ import { CommentActions } from "@/components/CommentActions";
 import { DeleteAppButton } from "@/components/DeleteAppButton";
 import { CopyButton } from "@/components/CopyButton";
 import { ReportModal } from "@/components/ReportModal";
+import { useKeyboardShortcuts } from "@/lib/keyboardShortcuts";
 
 interface AppDetail {
   asciiArtAlignment: any;
@@ -72,61 +73,72 @@ export default function ViewAppPage() {
   const deleteRef = useRef<HTMLButtonElement>(null);
   const reportRef = useRef<HTMLButtonElement>(null);
 
-  // Handle keyboard shortcuts
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      // Ignore shortcuts when typing in inputs
-      const activeElement = document.activeElement;
-      if (
-        activeElement &&
-        (activeElement.tagName === "INPUT" ||
-          activeElement.tagName === "TEXTAREA" ||
-          activeElement.tagName === "SELECT")
-      ) {
-        return;
-      }
-
-      const key = e.key.toLowerCase();
-
-      switch (key) {
-        case "v":
-          e.preventDefault();
+  // Handle keyboard shortcuts using centralized system
+  useKeyboardShortcuts(
+    "app-page",
+    [
+      {
+        key: "v",
+        action: () => {
           if (session && !voting) {
             handleVote();
             voteRef.current?.focus();
           }
-          break;
-        case "c":
-          e.preventDefault();
+        },
+        description: "Vote for this app",
+        requiresShift: true,
+        priority: 10,
+      },
+      {
+        key: "c",
+        action: () => {
           if (session) {
             setShowCollectionsModal(true);
             collectionsRef.current?.focus();
           }
-          break;
-        case "e":
-          e.preventDefault();
-          editRef.current?.click();
-          break;
-        case "d":
-          e.preventDefault();
-          deleteRef.current?.click();
-          break;
-        case "r":
-          e.preventDefault();
+        },
+        description: "Add to collection",
+        requiresShift: true,
+        priority: 10,
+      },
+      {
+        key: "e",
+        action: () => {
+          if (session && app && editRef.current) {
+            editRef.current?.click();
+          }
+        },
+        description: "Edit app",
+        requiresShift: true,
+        priority: 10,
+      },
+      {
+        key: "d",
+        action: () => {
+          if (session && app && deleteRef.current) {
+            deleteRef.current?.click();
+          }
+        },
+        description: "Delete app",
+        requiresShift: true,
+        priority: 10,
+      },
+      {
+        key: "r",
+        action: () => {
           if (session) {
             setShowReportModal(true);
             reportRef.current?.focus();
           }
-          break;
-        case "escape":
-          e.preventDefault();
-          break;
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyPress);
-    return () => document.removeEventListener("keydown", handleKeyPress);
-  }, [session, voting]);
+        },
+        description: "Report app",
+        requiresShift: true,
+        priority: 10,
+      },
+    ],
+    10, // High priority for page-specific shortcuts
+    [session, voting, app]
+  );
 
   useEffect(() => {
     fetchApp();
@@ -363,17 +375,27 @@ export default function ViewAppPage() {
           </div>
 
           <div className="p-4 space-y-6 overflow-y-auto lg:h-full max-h-96 lg:max-h-[calc(100vh-5rem)]">
-         
-
             {/* Primary Installation Command */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-accent)' }}>
+                <h3
+                  className="text-xs font-semibold uppercase tracking-wider"
+                  style={{ color: "var(--color-accent)" }}
+                >
                   Primary Install Command
                 </h3>
-                <CopyButton text={app.primaryInstallCommand || `hunt ${app.identifier}`} />
+                <CopyButton
+                  text={app.primaryInstallCommand || `hunt ${app.identifier}`}
+                />
               </div>
-              <div className="p-3 text-xs font-mono border overflow-x-auto" style={{ backgroundColor: 'var(--color-primary)', borderColor: 'var(--color-accent)', color: 'var(--color-text)' }}>
+              <div
+                className="p-3 text-xs font-mono border overflow-x-auto"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  borderColor: "var(--color-accent)",
+                  color: "var(--color-text)",
+                }}
+              >
                 {app.primaryInstallCommand || `hunt ${app.identifier}`}
               </div>
             </div>
@@ -381,17 +403,26 @@ export default function ViewAppPage() {
             {/* Identifier */}
             <div>
               <div className="flex items-center justify-between mb-3 mt-4">
-                <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-accent)' }}>
+                <h3
+                  className="text-xs font-semibold uppercase tracking-wider"
+                  style={{ color: "var(--color-accent)" }}
+                >
                   Identifier
                 </h3>
-                <CopyButton text={app.identifier} />
+                <CopyButton text={app.identifier || ""} />
               </div>
-              <div className="p-3 text-xs font-mono border overflow-x-auto" style={{ backgroundColor: 'var(--color-primary)', borderColor: 'var(--color-accent)', color: 'var(--color-text)' }}>
+              <div
+                className="p-3 text-xs font-mono border overflow-x-auto"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  borderColor: "var(--color-accent)",
+                  color: "var(--color-text)",
+                }}
+              >
                 {app.identifier}
               </div>
             </div>
 
-      
             {/* Stats */}
             <div>
               <h3
@@ -522,19 +553,11 @@ export default function ViewAppPage() {
                     }}
                     title={
                       app.userHasVoted
-                        ? "Remove vote (V)"
-                        : "Vote for this app (V)"
+                        ? "Remove vote (Shift+V)"
+                        : "Vote for this app (Shift+V)"
                     }
                   >
-                    {app.userHasVoted ? (
-                      <>
-                        ↓ Remove <span className="underline">V</span>ote
-                      </>
-                    ) : (
-                      <>
-                        ↑ <span className="underline">V</span>ote
-                      </>
-                    )}
+                    {app.userHasVoted ? <>↓ Remove Vote</> : <>↑ Vote</>}
                   </button>
                   <button
                     ref={collectionsRef}
@@ -554,9 +577,9 @@ export default function ViewAppPage() {
                       e.target.style.borderColor = "var(--color-accent)";
                       e.target.style.boxShadow = "none";
                     }}
-                    title="Add to Collection (C)"
+                    title="Add to Collection (Shift+C)"
                   >
-                    + Add to <span className="underline">C</span>ollection
+                    + Add to Collection
                   </button>
 
                   <button
@@ -577,9 +600,9 @@ export default function ViewAppPage() {
                       e.target.style.borderColor = "var(--color-accent)";
                       e.target.style.boxShadow = "none";
                     }}
-                    title="Report App (R)"
+                    title="Report App (Shift+R)"
                   >
-                    <span className="underline">R</span>eport
+                    Report
                   </button>
 
                   {/* Edit button for app creator */}
@@ -605,6 +628,41 @@ export default function ViewAppPage() {
                 </div>
               </div>
             )}
+
+            {/* Keyboard Shortcuts */}
+            <div>
+              <h3
+                className="text-xs font-semibold mb-3 uppercase tracking-wider"
+                style={{ color: "var(--color-accent)" }}
+              >
+                Keyboard Shortcuts
+              </h3>
+              <div
+                className="text-xs space-y-1"
+                style={{ color: "var(--color-text)" }}
+              >
+                {session && (
+                  <>
+                    <div>Shift+V vote for app</div>
+                    <div>Shift+C add to collection</div>
+                    <div>Shift+R report app</div>
+                    {session?.user?.email && app && app.creatorId && (
+                      <>
+                        <div>Shift+E edit app</div>
+                        <div>Shift+D delete app</div>
+                      </>
+                    )}
+                  </>
+                )}
+                <div
+                  className="text-xs pt-2"
+                  style={{ color: "var(--color-accent)" }}
+                >
+                  * Browser shortcuts (Ctrl/Cmd+R, Ctrl/Cmd+C, etc.) work
+                  normally
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -619,21 +677,21 @@ export default function ViewAppPage() {
               className={`hidden sm:block p-2 sm:p-4 font-mono text-xs text-${app.asciiArtAlignment} items-${app.asciiArtAlignment} overflow-x-auto`}
               style={{
                 color: "var(--color-highlight)",
-                textAlign: app.asciiArtAlignment, 
+                textAlign: app.asciiArtAlignment,
               }}
             >
               <pre className="whitespace-pre text-xs sm:text-sm">
                 {formatAsciiArt(app.asciiArt || "", app.name)}
-                </pre>
-              </div>
+              </pre>
+            </div>
 
-              {/* Mobile ASCII Art - Smaller and simplified */}
-              <div
-                className={`block sm:hidden p-2 font-mono text-xs text-${app.asciiArtAlignment} items-${app.asciiArtAlignment} overflow-x-auto`}
-                style={{
-                  backgroundColor: "var(--color-primary)",
+            {/* Mobile ASCII Art - Smaller and simplified */}
+            <div
+              className={`block sm:hidden p-2 font-mono text-xs text-${app.asciiArtAlignment} items-${app.asciiArtAlignment} overflow-x-auto`}
+              style={{
+                backgroundColor: "var(--color-primary)",
                 color: "var(--color-accent)",
-                textAlign: app.asciiArtAlignment, 
+                textAlign: app.asciiArtAlignment,
               }}
             >
               <pre className="whitespace-pre text-xs">
@@ -724,21 +782,30 @@ export default function ViewAppPage() {
               <MarkdownRenderer content={app.installCommands} />
             </div>
           </div>
-      {/* Makefile Copy Button */}
-      {app.makefile && (
-              <div className="mt-4 mb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold uppercase" style={{ color: 'var(--color-text)' }}>
-                    EXEC COMMANDS
-                  </h3>
-                  <CopyButton text={app.makefile} />
-                </div>
-                <div className="p-3 text-xs font-mono border overflow-x-auto" style={{ backgroundColor: 'var(--color-primary)', borderColor: 'var(--color-accent)', color: 'var(--color-text)' }}>
-                  <span>{app.makefile}</span>
-                </div>
-             
+          {/* Makefile Copy Button */}
+          {app.makefile && (
+            <div className="mt-4 mb-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3
+                  className="text-sm font-semibold uppercase"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  EXEC COMMANDS
+                </h3>
+                <CopyButton text={app.makefile} />
               </div>
-            )}
+              <div
+                className="p-3 text-xs font-mono border overflow-x-auto"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  borderColor: "var(--color-accent)",
+                  color: "var(--color-text)",
+                }}
+              >
+                <span>{app.makefile}</span>
+              </div>
+            </div>
+          )}
 
           {/* Comments Section */}
           <div>

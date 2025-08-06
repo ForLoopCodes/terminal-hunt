@@ -2,7 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { db } from "@/lib/db";
-import { users, apps, comments, achievements, votes, followers } from "@/lib/db/schema";
+import {
+  users,
+  apps,
+  comments,
+  achievements,
+  votes,
+  followers,
+} from "@/lib/db/schema";
 import { and, count, eq } from "drizzle-orm";
 
 export async function GET(
@@ -151,25 +158,60 @@ export async function PUT(
   try {
     const { userTag } = params;
     const body = await request.json();
-    const { name, bio, socialLinks } = body;
+    const { name, bio, socialLinks, newUserTag } = body;
 
     // Check if the user is updating their own profile
-    if (session.user.userTag !== userTag) {
+    if ((session as any).user.userTag !== userTag) {
       return NextResponse.json(
         { error: "Forbidden: You can only update your own profile" },
         { status: 403 }
       );
     }
 
+    // If updating userTag, check if the new one is available
+    if (newUserTag && newUserTag !== userTag) {
+      // Validate new userTag format
+      if (!/^[a-zA-Z0-9_]{3,30}$/.test(newUserTag)) {
+        return NextResponse.json(
+          {
+            error:
+              "User tag must be 3-30 characters, alphanumeric and underscores only",
+          },
+          { status: 400 }
+        );
+      }
+
+      // Check if new userTag already exists
+      const existingUser = await db
+        .select()
+        .from(users)
+        .where(eq(users.userTag, newUserTag))
+        .limit(1);
+
+      if (existingUser.length > 0) {
+        return NextResponse.json(
+          { error: "User tag already taken" },
+          { status: 409 }
+        );
+      }
+    }
+
     // Update user profile
+    const updateData: any = {
+      name,
+      bio,
+      socialLinks,
+      updatedAt: new Date(),
+    };
+
+    // Add userTag to update if provided
+    if (newUserTag && newUserTag !== userTag) {
+      updateData.userTag = newUserTag;
+    }
+
     const [updatedUser] = await db
       .update(users)
-      .set({
-        name,
-        bio,
-        socialLinks,
-        updatedAt: new Date(),
-      })
+      .set(updateData)
       .where(eq(users.userTag, userTag))
       .returning({
         id: users.id,
@@ -190,4 +232,3 @@ export async function PUT(
     );
   }
 }
-
