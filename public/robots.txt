@@ -1,0 +1,74 @@
+# robots.txt for Termhunt - Terminal Applications Discovery Platform
+
+User-agent: *
+Allow: /
+
+# Allow all crawlers to access main content
+Allow: /app/
+Allow: /profile/
+Allow: /leaderboard
+Allow: /faq
+Allow: /collections
+
+# Disallow admin areas and sensitive pages
+Disallow: /admin/
+Disallow: /api/admin/
+
+# Disallow authentication pages (no SEO value)
+Disallow: /auth/
+Disallow: /api/auth/
+
+# Disallow internal API routes (except public ones)
+Disallow: /api/
+Allow: /api/apps
+Allow: /api/stats
+Allow: /api/leaderboards/
+
+# Disallow debug and development pages
+Disallow: /debug/
+Disallow: /_next/
+Allow: /_next/static/
+
+# Disallow user-specific actions
+Disallow: /submit
+Disallow: /*?*action=
+Disallow: /*&action=
+
+# Allow essential files for proper rendering
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.gif$
+Allow: /*.svg$
+Allow: /*.webp$
+Allow: /*.ico$
+Allow: /manifest.json
+Allow: /sitemap.xml
+Allow: /feed.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://termhunt.dev/sitemap.xml
+
+# Special rules for different bots
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
+
+# Block known bad bots
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
